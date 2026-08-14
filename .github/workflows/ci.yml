@@ -27,5 +27,5 @@ jobs:
       - name: Test
         run: bash .github/scripts/ci/test.sh
 
-      - name: Smoke (container must respond)
+      - name: Smoke (app must respond)
         run: bash .github/scripts/ci/smoke.sh
