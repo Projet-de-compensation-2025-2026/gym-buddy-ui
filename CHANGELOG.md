@@ -14,6 +14,8 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Release writes the computed SemVer into `package.json` before the tag
+  (humans do not hand-edit that number). Auto bump still refuses `1.0.0`.
 - OpenAPI consumer pin is the package tag `v0.1.0` (not a raw `develop` SHA
   GET of `bundled.yaml`).
 - Handwritten auth models / HTTP service are a thin wrapper over the generated

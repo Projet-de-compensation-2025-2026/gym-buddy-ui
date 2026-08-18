@@ -24,7 +24,7 @@ refresh / logout still send the HttpOnly refresh cookie.
 | Workflow | Trigger                | Promise                                                                 |
 | -------- | ---------------------- | ----------------------------------------------------------------------- |
 | CI       | PR / push on `develop` | Prettier `--write`, `ng test` (ChromeHeadless), `ng build` + HTTP smoke |
-| Release  | `workflow_dispatch`    | squash `develop` → `main`, tag `vX.Y.Z`                                 |
+| Release  | `workflow_dispatch`    | write SemVer into `package.json`, squash `develop` → `main`, tag `vX.Y.Z` |
 | Deploy   | that tag               | GitHub Pages                                                            |
 
 Live site: https://projet-de-compensation-2025-2026.github.io/gym-buddy-ui/
