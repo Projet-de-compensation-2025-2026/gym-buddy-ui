@@ -20,7 +20,7 @@ export class SignInPage {
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
   readonly registered = signal(
-    Boolean(this.router.lastSuccessfulNavigation?.extras.state?.['registered']),
+    Boolean(this.router.lastSuccessfulNavigation()?.extras.state?.['registered']),
   );
 
   readonly form = this.fb.nonNullable.group({
