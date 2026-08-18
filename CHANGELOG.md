@@ -7,7 +7,16 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Build generates an Angular `HttpClient` from the
+  [gym-buddy-openapi](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi)
+  consumer bundle at SHA `7fa510874e8ebb7d424f01629f3085705d569139` (orval 8.22.0).
+  No `openapi.yaml` / `bundled.yaml` is checked in.
+
 ### Changed
+
+- Handwritten auth models / HTTP service are a thin wrapper over the generated
+  `GymBuddyAPIService`. Register, login, refresh, logout, and healthz keep the
+  same URLs and cookie credentials.
 
 ## [0.1.1] — 2026-08-18
 
