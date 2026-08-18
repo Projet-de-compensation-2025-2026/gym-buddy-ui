@@ -5,7 +5,7 @@ cd "$root"
 if [[ -f angular.json ]]; then
   pnpm install --frozen-lockfile
   export CHROME_BIN="${CHROME_BIN:-$(command -v google-chrome-stable || command -v google-chrome || true)}"
-  pnpm test -- --watch=false --browsers=ChromeHeadless
+  pnpm exec ng test --watch=false --browsers=ChromeHeadless
   exit 0
 fi
 python3 - <<'PY'
