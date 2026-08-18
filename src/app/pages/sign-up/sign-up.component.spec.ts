@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { SignUpPage } from './sign-up.component';
@@ -11,7 +11,6 @@ describe('SignUpPage', () => {
     root: HTMLElement;
     http: HttpTestingController;
     router: Router;
-    fixture: ComponentFixture<SignUpPage>;
   }> {
     await TestBed.configureTestingModule({
       imports: [SignUpPage],
@@ -25,7 +24,6 @@ describe('SignUpPage', () => {
       root: fixture.nativeElement as HTMLElement,
       http: TestBed.inject(HttpTestingController),
       router: TestBed.inject(Router),
-      fixture,
     };
   }
 
@@ -119,24 +117,5 @@ describe('SignUpPage', () => {
 
     expect(page.error()).toBe('Email or handle already exists');
     http.verify();
-  });
-
-  it('toggles password visibility with the eye control', async () => {
-    const { root, fixture } = await setup();
-    const input = root.querySelector<HTMLInputElement>('[data-testid="sign-up-password"]');
-    const toggle = root.querySelector<HTMLButtonElement>(
-      '[data-testid="sign-up-password-visibility"]',
-    );
-    expect(input).toBeTruthy();
-    expect(toggle).toBeTruthy();
-    expect(input!.type).toBe('password');
-
-    toggle!.click();
-    fixture.detectChanges();
-    expect(input!.type).toBe('text');
-
-    toggle!.click();
-    fixture.detectChanges();
-    expect(input!.type).toBe('password');
   });
 });

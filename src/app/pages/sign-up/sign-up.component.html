@@ -27,10 +27,11 @@
     </label>
     <label>
       Password
-      <app-password-field
-        [control]="form.controls.password"
+      <input
+        type="password"
+        formControlName="password"
         autocomplete="new-password"
-        testId="sign-up-password"
+        data-testid="sign-up-password"
       />
     </label>
     <label>

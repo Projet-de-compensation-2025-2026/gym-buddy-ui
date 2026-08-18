@@ -4,11 +4,10 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthApi } from '../../api/auth-api.service';
 import { readApiError } from '../../api/models';
 import { AuthSession } from '../../auth/auth-session.service';
-import { PasswordField } from '../../auth/password-field';
 
 @Component({
   selector: 'app-sign-in',
-  imports: [ReactiveFormsModule, RouterLink, PasswordField],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './sign-in.component.html',
   styleUrl: './sign-in.component.css',
 })
