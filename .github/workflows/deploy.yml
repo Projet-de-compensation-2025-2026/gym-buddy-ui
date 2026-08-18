@@ -63,6 +63,9 @@ jobs:
           else
             cp -a public/. _site/
           fi
+          if [[ -f _site/index.html ]]; then
+            cp _site/index.html _site/404.html
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

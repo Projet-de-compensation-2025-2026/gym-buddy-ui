@@ -14,6 +14,7 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Production Angular build uses `baseHref` `/gym-buddy-ui/` so the existing Deploy `ng build` emits GitHub Pages project-site asset paths
 - Package manager is pnpm (`packageManager`: `pnpm@11.22.0`) with a four-week release-age floor (`minimumReleaseAge: 40320` minutes)
 - TypeScript is `~6.0.2` (newest Angular 22 supports). Wiki names TypeScript 7.0; the compiler gap is recorded here as [07-Technology-choices.md](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-documentation/blob/develop/20-Architecture/07-Technology-choices.md) requires
 - Smoke and deploy build `ng build` now that `angular.json` exists

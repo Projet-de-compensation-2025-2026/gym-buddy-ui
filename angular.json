@@ -68,6 +68,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/gym-buddy-ui/",
               "budgets": [
                 {
                   "type": "initial",
