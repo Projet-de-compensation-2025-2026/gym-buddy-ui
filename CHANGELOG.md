@@ -16,5 +16,6 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 - TypeScript is `~6.0.2` (newest Angular 22 supports). Wiki names TypeScript 7.0; the compiler gap is recorded here as [07-Technology-choices.md](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-documentation/blob/develop/20-Architecture/07-Technology-choices.md) requires
 - Smoke and deploy build `ng build` now that `angular.json` exists
+- Auth HTTP types match `gym-buddy-openapi` 0.1.0 on develop (`RegisteredUser.role`)
 
 [Unreleased]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui

@@ -2,24 +2,61 @@ openapi: 3.1.0
 info:
   title: Gym Buddy API
   version: 0.1.0
-  description: >
-    Auth paths this UI consumes (FS-ACCT-01..04, FS-ACCT-06 / JWT register, login,
-    refresh, logout). Canonical YAML lives in gym-buddy-openapi; that repo is still
-    the health-only stub on develop. Keep these shapes aligned when that contract
-    ships. Do not treat a running Spring /v3/api-docs as source of truth.
+  description: Canonical HTTP contract. Expand this file; do not treat a running Spring /v3/api-docs as source of truth.
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
-  - url: http://127.0.0.1:8080/api/v1
+  - url: /api/v1
 security:
   - bearerAuth: []
+tags:
+  - name: Auth
+    description: Sign-up, sign-in, refresh, and log-out (FS-ACCT-01..04, FS-ACCT-06).
 paths:
+  /healthz:
+    get:
+      operationId: getHealthz
+      summary: Liveness probe
+      description: Process is up. Unauthenticated. Does not check dependencies.
+      security: []
+      responses:
+        '200':
+          description: Process is up
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+  /readyz:
+    get:
+      operationId: getReadyz
+      summary: Readiness probe
+      description: PostgreSQL and object storage are reachable. Unauthenticated.
+      security: []
+      responses:
+        '200':
+          description: PostgreSQL and object storage are reachable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: PostgreSQL or object storage is not reachable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
   /auth/register:
     post:
-      operationId: register
-      summary: Register a member
-      description: FS-ACCT-01. Email and handle must be unique (FS-ACCT-02).
+      operationId: postAuthRegister
+      tags: [Auth]
+      summary: Register a visitor
+      description: |
+        Creates a user (and profile) from email, handle, password, and display name (FS-ACCT-01).
+        Email and handle are unique case-insensitively (FS-ACCT-02).
+        Password must be at least 10 characters and must not equal email or handle (FS-ACCT-03).
+        Stored as Argon2id; never logged. Does not return tokens — the visitor logs in afterwards.
+        The first registered user may receive role `admin` (FS-ACCT-10); later users are `member`.
       security: []
       requestBody:
         required: true
@@ -27,30 +64,61 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              valid:
+                value:
+                  email: alex@example.com
+                  handle: alex
+                  password: a-long-enough-secret
+                  displayName: Alex
       responses:
         '201':
-          description: Account created
+          description: User created. No access JWT and no refresh cookie.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegisteredUser'
         '409':
-          description: Duplicate email or handle
+          description: Duplicate email or handle (CONFLICT).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiError'
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                duplicateEmail:
+                  value:
+                    error:
+                      code: CONFLICT
+                      message: email or handle already exists
+                      details:
+                        - path: email
+                          issue: duplicate
         '422':
-          description: Validation failed
+          description: Weak or invalid password, or payload fails schema (VALIDATION).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiError'
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                weakPassword:
+                  value:
+                    error:
+                      code: VALIDATION
+                      message: password must be at least 10 characters and must not equal email or handle
+                      details:
+                        - path: password
+                          issue: weak
   /auth/login:
     post:
-      operationId: login
+      operationId: postAuthLogin
+      tags: [Auth]
       summary: Sign in
-      description: FS-ACCT-04. Returns an access JWT; refresh is an HttpOnly cookie.
+      description: |
+        Verifies email and password (Argon2id, timing-safe). On success returns an access JWT
+        in the JSON body and a refresh JWT in `Set-Cookie` (FS-ACCT-04).
+        The access token is not set as a cookie. Unknown email and wrong password use the
+        same generic invalid-credentials response. Locked users fail with FORBIDDEN without
+        revealing whether the password was correct.
       security: []
       requestBody:
         required: true
@@ -58,81 +126,182 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/LoginRequest'
+            examples:
+              valid:
+                value:
+                  email: alex@example.com
+                  password: a-long-enough-secret
       responses:
         '200':
-          description: Authenticated
+          description: Access JWT in JSON plus HttpOnly refresh cookie.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/SetRefreshCookie'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccessTokenResponse'
-        '401':
-          description: Invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Account locked
+          description: Locked user, or invalid credentials (FORBIDDEN).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiError'
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidCredentials:
+                  summary: Unknown email or wrong password
+                  value:
+                    error:
+                      code: FORBIDDEN
+                      message: invalid credentials
+                locked:
+                  summary: Account is locked (password correctness is not revealed)
+                  value:
+                    error:
+                      code: FORBIDDEN
+                      message: account is locked
+        '422':
+          description: Payload fails schema (VALIDATION).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/refresh:
     post:
-      operationId: refresh
-      summary: Rotate refresh cookie and issue a new access JWT
-      security: []
+      operationId: postAuthRefresh
+      tags: [Auth]
+      summary: Rotate refresh and issue a new access token
+      description: |
+        Cookie only — no request body and no access token.
+        Validates the refresh cookie (`typ=refresh`), replaces `jti` (rotation), and returns
+        a new access JWT in JSON plus a new refresh `Set-Cookie`.
+        Locked users fail. Missing, expired, or denylisted refresh fails as UNAUTHENTICATED.
+      security:
+        - refreshCookie: []
       responses:
         '200':
-          description: New access token
+          description: New access JWT in JSON and rotated refresh cookie.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/SetRefreshCookie'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccessTokenResponse'
         '401':
-          description: Missing or revoked refresh cookie
+          description: Missing, expired, rotated-away, or Redis-denylisted refresh (UNAUTHENTICATED).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiError'
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthenticated:
+                  value:
+                    error:
+                      code: UNAUTHENTICATED
+                      message: refresh credential is missing or no longer valid
+        '403':
+          description: User is locked (FORBIDDEN).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                locked:
+                  value:
+                    error:
+                      code: FORBIDDEN
+                      message: account is locked
   /auth/logout:
     post:
-      operationId: logout
+      operationId: postAuthLogout
+      tags: [Auth]
       summary: Revoke the refresh credential
-      description: FS-ACCT-06. Sends the HttpOnly refresh cookie (path /api/v1/auth).
-      security: []
+      description: |
+        Cookie only. Puts the refresh `jti` on a Redis denylist until that token's `exp`
+        (FS-ACCT-06). Clears the refresh cookie. The access JWT is not revoked server-side
+        (15-minute TTL). A later refresh with the old cookie is UNAUTHENTICATED.
+      security:
+        - refreshCookie: []
       responses:
         '204':
-          description: Refresh credential revoked
+          description: Refresh jti denylisted. Cookie cleared.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/ClearRefreshCookie'
         '401':
-          description: Not authenticated
+          description: Missing or invalid refresh cookie (UNAUTHENTICATED).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiError'
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: |
+        Access JWT in `Authorization: Bearer <access_token>`. HS256, 15-minute TTL.
+        Claims `sub`, `handle`, `role`, `typ=access`. Not stored in a cookie.
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: refresh
+      description: |
+        Refresh JWT cookie. HttpOnly; Secure; SameSite=Lax; Path=/api/v1/auth.
+        14-day TTL. Claims `sub`, `jti`, `typ=refresh`. Rotated on refresh.
+  headers:
+    SetRefreshCookie:
+      description: |
+        Refresh JWT. HttpOnly; Secure; SameSite=Lax; Path=/api/v1/auth.
+        The access token is never set as a cookie.
+      schema:
+        type: string
+        examples:
+          - refresh=eyJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJyZWZyZXNoIn0.example; HttpOnly; Secure; SameSite=Lax; Path=/api/v1/auth; Max-Age=1209600
+    ClearRefreshCookie:
+      description: Clears the refresh cookie after the jti is denylisted in Redis.
+      schema:
+        type: string
+        examples:
+          - refresh=; HttpOnly; Secure; SameSite=Lax; Path=/api/v1/auth; Max-Age=0
   schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          examples:
+            - ok
+            - unavailable
     RegisterRequest:
       type: object
+      additionalProperties: false
       required: [email, handle, password, displayName]
       properties:
         email:
           type: string
           format: email
+          description: Unique case-insensitively (CITEXT).
         handle:
           type: string
+          minLength: 1
+          description: Unique public identifier, case-insensitive.
         password:
           type: string
+          format: password
+          writeOnly: true
           minLength: 10
+          description: At least 10 characters; must not equal email or handle. Stored as Argon2id.
         displayName:
           type: string
+          minLength: 1
+          description: Profile display name.
     LoginRequest:
       type: object
+      additionalProperties: false
       required: [email, password]
       properties:
         email:
@@ -140,9 +309,12 @@ components:
           format: email
         password:
           type: string
+          format: password
+          writeOnly: true
     RegisteredUser:
       type: object
-      required: [id, email, handle, displayName]
+      additionalProperties: false
+      required: [id, email, handle, displayName, role]
       properties:
         id:
           type: string
@@ -154,39 +326,51 @@ components:
           type: string
         displayName:
           type: string
+        role:
+          type: string
+          enum: [member, moderator, admin]
+          description: First registered user may be `admin` (bootstrap); later users are `member`.
     AccessTokenResponse:
       type: object
+      additionalProperties: false
       required: [accessToken]
       properties:
         accessToken:
           type: string
-        expiresIn:
-          type: integer
-          description: Access token TTL in seconds (15 minutes per JWT spec).
-    ApiError:
+          description: |
+            HS256 access JWT for the Authorization header. 15-minute TTL.
+            Not returned in a cookie and must not be stored in localStorage.
+          examples:
+            - eyJhbGciOiJIUzI1NiJ9.eyJ0eXAiOiJhY2Nlc3MifQ.example
+    ErrorResponse:
       type: object
+      additionalProperties: false
       required: [error]
       properties:
         error:
           type: object
+          additionalProperties: false
           required: [code, message]
           properties:
             code:
               type: string
-              examples:
-                - VALIDATION
-                - CONFLICT
+              enum:
                 - UNAUTHENTICATED
                 - FORBIDDEN
+                - CONFLICT
+                - VALIDATION
             message:
               type: string
             details:
               type: array
               items:
-                type: object
-                required: [path, issue]
-                properties:
-                  path:
-                    type: string
-                  issue:
-                    type: string
+                $ref: '#/components/schemas/ErrorDetail'
+    ErrorDetail:
+      type: object
+      additionalProperties: false
+      required: [path, issue]
+      properties:
+        path:
+          type: string
+        issue:
+          type: string

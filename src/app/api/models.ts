@@ -12,16 +12,18 @@ export interface LoginRequest {
   password: string;
 }
 
+export type MemberRole = 'member' | 'moderator' | 'admin';
+
 export interface RegisteredUser {
   id: string;
   email: string;
   handle: string;
   displayName: string;
+  role: MemberRole;
 }
 
 export interface AccessTokenResponse {
   accessToken: string;
-  expiresIn?: number;
 }
 
 export interface ApiErrorDetail {

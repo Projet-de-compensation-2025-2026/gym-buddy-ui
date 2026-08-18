@@ -62,6 +62,7 @@ describe('SignUpPage', () => {
         email: 'alex@example.com',
         handle: 'alex',
         displayName: 'Alex',
+        role: 'member',
       },
       { status: 201, statusText: 'Created' },
     );

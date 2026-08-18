@@ -57,7 +57,7 @@ describe('SignInPage', () => {
       email: 'alex@example.com',
       password: 'longenough1',
     });
-    req.flush({ accessToken: 'access.jwt.token', expiresIn: 900 });
+    req.flush({ accessToken: 'access.jwt.token' });
 
     expect(session.accessToken()).toBe('access.jwt.token');
     expect(session.signedIn()).toBeTrue();
