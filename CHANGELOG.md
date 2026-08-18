@@ -7,6 +7,8 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- README documents the live GitHub Pages project site (auth still requires a local API)
+
 ### Changed
 
 ## [0.1.0] — 2026-08-18
