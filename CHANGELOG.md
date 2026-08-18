@@ -7,9 +7,11 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- README documents the live GitHub Pages project site (auth still requires a local API)
+- README documents the live GitHub Pages project site (login-from-Pages is not claimed)
 
 ### Changed
+
+- Production `apiBaseUrl` is the VPS (`https://vps-c39cdf03.vps.ovh.net/api/v1`). Local `ng serve` still uses `/api/v1`. Login-from-Pages is not claimed until Sentinel re-curls.
 
 ## [0.1.0] — 2026-08-18
 
