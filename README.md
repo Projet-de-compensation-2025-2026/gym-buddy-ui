@@ -20,11 +20,13 @@ The HTTP contract is
 
 ## Run locally
 
-Requires Node.js `^22.22.3` (see `.nvmrc`).
+Requires Node.js `^22.22.3` (see `.nvmrc`) and the pinned pnpm from
+`packageManager` (enable it with Corepack: `corepack enable`).
 
 ```bash
-npm ci
-npm start
+corepack enable
+pnpm install --frozen-lockfile
+pnpm start
 ```
 
 `ng serve` proxies `/api` to `http://127.0.0.1:8080`. Production builds use

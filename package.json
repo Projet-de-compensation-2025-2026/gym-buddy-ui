@@ -10,9 +10,10 @@
     "format": "prettier --write ."
   },
   "private": true,
-  "packageManager": "npm@10.9.8",
+  "packageManager": "pnpm@11.22.0",
   "engines": {
-    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0",
+    "pnpm": ">=11.22.0 <12"
   },
   "dependencies": {
     "@angular/common": "^22.1.0",

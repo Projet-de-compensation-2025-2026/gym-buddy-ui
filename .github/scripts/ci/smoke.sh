@@ -5,9 +5,9 @@ cd "$root"
 
 if [[ -f angular.json ]]; then
   if [[ ! -d node_modules ]]; then
-    npm ci
+    pnpm install --frozen-lockfile
   fi
-  npx ng build
+  pnpm exec ng build
 fi
 
 if [[ -d dist/gym-buddy-ui/browser ]]; then
