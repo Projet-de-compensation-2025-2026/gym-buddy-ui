@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "SemVer to publish (e.g. 0.2.0). Leave empty to compute automatically."
+        description: 'SemVer to publish (e.g. 0.2.0). Leave empty to compute automatically.'
         required: false
         type: string
       bump:
-        description: "When version is empty: auto (from Conventional Commits), patch, minor, or major."
+        description: 'When version is empty: auto (from Conventional Commits), patch, minor, or major.'
         required: false
         type: choice
         options:
@@ -41,6 +41,20 @@ jobs:
           fetch-depth: 0
           ref: develop
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Activate pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare --activate
 
       - name: Format (apply)
         run: bash .github/scripts/ci/format.sh --write

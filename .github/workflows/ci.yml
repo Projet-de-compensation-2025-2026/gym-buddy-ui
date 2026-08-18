@@ -17,15 +17,46 @@ jobs:
   ci:
     name: ci
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Activate pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare --activate
 
       - name: Format
-        run: bash .github/scripts/ci/format.sh --check
+        run: bash .github/scripts/ci/format.sh --write
+
+      - name: Commit format changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No format changes"
+          else
+            git commit -m "style: apply formatter"
+            git push origin HEAD:${{ github.head_ref || github.ref_name }}
+          fi
 
       - name: Test
         run: bash .github/scripts/ci/test.sh
 
-      - name: Smoke (container must respond)
+      - name: Smoke (app must respond)
         run: bash .github/scripts/ci/smoke.sh
