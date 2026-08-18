@@ -1,0 +1,192 @@
+openapi: 3.1.0
+info:
+  title: Gym Buddy API
+  version: 0.1.0
+  description: >
+    Auth paths this UI consumes (FS-ACCT-01..04, FS-ACCT-06 / JWT register, login,
+    refresh, logout). Canonical YAML lives in gym-buddy-openapi; that repo is still
+    the health-only stub on develop. Keep these shapes aligned when that contract
+    ships. Do not treat a running Spring /v3/api-docs as source of truth.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: http://127.0.0.1:8080/api/v1
+security:
+  - bearerAuth: []
+paths:
+  /auth/register:
+    post:
+      operationId: register
+      summary: Register a member
+      description: FS-ACCT-01. Email and handle must be unique (FS-ACCT-02).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisteredUser'
+        '409':
+          description: Duplicate email or handle
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/login:
+    post:
+      operationId: login
+      summary: Sign in
+      description: FS-ACCT-04. Returns an access JWT; refresh is an HttpOnly cookie.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Account locked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/refresh:
+    post:
+      operationId: refresh
+      summary: Rotate refresh cookie and issue a new access JWT
+      security: []
+      responses:
+        '200':
+          description: New access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenResponse'
+        '401':
+          description: Missing or revoked refresh cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/logout:
+    post:
+      operationId: logout
+      summary: Revoke the refresh credential
+      description: FS-ACCT-06. Sends the HttpOnly refresh cookie (path /api/v1/auth).
+      security: []
+      responses:
+        '204':
+          description: Refresh credential revoked
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [email, handle, password, displayName]
+      properties:
+        email:
+          type: string
+          format: email
+        handle:
+          type: string
+        password:
+          type: string
+          minLength: 10
+        displayName:
+          type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    RegisteredUser:
+      type: object
+      required: [id, email, handle, displayName]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        handle:
+          type: string
+        displayName:
+          type: string
+    AccessTokenResponse:
+      type: object
+      required: [accessToken]
+      properties:
+        accessToken:
+          type: string
+        expiresIn:
+          type: integer
+          description: Access token TTL in seconds (15 minutes per JWT spec).
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              examples:
+                - VALIDATION
+                - CONFLICT
+                - UNAUTHENTICATED
+                - FORBIDDEN
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+                required: [path, issue]
+                properties:
+                  path:
+                    type: string
+                  issue:
+                    type: string

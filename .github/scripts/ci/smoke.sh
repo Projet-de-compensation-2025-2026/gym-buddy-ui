@@ -3,7 +3,18 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$root"
 
-if [[ -d dist ]]; then
+if [[ -f angular.json ]]; then
+  if [[ ! -d node_modules ]]; then
+    npm ci
+  fi
+  npx ng build
+fi
+
+if [[ -d dist/gym-buddy-ui/browser ]]; then
+  dir=dist/gym-buddy-ui/browser
+elif [[ -d dist/browser ]]; then
+  dir=dist/browser
+elif [[ -d dist ]]; then
   dir=dist
 elif [[ -d public ]]; then
   dir=public

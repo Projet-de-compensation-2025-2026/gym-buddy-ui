@@ -1,0 +1,16 @@
+<section>
+  @if (session.signedIn()) {
+    <h1>Signed in</h1>
+    <p data-testid="home-signed-in">
+      The access token is held in memory for this tab. Use Log out to revoke the refresh cookie.
+    </p>
+  } @else {
+    <h1>Gym Buddy</h1>
+    <p>Basic sign-up and sign-in. Friends, feed, and events are not in this slice.</p>
+    <p>
+      <a routerLink="/register">Sign up</a>
+      ·
+      <a routerLink="/login">Sign in</a>
+    </p>
+  }
+</section>
