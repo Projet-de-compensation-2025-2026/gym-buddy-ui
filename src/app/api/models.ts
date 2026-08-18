@@ -1,4 +1,8 @@
-/** HTTP shapes from openapi/openapi.yaml (gym-buddy-openapi auth contract). */
+/**
+ * HTTP shapes from the canonical contract:
+ * https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi
+ * (`openapi/openapi.yaml` on develop, 0.1.0).
+ */
 
 export interface RegisterRequest {
   email: string;
@@ -26,21 +30,23 @@ export interface AccessTokenResponse {
   accessToken: string;
 }
 
-export interface ApiErrorDetail {
+export type ErrorCode = 'UNAUTHENTICATED' | 'FORBIDDEN' | 'CONFLICT' | 'VALIDATION';
+
+export interface ErrorDetail {
   path: string;
   issue: string;
 }
 
-export interface ApiErrorBody {
+export interface ErrorResponse {
   error: {
-    code: string;
+    code: ErrorCode;
     message: string;
-    details?: ApiErrorDetail[];
+    details?: ErrorDetail[];
   };
 }
 
 export function readApiError(err: unknown): string {
-  if (isHttpError(err) && isApiErrorBody(err.error)) {
+  if (isHttpError(err) && isErrorResponse(err.error)) {
     return err.error.error.message;
   }
   if (err instanceof Error && err.message) {
@@ -53,7 +59,7 @@ function isHttpError(err: unknown): err is { error: unknown } {
   return typeof err === 'object' && err !== null && 'error' in err;
 }
 
-function isApiErrorBody(value: unknown): value is ApiErrorBody {
+function isErrorResponse(value: unknown): value is ErrorResponse {
   if (typeof value !== 'object' || value === null || !('error' in value)) {
     return false;
   }

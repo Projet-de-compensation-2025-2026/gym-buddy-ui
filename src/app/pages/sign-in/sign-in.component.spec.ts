@@ -65,4 +65,46 @@ describe('SignInPage', () => {
     expect(navigate).toHaveBeenCalledWith('/');
     http.verify();
   });
+
+  it('FS-ACCT-04 surfaces FORBIDDEN 403 for invalid credentials (generic message)', async () => {
+    const { root, http, page, session } = await setup();
+
+    fill(root, {
+      'sign-in-email': 'alex@example.com',
+      'sign-in-password': 'wrong-password',
+    });
+    page.submit();
+
+    http
+      .expectOne(`${environment.apiBaseUrl}/auth/login`)
+      .flush(
+        { error: { code: 'FORBIDDEN', message: 'invalid credentials' } },
+        { status: 403, statusText: 'Forbidden' },
+      );
+
+    expect(page.error()).toBe('invalid credentials');
+    expect(session.accessToken()).toBeNull();
+    http.verify();
+  });
+
+  it('FS-ACCT-04 surfaces FORBIDDEN 403 when the account is locked', async () => {
+    const { root, http, page, session } = await setup();
+
+    fill(root, {
+      'sign-in-email': 'alex@example.com',
+      'sign-in-password': 'longenough1',
+    });
+    page.submit();
+
+    http
+      .expectOne(`${environment.apiBaseUrl}/auth/login`)
+      .flush(
+        { error: { code: 'FORBIDDEN', message: 'account is locked' } },
+        { status: 403, statusText: 'Forbidden' },
+      );
+
+    expect(page.error()).toBe('account is locked');
+    expect(session.accessToken()).toBeNull();
+    http.verify();
+  });
 });

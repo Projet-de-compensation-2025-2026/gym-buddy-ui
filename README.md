@@ -8,6 +8,10 @@ It calls `POST /api/v1/auth/register`, `/login`, and `/logout`. The access JWT s
 in memory; the refresh token is the API’s HttpOnly cookie (`path /api/v1/auth`).
 Friends, feed, and events are out of scope.
 
+The HTTP contract is
+[`gym-buddy-openapi`](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi)
+(`openapi/openapi.yaml` on `develop`, version `0.1.0`). This repo does not keep a copy.
+
 | Workflow | Trigger                | Promise                                                                 |
 | -------- | ---------------------- | ----------------------------------------------------------------------- |
 | CI       | PR / push on `develop` | Prettier `--write`, `ng test` (ChromeHeadless), `ng build` + HTTP smoke |

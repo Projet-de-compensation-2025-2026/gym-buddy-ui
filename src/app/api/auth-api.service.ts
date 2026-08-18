@@ -6,7 +6,8 @@ import { AccessTokenResponse, LoginRequest, RegisterRequest, RegisteredUser } fr
 
 /**
  * Typed client for POST /api/v1/auth/{register,login,refresh,logout}.
- * Cookie credentials are required on refresh and logout (path /api/v1/auth).
+ * Shapes: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi
+ * Refresh and logout are cookie-only (path /api/v1/auth).
  */
 @Injectable({ providedIn: 'root' })
 export class AuthApi {
@@ -24,14 +25,12 @@ export class AuthApi {
   }
 
   refresh(): Observable<AccessTokenResponse> {
-    return this.http.post<AccessTokenResponse>(
-      `${this.base}/refresh`,
-      {},
-      { withCredentials: true },
-    );
+    return this.http.post<AccessTokenResponse>(`${this.base}/refresh`, null, {
+      withCredentials: true,
+    });
   }
 
   logout(): Observable<void> {
-    return this.http.post<void>(`${this.base}/logout`, {}, { withCredentials: true });
+    return this.http.post<void>(`${this.base}/logout`, null, { withCredentials: true });
   }
 }
