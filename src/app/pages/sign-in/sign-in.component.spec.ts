@@ -13,6 +13,7 @@ describe('SignInPage', () => {
     http: HttpTestingController;
     router: Router;
     session: AuthSession;
+    detect: () => void;
   }> {
     await TestBed.configureTestingModule({
       imports: [SignInPage],
@@ -27,6 +28,7 @@ describe('SignInPage', () => {
       http: TestBed.inject(HttpTestingController),
       router: TestBed.inject(Router),
       session: TestBed.inject(AuthSession),
+      detect: () => fixture.detectChanges(),
     };
   }
 
@@ -38,6 +40,26 @@ describe('SignInPage', () => {
       input!.dispatchEvent(new Event('input'));
     }
   }
+
+  it('password field has a visibility toggle that shows and hides the typed password', async () => {
+    const { root, page, detect } = await setup();
+    const input = root.querySelector<HTMLInputElement>('[data-testid="sign-in-password"]')!;
+    const toggle = root.querySelector<HTMLButtonElement>(
+      '[data-testid="sign-in-password-visibility"]',
+    )!;
+
+    page.form.controls.password.setValue('longenough1');
+    expect(input.type).toBe('password');
+    expect(toggle.getAttribute('aria-label')).toBe('Show password');
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+
+    toggle.click();
+    detect();
+    expect(input.type).toBe('text');
+    expect(input.value).toBe('longenough1');
+    expect(toggle.getAttribute('aria-label')).toBe('Hide password');
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+  });
 
   it('FS-ACCT-04 posts login, stores the access JWT in memory, and does not write localStorage', async () => {
     const { root, http, page, router, session } = await setup();
