@@ -29,5 +29,4 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - Auth TypeScript types follow [gym-buddy-openapi](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi) 0.1.0 (`RegisteredUser.role`, login `403` FORBIDDEN, no `expiresIn`)
 
 [Unreleased]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui
-
 [0.1.0]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v0.1.0
