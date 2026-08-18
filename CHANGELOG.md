@@ -7,6 +7,12 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+### Changed
+
+## [0.1.0] — 2026-08-18
+
+### Added
+
 - Angular 22 app with sign-up, sign-in, and log-out calling `/api/v1/auth`
 - In-memory access token (not `localStorage`); refresh/logout send cookie credentials
 - Prettier 3.6.2 so CI `format.sh --write` formats the tree
@@ -21,3 +27,5 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - Auth TypeScript types follow [gym-buddy-openapi](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi) 0.1.0 (`RegisteredUser.role`, login `403` FORBIDDEN, no `expiresIn`)
 
 [Unreleased]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui
+
+[0.1.0]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v0.1.0
