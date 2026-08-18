@@ -11,6 +11,7 @@ describe('SignUpPage', () => {
     root: HTMLElement;
     http: HttpTestingController;
     router: Router;
+    detect: () => void;
   }> {
     await TestBed.configureTestingModule({
       imports: [SignUpPage],
@@ -24,6 +25,7 @@ describe('SignUpPage', () => {
       root: fixture.nativeElement as HTMLElement,
       http: TestBed.inject(HttpTestingController),
       router: TestBed.inject(Router),
+      detect: () => fixture.detectChanges(),
     };
   }
 
@@ -35,6 +37,26 @@ describe('SignUpPage', () => {
       input!.dispatchEvent(new Event('input'));
     }
   }
+
+  it('password field has a visibility toggle that shows and hides the typed password', async () => {
+    const { root, page, detect } = await setup();
+    const input = root.querySelector<HTMLInputElement>('[data-testid="sign-up-password"]')!;
+    const toggle = root.querySelector<HTMLButtonElement>(
+      '[data-testid="sign-up-password-visibility"]',
+    )!;
+
+    page.form.controls.password.setValue('longenough1');
+    expect(input.type).toBe('password');
+    expect(toggle.getAttribute('aria-label')).toBe('Show password');
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+
+    toggle.click();
+    detect();
+    expect(input.type).toBe('text');
+    expect(input.value).toBe('longenough1');
+    expect(toggle.getAttribute('aria-label')).toBe('Hide password');
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+  });
 
   it('FS-ACCT-01 posts email, handle, password, and display name to register', async () => {
     const { root, http, router, page } = await setup();

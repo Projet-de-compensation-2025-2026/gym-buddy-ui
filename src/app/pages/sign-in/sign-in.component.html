@@ -21,11 +21,10 @@
     </label>
     <label>
       Password
-      <input
-        type="password"
-        formControlName="password"
+      <app-password-field
+        [control]="form.controls.password"
         autocomplete="current-password"
-        data-testid="sign-in-password"
+        testId="sign-in-password"
       />
     </label>
     <button type="submit" data-testid="sign-in-submit" [disabled]="submitting()">

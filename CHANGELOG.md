@@ -7,6 +7,7 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Password visibility toggle (eye) on register and login
 - README documents the live GitHub Pages project site (login-from-Pages is not claimed)
 
 ### Changed
