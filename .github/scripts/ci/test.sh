@@ -4,6 +4,7 @@ root="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$root"
 if [[ -f angular.json ]]; then
   pnpm install --frozen-lockfile
+  pnpm generate:api
   export CHROME_BIN="${CHROME_BIN:-$(command -v google-chrome-stable || command -v google-chrome || true)}"
   pnpm exec ng test --watch=false --browsers=ChromeHeadless
   exit 0

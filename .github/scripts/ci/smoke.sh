@@ -7,6 +7,7 @@ if [[ -f angular.json ]]; then
   if [[ ! -d node_modules ]]; then
     pnpm install --frozen-lockfile
   fi
+  pnpm generate:api
   pnpm exec ng build
 fi
 

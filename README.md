@@ -9,8 +9,17 @@ in memory; the refresh token is the API’s HttpOnly cookie (`path /api/v1/auth`
 Friends, feed, and events are out of scope.
 
 The HTTP contract is
-[`gym-buddy-openapi`](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi)
-(`openapi/openapi.yaml` on `develop`, version `0.1.0`). This repo does not keep a copy.
+[`gym-buddy-openapi`](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi).
+This repo does **not** vendor `openapi.yaml` or `bundled.yaml`.
+
+`pnpm generate:api` (also run by `pnpm start`, `pnpm build`, and `pnpm test`)
+fetches the consumer bundle from the raw GitHub URL pinned to
+`gym-buddy-openapi@7fa510874e8ebb7d424f01629f3085705d569139` (short `7fa5108`)
+and runs [orval](https://orval.dev) `8.22.0` (`client: 'angular'`) into
+`src/app/api/generated/`. Choice: raw SHA URL, not an npm package, so the
+build is reproducible without copying YAML into this tree. Auth pages use a
+thin `AuthApi` wrapper over the generated `GymBuddyAPIService` so login /
+refresh / logout still send the HttpOnly refresh cookie.
 
 | Workflow | Trigger                | Promise                                                                 |
 | -------- | ---------------------- | ----------------------------------------------------------------------- |
@@ -34,6 +43,7 @@ Requires Node.js `^22.22.3` (see `.nvmrc`) and the pinned pnpm from
 ```bash
 corepack enable
 pnpm install --frozen-lockfile
+pnpm generate:api
 pnpm start
 ```
 
