@@ -7,11 +7,7 @@ import { PasswordField } from './password-field';
   imports: [PasswordField, ReactiveFormsModule],
   template: `
     <form>
-      <app-password-field
-        [control]="password"
-        autocomplete="current-password"
-        testId="password"
-      />
+      <app-password-field [control]="password" autocomplete="current-password" testId="password" />
       <button type="submit" data-testid="host-submit">Submit</button>
     </form>
   `,
