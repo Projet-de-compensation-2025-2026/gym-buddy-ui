@@ -3,11 +3,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthApi } from '../../api/auth-api.service';
 import { readApiError } from '../../api/models';
+import { PasswordField } from '../../auth/password-field';
 import { fsAcct03PasswordValidator } from '../../auth/password-rules';
 
 @Component({
   selector: 'app-sign-up',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, PasswordField],
   templateUrl: './sign-up.component.html',
   styleUrl: './sign-up.component.css',
 })

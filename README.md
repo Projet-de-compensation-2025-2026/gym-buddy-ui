@@ -20,11 +20,11 @@ The HTTP contract is
 
 Live site: https://projet-de-compensation-2025-2026.github.io/gym-buddy-ui/
 
-Production `apiBaseUrl` is `https://vps-c39cdf03.vps.ovh.net/api/v1`. This does not
-claim that register/login from the Pages origin succeeds (CORS / UFW / SameSite=Lax
-honesty gate is after this lands). Client routes like `/register` may return
-HTTP 404 with the same index body (GitHub Pages SPA fallback via 404.html). That is
-expected.
+Production `apiBaseUrl` is `https://vps-c39cdf03.vps.ovh.net/api/v1` (the VPS API, not
+a Pages URL). This does not claim that register/login from the Pages origin succeeds
+(CORS / UFW / SameSite=Lax honesty gate is after this lands; Sentinel re-curls).
+Client routes like `/register` may return HTTP 404 with the same index body (GitHub
+Pages SPA fallback via 404.html). That is expected.
 
 ## Run locally
 
@@ -37,7 +37,8 @@ pnpm install --frozen-lockfile
 pnpm start
 ```
 
-`ng serve` proxies `/api` to `http://127.0.0.1:8080`. Production builds use
+`ng serve` proxies `/api` to `http://127.0.0.1:8080` and uses
+`src/environments/environment.development.ts` (`/api/v1`). Production builds use
 `src/environments/environment.ts` (`https://vps-c39cdf03.vps.ovh.net/api/v1`).
 
 ```bash

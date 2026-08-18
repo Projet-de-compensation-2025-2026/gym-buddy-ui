@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { AuthSession } from '../../auth/auth-session.service';
@@ -13,6 +13,7 @@ describe('SignInPage', () => {
     http: HttpTestingController;
     router: Router;
     session: AuthSession;
+    fixture: ComponentFixture<SignInPage>;
   }> {
     await TestBed.configureTestingModule({
       imports: [SignInPage],
@@ -27,6 +28,7 @@ describe('SignInPage', () => {
       http: TestBed.inject(HttpTestingController),
       router: TestBed.inject(Router),
       session: TestBed.inject(AuthSession),
+      fixture,
     };
   }
 
@@ -106,5 +108,24 @@ describe('SignInPage', () => {
     expect(page.error()).toBe('account is locked');
     expect(session.accessToken()).toBeNull();
     http.verify();
+  });
+
+  it('toggles password visibility with the eye control', async () => {
+    const { root, fixture } = await setup();
+    const input = root.querySelector<HTMLInputElement>('[data-testid="sign-in-password"]');
+    const toggle = root.querySelector<HTMLButtonElement>(
+      '[data-testid="sign-in-password-visibility"]',
+    );
+    expect(input).toBeTruthy();
+    expect(toggle).toBeTruthy();
+    expect(input!.type).toBe('password');
+
+    toggle!.click();
+    fixture.detectChanges();
+    expect(input!.type).toBe('text');
+
+    toggle!.click();
+    fixture.detectChanges();
+    expect(input!.type).toBe('password');
   });
 });
