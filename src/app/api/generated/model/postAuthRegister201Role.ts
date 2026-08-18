@@ -9,13 +9,15 @@
  *
  * OpenAPI spec version: 0.1.0
  */
-import type { RegisteredUserRole } from './registeredUserRole';
 
-export interface RegisteredUser {
-  id: string;
-  email: string;
-  handle: string;
-  displayName: string;
-  /** First registered user may be `admin` (bootstrap); later users are `member`. */
-  role: RegisteredUserRole;
-}
+/**
+ * First registered user may be `admin` (bootstrap); later users are `member`.
+ */
+export type PostAuthRegister201Role =
+  (typeof PostAuthRegister201Role)[keyof typeof PostAuthRegister201Role];
+
+export const PostAuthRegister201Role = {
+  member: 'member',
+  moderator: 'moderator',
+  admin: 'admin',
+} as const;

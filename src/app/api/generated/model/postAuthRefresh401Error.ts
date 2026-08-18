@@ -9,13 +9,11 @@
  *
  * OpenAPI spec version: 0.1.0
  */
-import type { RegisteredUserRole } from './registeredUserRole';
+import type { PostAuthRefresh401ErrorCode } from './postAuthRefresh401ErrorCode';
+import type { PostAuthRefresh401ErrorDetailsItem } from './postAuthRefresh401ErrorDetailsItem';
 
-export interface RegisteredUser {
-  id: string;
-  email: string;
-  handle: string;
-  displayName: string;
-  /** First registered user may be `admin` (bootstrap); later users are `member`. */
-  role: RegisteredUserRole;
-}
+export type PostAuthRefresh401Error = {
+  code: PostAuthRefresh401ErrorCode;
+  message: string;
+  details?: PostAuthRefresh401ErrorDetailsItem[];
+};

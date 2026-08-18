@@ -9,13 +9,13 @@
  *
  * OpenAPI spec version: 0.1.0
  */
-import type { RegisteredUserRole } from './registeredUserRole';
 
-export interface RegisteredUser {
-  id: string;
-  email: string;
-  handle: string;
-  displayName: string;
-  /** First registered user may be `admin` (bootstrap); later users are `member`. */
-  role: RegisteredUserRole;
-}
+export type PostAuthRefresh401ErrorCode =
+  (typeof PostAuthRefresh401ErrorCode)[keyof typeof PostAuthRefresh401ErrorCode];
+
+export const PostAuthRefresh401ErrorCode = {
+  UNAUTHENTICATED: 'UNAUTHENTICATED',
+  FORBIDDEN: 'FORBIDDEN',
+  CONFLICT: 'CONFLICT',
+  VALIDATION: 'VALIDATION',
+} as const;

@@ -26,6 +26,9 @@ importers:
       '@angular/router':
         specifier: ^22.1.0
         version: 22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(@angular/platform-browser@22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)))(rxjs@7.8.2)
+      gym-buddy-openapi:
+        specifier: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#v0.1.0
+        version: https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/9c7c12326288da77afbb0245ddd60b657bab3eba
       rxjs:
         specifier: ~7.8.0
         version: 7.8.2
@@ -1977,6 +1980,10 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  gym-buddy-openapi@https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/9c7c12326288da77afbb0245ddd60b657bab3eba:
+    resolution: {gitHosted: true, integrity: sha512-j2GKwFTOf48kcli2k+V8Qm5Yopnij2HyeVCPZ2JtdTzmnqBGxT3oDlWEOohzG7y2+c5Pt6xQtXoAUm1RqyY8sQ==, tarball: https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/9c7c12326288da77afbb0245ddd60b657bab3eba}
+    version: 0.1.0
 
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
@@ -4873,6 +4880,8 @@ snapshots:
   gopd@1.2.0: {}
 
   graceful-fs@4.2.11: {}
+
+  gym-buddy-openapi@https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/9c7c12326288da77afbb0245ddd60b657bab3eba: {}
 
   has-flag@4.0.0: {}
 

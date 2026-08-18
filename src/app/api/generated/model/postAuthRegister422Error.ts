@@ -9,13 +9,11 @@
  *
  * OpenAPI spec version: 0.1.0
  */
-import type { RegisteredUserRole } from './registeredUserRole';
+import type { PostAuthRegister422ErrorCode } from './postAuthRegister422ErrorCode';
+import type { PostAuthRegister422ErrorDetailsItem } from './postAuthRegister422ErrorDetailsItem';
 
-export interface RegisteredUser {
-  id: string;
-  email: string;
-  handle: string;
-  displayName: string;
-  /** First registered user may be `admin` (bootstrap); later users are `member`. */
-  role: RegisteredUserRole;
-}
+export type PostAuthRegister422Error = {
+  code: PostAuthRegister422ErrorCode;
+  message: string;
+  details?: PostAuthRegister422ErrorDetailsItem[];
+};

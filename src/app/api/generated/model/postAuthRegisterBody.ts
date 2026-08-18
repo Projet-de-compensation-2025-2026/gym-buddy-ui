@@ -9,13 +9,23 @@
  *
  * OpenAPI spec version: 0.1.0
  */
-import type { RegisteredUserRole } from './registeredUserRole';
 
-export interface RegisteredUser {
-  id: string;
+export type PostAuthRegisterBody = {
+  /** Unique case-insensitively (CITEXT). */
   email: string;
+  /**
+   * Unique public identifier, case-insensitive.
+   * @minLength 1
+   */
   handle: string;
+  /**
+   * At least 10 characters; must not equal email or handle. Stored as Argon2id.
+   * @minLength 10
+   */
+  password: string;
+  /**
+   * Profile display name.
+   * @minLength 1
+   */
   displayName: string;
-  /** First registered user may be `admin` (bootstrap); later users are `member`. */
-  role: RegisteredUserRole;
-}
+};

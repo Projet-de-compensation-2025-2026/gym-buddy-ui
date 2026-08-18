@@ -1,6 +1,6 @@
 /**
  * Contract types come from the orval client generated in `./generated`.
- * Source: gym-buddy-openapi consumer bundle at SHA 7fa510874e8ebb7d424f01629f3085705d569139.
+ * Source: gym-buddy-openapi package tag v0.1.0 (`openapi/openapi.yaml` $ref tree).
  */
 export type {
   AccessTokenResponse,

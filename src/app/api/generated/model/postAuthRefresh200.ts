@@ -9,13 +9,11 @@
  *
  * OpenAPI spec version: 0.1.0
  */
-import type { RegisteredUserRole } from './registeredUserRole';
 
-export interface RegisteredUser {
-  id: string;
-  email: string;
-  handle: string;
-  displayName: string;
-  /** First registered user may be `admin` (bootstrap); later users are `member`. */
-  role: RegisteredUserRole;
-}
+export type PostAuthRefresh200 = {
+  /**
+   * HS256 access JWT for the Authorization header. 15-minute TTL.
+   * Not returned in a cookie and must not be stored in localStorage.
+   */
+  accessToken: string;
+};

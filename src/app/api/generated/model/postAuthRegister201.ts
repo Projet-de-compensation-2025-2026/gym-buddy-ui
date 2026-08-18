@@ -9,13 +9,13 @@
  *
  * OpenAPI spec version: 0.1.0
  */
-import type { RegisteredUserRole } from './registeredUserRole';
+import type { PostAuthRegister201Role } from './postAuthRegister201Role';
 
-export interface RegisteredUser {
+export type PostAuthRegister201 = {
   id: string;
   email: string;
   handle: string;
   displayName: string;
   /** First registered user may be `admin` (bootstrap); later users are `member`. */
-  role: RegisteredUserRole;
-}
+  role: PostAuthRegister201Role;
+};
