@@ -18,6 +18,13 @@ The HTTP contract is
 | Release  | `workflow_dispatch`    | squash `develop` → `main`, tag `vX.Y.Z`                                 |
 | Deploy   | that tag               | GitHub Pages                                                            |
 
+Live site: https://projet-de-compensation-2025-2026.github.io/gym-buddy-ui/
+
+Production `apiBaseUrl` is still `http://127.0.0.1:8080/api/v1`, so sign-up/sign-in from
+Pages does not work against a hosted API. Client routes like `/register` may return
+HTTP 404 with the same index body (GitHub Pages SPA fallback via 404.html). That is
+expected.
+
 ## Run locally
 
 Requires Node.js `^22.22.3` (see `.nvmrc`) and the pinned pnpm from
