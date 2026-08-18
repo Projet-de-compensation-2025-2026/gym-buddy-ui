@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
   workflow_call:
     inputs:
       version:
@@ -30,10 +30,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Build
+        run: |
+          if [[ -f angular.json ]]; then
+            npm ci
+            npx ng build
+          fi
+
       - name: Stage static files
         run: |
           mkdir -p _site
-          if [[ -d dist ]]; then
+          if [[ -d dist/gym-buddy-ui/browser ]]; then
+            cp -a dist/gym-buddy-ui/browser/. _site/
+          elif [[ -d dist/browser ]]; then
+            cp -a dist/browser/. _site/
+          elif [[ -d dist ]]; then
             cp -a dist/. _site/
           else
             cp -a public/. _site/

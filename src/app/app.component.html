@@ -1,0 +1,21 @@
+<header>
+  <a routerLink="/" class="brand">Gym Buddy</a>
+  <nav>
+    @if (session.signedIn()) {
+      <button type="button" data-testid="log-out" (click)="logout()" [disabled]="session.busy()">
+        {{ session.busy() ? 'Signing out…' : 'Log out' }}
+      </button>
+    } @else {
+      <a routerLink="/login" routerLinkActive="active">Sign in</a>
+      <a routerLink="/register" routerLinkActive="active">Sign up</a>
+    }
+  </nav>
+</header>
+
+@if (session.error()) {
+  <p class="error" role="alert" data-testid="session-error">{{ session.error() }}</p>
+}
+
+<main>
+  <router-outlet />
+</main>
