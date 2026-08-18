@@ -1,29 +1,29 @@
 #!/usr/bin/env node
 /**
- * Generate the Angular HttpClient from gym-buddy-openapi (ticket #42).
+ * Generate the Angular HttpClient from the versioned gym-buddy-openapi package.
  *
- * Choice: consume the published consumer bundle over the raw GitHub URL,
- * pinned to a commit SHA. We do not add a package dependency on the spec
- * repo, and we do not vendor openapi.yaml / bundled.yaml in this tree.
+ * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#v0.1.0
+ * (annotated tag 6373a11 → main 9c7c123). Same pin as gym-buddy-service 3ffdef8.
  *
- * Bundle (develop at this SHA; same bytes as the develop raw path):
- *   https://raw.githubusercontent.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/7fa510874e8ebb7d424f01629f3085705d569139/openapi/bundled.yaml
+ * Orval reads the $ref tree at
+ * node_modules/gym-buddy-openapi/openapi/openapi.yaml so relative $refs
+ * resolve from that checkout. Do not fetch bundled.yaml. Do not vendor YAML
+ * in this tree.
  *
- * Pin: gym-buddy-openapi@7fa510874e8ebb7d424f01629f3085705d569139 (short 7fa5108)
- * Tool: orval, client: 'angular' (HttpClient services for Angular 22)
- *
- * Refs https://github.com/Projet-de-compensation-2025-2026/gym-buddy-documentation/issues/42
+ * Refs https://github.com/Projet-de-compensation-2025-2026/gym-buddy-documentation/issues/48
  */
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, unlink, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join, relative, sep } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const OPENAPI_SHA = '7fa510874e8ebb7d424f01629f3085705d569139';
-export const OPENAPI_BUNDLE_URL = `https://raw.githubusercontent.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/${OPENAPI_SHA}/openapi/bundled.yaml`;
+export const OPENAPI_PACKAGE = 'gym-buddy-openapi';
+export const OPENAPI_TAG = 'v0.1.0';
+export const OPENAPI_VERSION = '0.1.0';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
+const require = createRequire(join(root, 'package.json'));
 
 function assertNoVendoredSpec() {
   const banned = spawnSync(
@@ -43,45 +43,62 @@ function assertNoVendoredSpec() {
   }
 }
 
-async function main() {
-  assertNoVendoredSpec();
-
-  const response = await fetch(OPENAPI_BUNDLE_URL);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${OPENAPI_BUNDLE_URL}: HTTP ${response.status}`);
-  }
-  const yaml = await response.text();
-  if (!yaml.includes('openapi:') || !yaml.includes('/auth/login')) {
+export function resolveOpenApiSpec() {
+  let pkgPath;
+  try {
+    pkgPath = require.resolve(`${OPENAPI_PACKAGE}/package.json`);
+  } catch {
     throw new Error(
-      `Fetched document from ${OPENAPI_BUNDLE_URL} is not the Gym Buddy consumer bundle`,
+      `Missing ${OPENAPI_PACKAGE}@${OPENAPI_TAG}. Run \`pnpm install\` (github:Projet-de-compensation-2025-2026/gym-buddy-openapi#${OPENAPI_TAG}).`,
     );
   }
 
-  const dir = await mkdtemp(join(tmpdir(), 'gym-buddy-openapi-'));
-  const specPath = join(dir, `consumer-${OPENAPI_SHA}.yaml`);
-  await writeFile(specPath, yaml, 'utf8');
+  const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+  if (pkg.version !== OPENAPI_VERSION) {
+    throw new Error(
+      `${OPENAPI_PACKAGE} version is ${pkg.version}; pin tag ${OPENAPI_TAG} (${OPENAPI_VERSION})`,
+    );
+  }
 
-  try {
-    const result = spawnSync('pnpm', ['exec', 'orval', '--config', 'orval.config.ts'], {
-      cwd: root,
-      stdio: 'inherit',
-      env: { ...process.env, GYM_BUDDY_OPENAPI_BUNDLE: specPath },
-    });
-    if (result.status !== 0) {
-      process.exit(result.status ?? 1);
-    }
-    const format = spawnSync('pnpm', ['exec', 'prettier', '--write', 'src/app/api/generated'], {
-      cwd: root,
-      stdio: 'inherit',
-    });
-    if (format.status !== 0) {
-      process.exit(format.status ?? 1);
-    }
-  } finally {
-    await unlink(specPath).catch(() => undefined);
+  const specPath = join(dirname(pkgPath), 'openapi', 'openapi.yaml');
+  if (!existsSync(specPath)) {
+    throw new Error(`Missing $ref tree at ${specPath}`);
+  }
+  if (!specPath.split(sep).includes('node_modules')) {
+    throw new Error('Generator must read the installed package tree, not a vendored YAML');
+  }
+  if (specPath.endsWith(`${sep}bundled.yaml`)) {
+    throw new Error('Do not generate from bundled.yaml; use openapi/openapi.yaml');
+  }
+
+  const yaml = readFileSync(specPath, 'utf8');
+  if (!yaml.includes('openapi:') || !yaml.includes('$ref:') || !yaml.includes('/auth/login')) {
+    throw new Error(`${specPath} is not the Gym Buddy $ref tree`);
+  }
+  return specPath;
+}
+
+function main() {
+  assertNoVendoredSpec();
+  const specPath = resolveOpenApiSpec();
+
+  const result = spawnSync('pnpm', ['exec', 'orval', '--config', 'orval.config.ts'], {
+    cwd: root,
+    stdio: 'inherit',
+    env: { ...process.env, GYM_BUDDY_OPENAPI_SPEC: specPath },
+  });
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+  const format = spawnSync('pnpm', ['exec', 'prettier', '--write', 'src/app/api/generated'], {
+    cwd: root,
+    stdio: 'inherit',
+  });
+  if (format.status !== 0) {
+    process.exit(format.status ?? 1);
   }
 
   assertNoVendoredSpec();
 }
 
-await main();
+main();

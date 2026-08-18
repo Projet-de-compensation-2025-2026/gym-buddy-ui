@@ -1,26 +1,63 @@
 /**
  * Orval config for gym-buddy-ui.
  *
- * Input is the gym-buddy-openapi consumer bundle fetched by
+ * Input is the versioned gym-buddy-openapi package $ref tree resolved by
  * scripts/generate-api.mjs (never a YAML file in this repo).
  *
- * Pin: 7fa510874e8ebb7d424f01629f3085705d569139 (short 7fa5108)
- * URL: https://raw.githubusercontent.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/7fa510874e8ebb7d424f01629f3085705d569139/openapi/bundled.yaml
+ * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#v0.1.0
+ * Target: node_modules/gym-buddy-openapi/openapi/openapi.yaml
+ *
+ * Orval 8.22 blocks external $refs unless listed. Allow the installed
+ * package tree (not bundled.yaml, not remote URLs).
  *
  * Runtime base URL is environment.apiBaseUrl so local `/api/v1` and the VPS
  * production host stay consistent with the existing Angular environments.
  */
+import { readdirSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
 import { defineConfig } from 'orval';
 
-const spec = process.env.GYM_BUDDY_OPENAPI_BUNDLE;
+const spec = process.env.GYM_BUDDY_OPENAPI_SPEC;
 if (!spec) {
-  throw new Error('Set GYM_BUDDY_OPENAPI_BUNDLE (run `pnpm generate:api`).');
+  throw new Error('Set GYM_BUDDY_OPENAPI_SPEC (run `pnpm generate:api`).');
+}
+if (spec.endsWith('bundled.yaml')) {
+  throw new Error('Do not generate from bundled.yaml; use openapi/openapi.yaml');
+}
+
+function allowListForRefTree(specPath: string): string[] {
+  const treeRoot = dirname(specPath);
+  const allow: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (
+        !entry.name.endsWith('.yaml') ||
+        entry.name === 'bundled.yaml' ||
+        entry.name === 'openapi.yaml'
+      ) {
+        continue;
+      }
+      allow.push(`./${relative(treeRoot, full).split('\\').join('/')}`);
+    }
+  };
+  walk(treeRoot);
+  return allow;
 }
 
 export default defineConfig({
   gymBuddy: {
     input: {
       target: spec,
+      parserOptions: {
+        externalRefs: {
+          allow: allowListForRefTree(spec),
+        },
+      },
     },
     output: {
       mode: 'single',
