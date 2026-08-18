@@ -30,17 +30,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
+          cache: pnpm
+
+      - name: Activate pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare --activate
 
       - name: Build
         run: |
           if [[ -f angular.json ]]; then
-            npm ci
-            npx ng build
+            pnpm install --frozen-lockfile
+            pnpm exec ng build
           fi
 
       - name: Stage static files

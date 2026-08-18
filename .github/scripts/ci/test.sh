@@ -3,9 +3,9 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$root"
 if [[ -f angular.json ]]; then
-  npm ci
+  pnpm install --frozen-lockfile
   export CHROME_BIN="${CHROME_BIN:-$(command -v google-chrome-stable || command -v google-chrome || true)}"
-  npm test -- --watch=false --browsers=ChromeHeadless
+  pnpm test -- --watch=false --browsers=ChromeHeadless
   exit 0
 fi
 python3 - <<'PY'
