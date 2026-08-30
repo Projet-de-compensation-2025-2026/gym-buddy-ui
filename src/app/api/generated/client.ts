@@ -19,6 +19,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 import type {
+  GetFriendships200,
+  GetFriendshipsParams,
   GetHealthz200,
   GetProfilesHandle200,
   GetProfilesMe200,
@@ -31,6 +33,10 @@ import type {
   PostAuthRefresh200,
   PostAuthRegister201,
   PostAuthRegisterBody,
+  PostBlocksBody,
+  PostFriendships201,
+  PostFriendshipsBody,
+  PostFriendshipsIdAccept200,
   PostMeCloseBody,
 } from './model';
 
@@ -69,6 +75,66 @@ type HttpClientResponseOptions = HttpClientOptions & {
 type HttpClientObserveOptions = HttpClientOptions & {
   readonly observe?: 'body' | 'events' | 'response';
 };
+
+type AngularHttpParamValue = string | number | boolean | Array<string | number | boolean>;
+type AngularHttpParamValueWithNullable = AngularHttpParamValue | null;
+
+function filterParams(
+  params: Record<string, unknown>,
+  requiredNullableKeys?: ReadonlySet<string>,
+  preserveRequiredNullables?: false,
+  passthroughKeys?: undefined,
+): Record<string, AngularHttpParamValue>;
+function filterParams(
+  params: Record<string, unknown>,
+  requiredNullableKeys: ReadonlySet<string> | undefined,
+  preserveRequiredNullables: true,
+  passthroughKeys?: undefined,
+): Record<string, AngularHttpParamValueWithNullable>;
+function filterParams(
+  params: Record<string, unknown>,
+  requiredNullableKeys: ReadonlySet<string> | undefined,
+  preserveRequiredNullables: boolean | undefined,
+  passthroughKeys: ReadonlySet<string>,
+): Record<string, unknown>;
+function filterParams(
+  params: Record<string, unknown>,
+  requiredNullableKeys: ReadonlySet<string> = new Set(),
+  preserveRequiredNullables = false,
+  passthroughKeys: ReadonlySet<string> = new Set(),
+): Record<string, unknown> {
+  const filteredParams: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(params)) {
+    if (passthroughKeys.has(key)) {
+      if (value !== undefined) {
+        filteredParams[key] = value;
+      }
+      continue;
+    }
+    if (Array.isArray(value)) {
+      const filtered = value.filter(
+        (item) =>
+          item != null &&
+          (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean'),
+      ) as Array<string | number | boolean>;
+      if (filtered.length) {
+        filteredParams[key] = filtered;
+      }
+    } else if (value === null && requiredNullableKeys.has(key)) {
+      // With a paramsSerializer (preserveRequiredNullables) the literal null
+      // is passed through for it to consume; without one, emit an empty
+      // string so the required key still reaches the wire as `?key=`
+      // instead of being silently dropped. See #3712.
+      filteredParams[key] = preserveRequiredNullables ? null : '';
+    } else if (
+      value != null &&
+      (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+    ) {
+      filteredParams[key] = value;
+    }
+  }
+  return filteredParams;
+}
 
 @Injectable({ providedIn: 'root' })
 export class GymBuddyAPIService {
@@ -518,6 +584,316 @@ export class GymBuddyAPIService {
     }
 
     return this.http.get<TData>(`${environment.apiBaseUrl}/profiles/${handle}`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-FRND-07. `filter=accepted` (default) is visible to the owner and to
+   * accepted friends of that owner. `filter=incoming` and `filter=outgoing`
+   * are owner-only pending lists. Optional `handle` lists another member's
+   * accepted friends (caller must be owner or an accepted friend). Strangers
+   * and blocked callers get NOT_FOUND.
+   * @summary List friendships
+   */
+  getFriendships<TData = GetFriendships200>(
+    params?: GetFriendshipsParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getFriendships<TData = GetFriendships200>(
+    params?: GetFriendshipsParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getFriendships<TData = GetFriendships200>(
+    params?: GetFriendshipsParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getFriendships<TData = GetFriendships200>(
+    params?: GetFriendshipsParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/friendships`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/friendships`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/friendships`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-FRND-01, FS-FRND-06. Approval required; no silent follow. Self-friend
+   * is VALIDATION. Duplicate pending or already-friends is CONFLICT. Target
+   * locked, closed, missing, or blocked is NOT_FOUND (no existence leak).
+   * @summary Send a friend request
+   */
+  postFriendships<TData = PostFriendships201>(
+    postFriendshipsBody: PostFriendshipsBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postFriendships<TData = PostFriendships201>(
+    postFriendshipsBody: PostFriendshipsBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postFriendships<TData = PostFriendships201>(
+    postFriendshipsBody: PostFriendshipsBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postFriendships<TData = PostFriendships201>(
+    postFriendshipsBody: PostFriendshipsBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/friendships`, postFriendshipsBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/friendships`, postFriendshipsBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/friendships`, postFriendshipsBody, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-FRND-02, FS-FRND-08. Addressee only. After accept the pair is
+   * symmetric and unlocks private profiles. Non-addressee callers get NOT_FOUND.
+   * @summary Accept a friend request
+   */
+  postFriendshipsIdAccept<TData = PostFriendshipsIdAccept200>(
+    id: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postFriendshipsIdAccept<TData = PostFriendshipsIdAccept200>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postFriendshipsIdAccept<TData = PostFriendshipsIdAccept200>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postFriendshipsIdAccept<TData = PostFriendshipsIdAccept200>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/friendships/${id}/accept`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/friendships/${id}/accept`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/friendships/${id}/accept`, undefined, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-FRND-02. Addressee only. Sets status declined. Non-addressee is NOT_FOUND.
+   * @summary Decline a friend request
+   */
+  postFriendshipsIdDecline<TData = void>(
+    id: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postFriendshipsIdDecline<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postFriendshipsIdDecline<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postFriendshipsIdDecline<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/friendships/${id}/decline`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/friendships/${id}/decline`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/friendships/${id}/decline`, undefined, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-FRND-03, FS-FRND-04. Requester may cancel pending. Either accepted
+   * friend may unfriend (row deleted). Other callers get NOT_FOUND.
+   * @summary Cancel a pending request or unfriend
+   */
+  deleteFriendshipsId<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+  deleteFriendshipsId<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  deleteFriendshipsId<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  deleteFriendshipsId<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/friendships/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/friendships/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.delete<TData>(`${environment.apiBaseUrl}/friendships/${id}`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-FRND-05. Upserts status `blocked` with the caller as requester.
+   * Reverse pending requests are cancelled. Accepted friendship is removed.
+   * Block hides both from each other's feed, search ranking, and suggestions,
+   * and prevents new requests or DMs. Self-block is VALIDATION. Missing or
+   * closed targets are NOT_FOUND.
+   * @summary Block a member
+   */
+  postBlocks<TData = void>(
+    postBlocksBody: PostBlocksBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postBlocks<TData = void>(
+    postBlocksBody: PostBlocksBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postBlocks<TData = void>(
+    postBlocksBody: PostBlocksBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postBlocks<TData = void>(
+    postBlocksBody: PostBlocksBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/blocks`, postBlocksBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/blocks`, postBlocksBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/blocks`, postBlocksBody, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-FRND-05. Removes the block row. Unknown or not-blocked is NOT_FOUND.
+   * @summary Unblock a member
+   */
+  deleteBlocksUserId<TData = void>(
+    userId: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  deleteBlocksUserId<TData = void>(
+    userId: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  deleteBlocksUserId<TData = void>(
+    userId: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  deleteBlocksUserId<TData = void>(
+    userId: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/blocks/${userId}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/blocks/${userId}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.delete<TData>(`${environment.apiBaseUrl}/blocks/${userId}`, {
       ...(options as Omit<NonNullable<typeof options>, 'observe'>),
       observe: 'body',
     });

@@ -1,0 +1,141 @@
+<section class="friends-page" data-testid="friends-page">
+  <header class="page-head">
+    <h1>Friends Management</h1>
+    <p class="muted">Manage your gym connections and requests.</p>
+  </header>
+
+  @if (error()) {
+    <p class="error" role="alert" data-testid="friends-error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="state" data-testid="friends-loading">Loading friends…</p>
+  } @else {
+    <div class="layout">
+      <aside class="card pending-card">
+        <h2>Pending Requests</h2>
+
+        <h3 class="section-label">Inbound</h3>
+        <ul class="stack-list" data-testid="pending-inbound">
+          @for (row of incoming(); track row.id) {
+            <li class="pending-row">
+              <a class="who" [routerLink]="['/u', row.peer.handle]">
+                <span class="avatar">{{ initials(row) }}</span>
+                <span>
+                  <strong>{{ row.peer.displayName || row.peer.handle }}</strong>
+                  <span class="handle">@{{ row.peer.handle }}</span>
+                </span>
+              </a>
+              <span class="pending-actions">
+                <button
+                  type="button"
+                  class="icon-btn accept"
+                  data-testid="accept-friend"
+                  [disabled]="busyId() === row.id"
+                  (click)="accept(row)"
+                  aria-label="Accept"
+                >
+                  ✓
+                </button>
+                <button
+                  type="button"
+                  class="icon-btn decline"
+                  data-testid="decline-friend"
+                  [disabled]="busyId() === row.id"
+                  (click)="decline(row)"
+                  aria-label="Decline"
+                >
+                  ×
+                </button>
+              </span>
+            </li>
+          } @empty {
+            <li class="muted empty">No incoming requests.</li>
+          }
+        </ul>
+
+        <h3 class="section-label">Outbound</h3>
+        <ul class="stack-list" data-testid="pending-outbound">
+          @for (row of outgoing(); track row.id) {
+            <li class="pending-row">
+              <a class="who" [routerLink]="['/u', row.peer.handle]">
+                <span class="avatar">{{ initials(row) }}</span>
+                <span>
+                  <strong>{{ row.peer.displayName || row.peer.handle }}</strong>
+                  <span class="handle">@{{ row.peer.handle }}</span>
+                </span>
+              </a>
+              <button
+                type="button"
+                class="text-danger"
+                data-testid="cancel-request"
+                [disabled]="busyId() === row.id"
+                (click)="cancel(row)"
+              >
+                Cancel
+              </button>
+            </li>
+          } @empty {
+            <li class="muted empty">No outgoing requests.</li>
+          }
+        </ul>
+      </aside>
+
+      <section>
+        <div class="friends-head">
+          <h2>My Friends</h2>
+          <label class="search">
+            <span class="visually-hidden">Search friends</span>
+            <input
+              type="search"
+              placeholder="Search friends..."
+              data-testid="friends-search"
+              [value]="query()"
+              (input)="onQuery($event)"
+            />
+          </label>
+        </div>
+        <div class="friends-grid" data-testid="friends-list">
+          @for (row of visibleFriends(); track row.id) {
+            <article class="card friend-card">
+              <a class="who" [routerLink]="['/u', row.peer.handle]">
+                <span class="avatar">{{ initials(row) }}</span>
+                <span>
+                  <strong>{{ row.peer.displayName || row.peer.handle }}</strong>
+                  <span class="handle">@{{ row.peer.handle }}</span>
+                </span>
+              </a>
+              <div class="chips">
+                @for (sport of row.peer.sports ?? []; track sport) {
+                  <span class="chip">{{ sport }}</span>
+                }
+              </div>
+              <div class="friend-actions">
+                <button
+                  type="button"
+                  class="btn-secondary btn-compact"
+                  data-testid="unfriend"
+                  [disabled]="busyId() === row.id"
+                  (click)="unfriend(row)"
+                >
+                  Unfriend
+                </button>
+                <button
+                  type="button"
+                  class="text-danger"
+                  data-testid="block-friend"
+                  [disabled]="busyId() === row.id"
+                  (click)="block(row)"
+                >
+                  Block
+                </button>
+              </div>
+            </article>
+          } @empty {
+            <p class="muted" data-testid="friends-empty">No friends to show.</p>
+          }
+        </div>
+      </section>
+    </div>
+  }
+</section>

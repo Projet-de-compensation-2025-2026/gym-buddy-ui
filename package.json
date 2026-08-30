@@ -23,7 +23,7 @@
     "@angular/forms": "^22.1.0",
     "@angular/platform-browser": "^22.1.0",
     "@angular/router": "^22.1.0",
-    "gym-buddy-openapi": "github:Projet-de-compensation-2025-2026/gym-buddy-openapi#dc3488158a302de9475153f124f7f98a6e4dba9b",
+    "gym-buddy-openapi": "github:Projet-de-compensation-2025-2026/gym-buddy-openapi#3e63187727035b5277738db90c44744406057b4c",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

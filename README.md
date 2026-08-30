@@ -3,14 +3,15 @@
 Angular 22 member app for Gym Buddies. Product decisions live in
 [`gym-buddy-documentation`](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-documentation).
 
-This slice is **sign-up**, **sign-in**, **profiles**, and **account settings**
-(`/register`, `/login`, `/u/:handle`, `/settings/profile`, `/settings/privacy`).
-The access JWT stays in memory; the refresh token is the API’s HttpOnly cookie
-(`path /api/v1/auth`). Friends, feed, events, and messaging are later tickets.
+This slice is **sign-up**, **sign-in**, **profiles**, **friend requests**, and
+**account settings** (`/register`, `/login`, `/u/:handle`, `/friends`,
+`/settings/profile`, `/settings/privacy`). The access JWT stays in memory; the
+refresh token is the API’s HttpOnly cookie (`path /api/v1/auth`). Feed, events,
+and messaging are later tickets.
 
 The HTTP contract is the versioned
 [`gym-buddy-openapi`](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi)
-package (ticket #59 pins develop SHA `dc3488158a302de9475153f124f7f98a6e4dba9b`
+package (ticket #60 pins develop SHA `3e63187727035b5277738db90c44744406057b4c`
 until the next 0.1.x tag). This repo does **not** vendor `openapi.yaml` or
 `bundled.yaml`.
 
@@ -20,7 +21,7 @@ points [orval](https://orval.dev) `8.22.0` (`client: 'angular'`) at
 resolves from that package checkout, then writes `src/app/api/generated/`.
 Do not generate from `bundled.yaml`. Auth pages use a thin `AuthApi` wrapper
 over the generated `GymBuddyAPIService` so login / refresh / logout still send
-the HttpOnly refresh cookie.
+the HttpOnly refresh cookie. Friends uses `FriendsApi` the same way.
 
 | Workflow | Trigger                | Promise                                                                   |
 | -------- | ---------------------- | ------------------------------------------------------------------------- |

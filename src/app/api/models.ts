@@ -1,6 +1,6 @@
 /**
  * Contract types come from the orval client generated in `./generated`.
- * Source: gym-buddy-openapi develop SHA dc3488158a302de9475153f124f7f98a6e4dba9b
+ * Source: gym-buddy-openapi develop SHA 3e63187727035b5277738db90c44744406057b4c
  * (`openapi/openapi.yaml` $ref tree).
  */
 export type {
@@ -9,6 +9,8 @@ export type {
   CloseAccountRequest,
   ErrorDetail,
   ErrorResponse,
+  Friendship,
+  GetFriendships200,
   GetProfilesHandle200,
   GetProfilesMe200,
   HealthStatus,
