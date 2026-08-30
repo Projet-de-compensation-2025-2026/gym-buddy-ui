@@ -4,7 +4,7 @@
  * Input is the versioned gym-buddy-openapi package $ref tree resolved by
  * scripts/generate-api.mjs (never a YAML file in this repo).
  *
- * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#d58a824e0720c2f50c56632e3664d3632484e281
+ * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#01ab3d50195833296b10e8ca44aa89d1e046683a
  * Target: node_modules/gym-buddy-openapi/openapi/openapi.yaml
  *
  * Orval 8.22 blocks external $refs unless listed. Allow the installed

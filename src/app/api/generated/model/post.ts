@@ -15,8 +15,8 @@ import type { PostVisibility } from './postVisibility';
 /**
  * Member post (FS-POST-01..08). `visibility` is `friends` (default) or `public`.
  * Hidden or deleted posts are `NOT_FOUND` to members. `mediaIds` are `kind=post`
- * image rows owned by the author and `ready` (max 4). `commentCount` is 0 until
- * nested comments land.
+ * image rows owned by the author and `ready` (max 4). `commentCount` includes
+ * tombstones.
  */
 export interface Post {
   id: string;

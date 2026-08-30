@@ -19,11 +19,15 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 import type {
+  GetCommentsIdReplies200,
+  GetCommentsIdRepliesParams,
   GetFriendships200,
   GetFriendshipsParams,
   GetHealthz200,
   GetMediaIdUrl200,
   GetPostsId200,
+  GetPostsIdComments200,
+  GetPostsIdCommentsParams,
   GetPostsIdLikes200,
   GetPostsIdLikesParams,
   GetProfilesHandle200,
@@ -48,6 +52,8 @@ import type {
   PostMediaBody,
   PostPosts201,
   PostPostsBody,
+  PostPostsIdComments201,
+  PostPostsIdCommentsBody,
   PostPostsIdReposts201,
 } from './model';
 
@@ -1404,6 +1410,289 @@ export class GymBuddyAPIService {
       ...(options as Omit<NonNullable<typeof options>, 'observe'>),
       observe: 'body',
       params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-CMT-06. Page of root comments (`parentId` null), newest first, default
+   * size 20. Load replies on demand via GET /comments/{id}/replies. Caller
+   * must `canView` the post. Hidden, deleted, unknown, or not visible is
+   * NOT_FOUND.
+   * @summary List root comments on a post
+   */
+  getPostsIdComments<TData = GetPostsIdComments200>(
+    id: string,
+    params?: GetPostsIdCommentsParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getPostsIdComments<TData = GetPostsIdComments200>(
+    id: string,
+    params?: GetPostsIdCommentsParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getPostsIdComments<TData = GetPostsIdComments200>(
+    id: string,
+    params?: GetPostsIdCommentsParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getPostsIdComments<TData = GetPostsIdComments200>(
+    id: string,
+    params?: GetPostsIdCommentsParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/posts/${id}/comments`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/posts/${id}/comments`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/posts/${id}/comments`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-CMT-01, FS-CMT-02, FS-CMT-03, FS-CMT-04. Authenticated member who can
+   * view the post. Body 1–1000 characters. No media. Omit `parentId` for a
+   * root (`depth` 0). Set `parentId` to reply (`depth = parent.depth + 1`).
+   * A reply beyond depth 4 is VALIDATION. Unknown or not-visible post or
+   * parent is NOT_FOUND.
+   * @summary Comment on a visible post
+   */
+  postPostsIdComments<TData = PostPostsIdComments201>(
+    id: string,
+    postPostsIdCommentsBody: PostPostsIdCommentsBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postPostsIdComments<TData = PostPostsIdComments201>(
+    id: string,
+    postPostsIdCommentsBody: PostPostsIdCommentsBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postPostsIdComments<TData = PostPostsIdComments201>(
+    id: string,
+    postPostsIdCommentsBody: PostPostsIdCommentsBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postPostsIdComments<TData = PostPostsIdComments201>(
+    id: string,
+    postPostsIdCommentsBody: PostPostsIdCommentsBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/posts/${id}/comments`,
+        postPostsIdCommentsBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/posts/${id}/comments`,
+        postPostsIdCommentsBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/posts/${id}/comments`,
+      postPostsIdCommentsBody,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
+  }
+
+  /**
+   * FS-CMT-06. Page of direct children, oldest first, default size 20. Does
+   * not recurse. Caller must `canView` the parent post. Unknown, not visible,
+   * or parent post inaccessible is NOT_FOUND. Tombstoned parents still return
+   * children.
+   * @summary List direct replies to a comment
+   */
+  getCommentsIdReplies<TData = GetCommentsIdReplies200>(
+    id: string,
+    params?: GetCommentsIdRepliesParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getCommentsIdReplies<TData = GetCommentsIdReplies200>(
+    id: string,
+    params?: GetCommentsIdRepliesParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getCommentsIdReplies<TData = GetCommentsIdReplies200>(
+    id: string,
+    params?: GetCommentsIdRepliesParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getCommentsIdReplies<TData = GetCommentsIdReplies200>(
+    id: string,
+    params?: GetCommentsIdRepliesParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/comments/${id}/replies`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/comments/${id}/replies`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/comments/${id}/replies`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-CMT-05. Author only. Replaces the body with `comment deleted` and sets
+   * `deleted`. Children remain. Not the author is FORBIDDEN. Unknown id or
+   * parent post not visible is NOT_FOUND.
+   * @summary Tombstone a comment
+   */
+  deleteCommentsId<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+  deleteCommentsId<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  deleteCommentsId<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  deleteCommentsId<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/comments/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/comments/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.delete<TData>(`${environment.apiBaseUrl}/comments/${id}`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-CMT-07, FS-POST-07. Unique `(user_id, target_type=comment, target_id)`.
+   * A second PUT does not double-count. Caller must `canView` the parent post.
+   * Unknown or not visible is NOT_FOUND.
+   * @summary Like a visible comment
+   */
+  putCommentsIdLike<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+  putCommentsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  putCommentsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  putCommentsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.put<TData>(`${environment.apiBaseUrl}/comments/${id}/like`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.put<TData>(`${environment.apiBaseUrl}/comments/${id}/like`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.put<TData>(`${environment.apiBaseUrl}/comments/${id}/like`, undefined, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-CMT-07, FS-POST-07. Removes the like row if present. Not visible is
+   * NOT_FOUND.
+   * @summary Unlike a comment
+   */
+  deleteCommentsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  deleteCommentsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  deleteCommentsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  deleteCommentsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/comments/${id}/like`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/comments/${id}/like`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.delete<TData>(`${environment.apiBaseUrl}/comments/${id}/like`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
     });
   }
 }
