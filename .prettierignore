@@ -1,4 +1,5 @@
 dist
+dist-admin
 _site
 node_modules
 .angular
