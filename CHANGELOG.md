@@ -37,15 +37,17 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - Release writes the computed SemVer into `package.json` before the tag
   (humans do not hand-edit that number). Auto bump still refuses `1.0.0`.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
-<<<<<<< HEAD
+  <<<<<<< HEAD
   `8f89f1a72b1ddb6996d9598e6cedbac4d4788ace` (ticket #69) until the next 0.1.x
   tag. Not a `bundled.yaml` GET.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
   `2550b32f95dcb881b0bfaa37e30f130595dbe9d3` (ticket #65) until the next 0.1.x
-=======
+  \=======
   `2550b32f95dcb881b0bfaa37e30f130595dbe9d3` (tickets #66 suggestions and #65 search) until the next 0.1.x
->>>>>>> origin/develop
-  tag. Not a `bundled.yaml` GET.
+
+> > > > > > > origin/develop
+> > > > > > > tag. Not a `bundled.yaml` GET.
+
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
   `2ebc892909eed2a79841a4aea572aef1968747b4` (ticket #64) until the next 0.1.x
   tag. Not a `bundled.yaml` GET.
