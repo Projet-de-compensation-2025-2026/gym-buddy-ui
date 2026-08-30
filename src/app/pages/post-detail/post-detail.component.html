@@ -14,11 +14,47 @@
       (like)="toggleLike($event)"
       (repost)="toggleRepost($event)"
     />
-    <article class="card comments">
+    <article class="card comments" data-testid="comments">
       <h2>Comments</h2>
-      <p class="muted" data-testid="comments-placeholder">
-        Nested comments land in a later slice. Like and repost work on this post.
-      </p>
+      <div class="composer">
+        <label class="sr-only" for="comment-body">Add a comment</label>
+        <input
+          id="comment-body"
+          data-testid="comment-composer"
+          maxlength="1000"
+          [ngModel]="commentBody()"
+          (ngModelChange)="commentBody.set($event)"
+          name="comment"
+          placeholder="Add a comment..."
+        />
+        <button
+          type="button"
+          class="btn-primary"
+          data-testid="submit-comment"
+          [disabled]="busy()"
+          (click)="submitComment()"
+        >
+          Post
+        </button>
+      </div>
+      @if (comments().length === 0) {
+        <p class="muted" data-testid="comments-empty">No comments yet. Be the first.</p>
+      }
+      <div class="stack" data-testid="comment-list">
+        @for (comment of comments(); track comment.id) {
+          <app-comment-thread [comment]="comment" (created)="onCreated()" />
+        }
+      </div>
+      @if (commentsNext()) {
+        <button
+          type="button"
+          class="text-btn"
+          data-testid="load-more-comments"
+          (click)="loadMoreComments()"
+        >
+          Load more comments
+        </button>
+      }
     </article>
   }
 </section>
