@@ -20,6 +20,8 @@ Versioning: [Semantic Versioning](https://semver.org/).
   `/admin/content`, `/admin/reports`, `/admin/media`, `/admin/fixtures`,
   `/admin/audit`) are copied from `dist-admin` so they never fall through the
   member `404.html`. Ticket #75.
+- Search people `q` is sent when the member types or presses Enter, not only on
+  Apply Filters (ticket #101, FS-SRCH-02).
 
 ## [1.0.0] — 2026-08-30
 
