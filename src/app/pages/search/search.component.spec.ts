@@ -33,6 +33,7 @@ describe('SearchPage', () => {
     const { root, http, detect } = await setup();
     expect(root.querySelector('[data-testid="search-loading"]')?.textContent).toContain('Loading');
 
+    flushMe(http);
     const req = expectPeople(http);
     expect(req.request.params.get('q')).toBeNull();
     req.flush({ data: [samplePerson()], page: { next: null, size: 20 } });
@@ -45,6 +46,7 @@ describe('SearchPage', () => {
 
   it('FS-SRCH-02 sends q when the member types', async () => {
     const { root, http, detect } = await setup();
+    flushMe(http);
     expectPeople(http).flush({ data: [samplePerson()], page: { next: null, size: 20 } });
     detect();
 
@@ -61,6 +63,7 @@ describe('SearchPage', () => {
 
   it('FS-SRCH-02 sends q when the member presses Enter', async () => {
     const { root, http, detect } = await setup();
+    flushMe(http);
     expectPeople(http).flush({ data: [samplePerson()], page: { next: null, size: 20 } });
     detect();
 
@@ -81,6 +84,7 @@ describe('SearchPage', () => {
 
   it('FS-SRCH-02 Apply Filters still sends q', async () => {
     const { root, http, detect } = await setup();
+    flushMe(http);
     expectPeople(http).flush({ data: [samplePerson()], page: { next: null, size: 20 } });
     detect();
 
@@ -101,6 +105,7 @@ describe('SearchPage', () => {
 
   it('FS-SRCH-01 Events tab stays on search and calls GET /search/events', async () => {
     const { root, http, detect } = await setup();
+    flushMe(http);
     expectPeople(http).flush({ data: [], page: { next: null, size: 20 } });
     detect();
 
@@ -124,6 +129,7 @@ describe('SearchPage', () => {
 
   it('FS-SRCH-01 Events tab sends q to search/events and does not call GET /events', async () => {
     const { root, http, detect } = await setup();
+    flushMe(http);
     expectPeople(http).flush({ data: [], page: { next: null, size: 20 } });
     detect();
 
@@ -144,8 +150,57 @@ describe('SearchPage', () => {
     http.verify();
   });
 
+  it('FS-SRCH-03 hides the km slider until the viewer has coordinates', async () => {
+    const { root, http, detect } = await setup();
+    expect(root.querySelector('[data-testid="search-radius"]')).toBeNull();
+    flushMe(http);
+    const req = expectPeople(http);
+    expect(req.request.params.get('radiusKm')).toBeNull();
+    req.flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+
+    expect(root.querySelector('[data-testid="search-radius"]')).toBeNull();
+    expect(root.querySelector('[data-testid="search-radius-unavailable"]')?.textContent).toContain(
+      'coordinates',
+    );
+    http.verify();
+  });
+
+  it('FS-SRCH-03 Apply Filters does not send radiusKm when lat/lng are null', async () => {
+    const { root, http, detect } = await setup();
+    flushMe(http);
+    expectPeople(http).flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+
+    const city = root.querySelector('[data-testid="search-city"]') as HTMLInputElement;
+    city.value = 'Lyon';
+    city.dispatchEvent(new Event('input', { bubbles: true }));
+    (root.querySelector('[data-testid="apply-filters"]') as HTMLButtonElement).click();
+    detect();
+    const req = expectPeople(http);
+    expect(req.request.params.get('city')).toBe('Lyon');
+    expect(req.request.params.get('radiusKm')).toBeNull();
+    req.flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+    http.verify();
+  });
+
+  it('FS-SRCH-03 sends radiusKm when the viewer has coordinates', async () => {
+    const { root, http, detect } = await setup();
+    flushMe(http, { lat: 45.75, lng: 4.85 });
+    detect();
+    expect(root.querySelector('[data-testid="search-radius"]')).toBeTruthy();
+    expect(root.querySelector('[data-testid="search-radius-unavailable"]')).toBeNull();
+    const req = expectPeople(http);
+    expect(req.request.params.get('radiusKm')).toBe('10');
+    req.flush({ data: [samplePerson()], page: { next: null, size: 20 } });
+    detect();
+    http.verify();
+  });
+
   it('shows empty and error states', async () => {
     const { root, http, detect } = await setup();
+    flushMe(http);
     expectPeople(http).flush({ data: [], page: { next: null, size: 20 } });
     detect();
     expect(root.querySelector('[data-testid="people-empty"]')?.textContent).toContain('No people');
@@ -164,6 +219,7 @@ describe('SearchPage', () => {
   it('CONNECT posts a friendship request', async () => {
     const { root, http, detect } = await setup();
     const person = samplePerson();
+    flushMe(http);
     expectPeople(http).flush({ data: [person], page: { next: null, size: 20 } });
     detect();
 
@@ -189,6 +245,22 @@ describe('SearchPage', () => {
     http.verify();
   });
 });
+
+function flushMe(
+  http: HttpTestingController,
+  coords: { lat: number | null; lng: number | null } = { lat: null, lng: null },
+): void {
+  const req = http.expectOne(`${environment.apiBaseUrl}/profiles/me`);
+  expect(req.request.method).toBe('GET');
+  req.flush({
+    view: 'full',
+    handle: 'alex',
+    displayName: 'Alex',
+    visibility: 'public',
+    lat: coords.lat,
+    lng: coords.lng,
+  });
+}
 
 function expectPeople(http: HttpTestingController) {
   return http.expectOne(

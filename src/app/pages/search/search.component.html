@@ -18,24 +18,31 @@
         Location
         <input
           type="text"
-          placeholder="City"
           name="city"
+          placeholder="City"
           data-testid="search-city"
           [value]="city()"
           (input)="onCity($event)"
         />
       </label>
-      <label class="radius">
-        <span class="muted">{{ radiusKm() }} km</span>
-        <input
-          type="range"
-          min="1"
-          max="50"
-          data-testid="search-radius"
-          [value]="radiusKm()"
-          (input)="onRadius($event)"
-        />
-      </label>
+      @if (hasCoordinates()) {
+        <label class="radius">
+          <span class="muted">{{ radiusKm() }} km</span>
+          <input
+            type="range"
+            min="1"
+            max="50"
+            name="radiusKm"
+            data-testid="search-radius"
+            [value]="radiusKm()"
+            (input)="onRadius($event)"
+          />
+        </label>
+      } @else {
+        <p class="muted radius-unavailable" data-testid="search-radius-unavailable">
+          Set coordinates on your profile to filter by distance.
+        </p>
+      }
       <div>
         <p class="section-label">Sports &amp; Activities</p>
         <div class="chips">
