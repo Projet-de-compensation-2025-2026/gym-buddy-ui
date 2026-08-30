@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { Observable } from 'rxjs';
 import { AuthSession } from '../../auth/auth-session.service';
 import { EventsApi } from '../../api/events-api.service';
 import { MediaApi } from '../../api/media-api.service';
@@ -11,7 +12,6 @@ import type {
 
 @Component({
   selector: 'app-event-detail',
-  imports: [RouterLink],
   templateUrl: './event-detail.component.html',
   styleUrl: './event-detail.component.css',
 })
@@ -113,9 +113,7 @@ export class EventDetailPage {
     });
   }
 
-  private run(
-    request: () => ReturnType<EventsApi['apply']> | ReturnType<EventsApi['withdraw']>,
-  ): void {
+  private run(request: () => Observable<unknown>): void {
     const event = this.event();
     if (!event) {
       return;
