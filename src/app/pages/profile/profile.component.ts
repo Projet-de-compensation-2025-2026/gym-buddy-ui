@@ -1,8 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { FriendsApi } from '../../api/friends-api.service';
 import { MediaApi } from '../../api/media-api.service';
+import { MessagingApi } from '../../api/messaging-api.service';
 import { ProfilesApi } from '../../api/profiles-api.service';
 import { readApiError } from '../../api/models';
 import type { GetFriendships200DataItem, GetProfilesHandle200 } from '../../api/generated/model';
@@ -18,8 +19,10 @@ type ProfileRelation = 'none' | 'outgoing' | 'incoming' | 'accepted' | 'blocked'
 })
 export class ProfilePage {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly api = inject(ProfilesApi);
   private readonly friends = inject(FriendsApi);
+  private readonly messaging = inject(MessagingApi);
   private readonly media = inject(MediaApi);
   protected readonly session = inject(AuthSession);
 
@@ -96,6 +99,16 @@ export class ProfilePage {
       return;
     }
     this.run(this.friends.remove(row.id), () => this.load(handle));
+  }
+
+  message(): void {
+    const userId = this.relationRow()?.peer.userId;
+    if (!userId) {
+      return;
+    }
+    this.run(this.messaging.open({ userId }), (conversation) => {
+      void this.router.navigate(['/messages', (conversation as { id: string }).id]);
+    });
   }
 
   block(): void {
@@ -180,11 +193,11 @@ export class ProfilePage {
     });
   }
 
-  private run(request: Observable<unknown>, onDone: () => void): void {
+  private run(request: Observable<unknown>, onDone: (value?: unknown) => void): void {
     this.busy.set(true);
     this.error.set(null);
     request.subscribe({
-      next: () => onDone(),
+      next: (value) => onDone(value),
       error: (err: unknown) => {
         this.busy.set(false);
         this.error.set(readApiError(err));

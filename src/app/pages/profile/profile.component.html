@@ -156,8 +156,16 @@
                   </button>
                 }
               }
-              @if (relation() !== 'blocked') {
-                <button type="button" class="btn-secondary" disabled>Message</button>
+              @if (relation() === 'accepted') {
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  data-testid="message-friend"
+                  [disabled]="busy()"
+                  (click)="message()"
+                >
+                  Message
+                </button>
               }
             } @else {
               <a class="btn-primary" routerLink="/settings/profile">Edit Profile</a>
