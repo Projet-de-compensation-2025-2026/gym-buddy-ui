@@ -31,6 +31,51 @@
         @if (notice()) {
           <p class="notice" data-testid="settings-profile-notice">{{ notice() }}</p>
         }
+        <article class="card photo-card">
+          <h2>Profile Photo</h2>
+          <div class="photo-row">
+            <div class="avatar avatar-lg" data-testid="settings-avatar">
+              @if (avatarUrl(); as src) {
+                <img [src]="src" alt="" />
+              } @else {
+                <span>{{ initials() || '•' }}</span>
+              }
+            </div>
+            <div>
+              <p class="muted">Recommended 400×400px. Max {{ maxBytesLabel }}.</p>
+              <div class="photo-actions">
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  data-testid="upload-avatar"
+                  [disabled]="uploading() || saving()"
+                  (click)="openFilePicker()"
+                >
+                  {{ uploading() ? 'Uploading…' : 'Upload New' }}
+                </button>
+                @if (avatarMediaId()) {
+                  <button
+                    type="button"
+                    class="link-danger"
+                    data-testid="remove-avatar"
+                    [disabled]="uploading() || saving()"
+                    (click)="removeAvatar()"
+                  >
+                    Remove
+                  </button>
+                }
+              </div>
+              <input
+                #fileInput
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                hidden
+                data-testid="avatar-file"
+                (change)="onFileInput($event)"
+              />
+            </div>
+          </div>
+        </article>
         <article class="card">
           <h2>Basic Information</h2>
           <div class="two">

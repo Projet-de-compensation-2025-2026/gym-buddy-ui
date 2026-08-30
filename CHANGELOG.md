@@ -7,6 +7,8 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Avatar upload on `/settings/profile` via `POST /media` + signed PUT (FS-MED-01..09).
+  Ticket #68. Max **8 MiB** (mockup “Max 2MB” is leftover). No local `/uploads`.
 - Friends management (`/friends`): inbound accept/decline, outbound cancel,
   unfriend, block, and client-side search. Add Friend / Request Friend on
   `/u/:handle`. Ticket #60. Avatars stay placeholders until media (#68).
@@ -25,6 +27,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
   (humans do not hand-edit that number). Auto bump still refuses `1.0.0`.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
   `3e63187727035b5277738db90c44744406057b4c` (ticket #60) until the next 0.1.x
+  tag. Not a `bundled.yaml` GET.
+- OpenAPI consumer pin is gym-buddy-openapi develop SHA
+  `edca075cdf1e1eb6caf6f094e02cadaba7c480b5` (ticket #68) until the next 0.1.x
   tag. Not a `bundled.yaml` GET.
 - Handwritten auth models / HTTP service are a thin wrapper over the generated
   `GymBuddyAPIService`. Register, login, refresh, logout, and healthz keep the

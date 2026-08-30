@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { FriendsApi } from '../../api/friends-api.service';
+import { MediaApi } from '../../api/media-api.service';
 import { ProfilesApi } from '../../api/profiles-api.service';
 import { readApiError } from '../../api/models';
 import type { GetFriendships200DataItem, GetProfilesHandle200 } from '../../api/generated/model';
@@ -19,11 +20,13 @@ export class ProfilePage {
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(ProfilesApi);
   private readonly friends = inject(FriendsApi);
+  private readonly media = inject(MediaApi);
   protected readonly session = inject(AuthSession);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly profile = signal<GetProfilesHandle200 | null>(null);
+  readonly avatarUrl = signal<string | null>(null);
   readonly relation = signal<ProfileRelation>('none');
   readonly relationRow = signal<GetFriendships200DataItem | null>(null);
   readonly busy = signal(false);
@@ -44,11 +47,13 @@ export class ProfilePage {
     this.loading.set(true);
     this.error.set(null);
     this.profile.set(null);
+    this.avatarUrl.set(null);
     this.relation.set('none');
     this.relationRow.set(null);
     this.api.byHandle(handle).subscribe({
       next: (profile) => {
         this.profile.set(profile);
+        this.loadAvatar(profile.avatarMediaId);
         if (this.isOwner(profile)) {
           this.loading.set(false);
           return;
@@ -128,6 +133,17 @@ export class ProfilePage {
 
   isOwner(profile: GetProfilesHandle200): boolean {
     return this.session.handle()?.toLowerCase() === profile.handle.toLowerCase();
+  }
+
+  private loadAvatar(mediaId: string | null | undefined): void {
+    if (!mediaId) {
+      this.avatarUrl.set(null);
+      return;
+    }
+    this.media.url(mediaId).subscribe({
+      next: (signed) => this.avatarUrl.set(signed.url),
+      error: () => this.avatarUrl.set(null),
+    });
   }
 
   private loadRelation(handle: string): void {

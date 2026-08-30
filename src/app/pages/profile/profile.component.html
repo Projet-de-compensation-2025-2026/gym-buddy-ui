@@ -7,7 +7,11 @@
     @if (p.view === 'stub') {
       <article class="stub-card" data-testid="profile-stub">
         <div class="avatar avatar-lg locked">
-          <span>{{ initials(p) || '•' }}</span>
+          @if (avatarUrl(); as src) {
+            <img [src]="src" alt="" />
+          } @else {
+            <span>{{ initials(p) || '•' }}</span>
+          }
           <span class="lock" aria-hidden="true">🔒</span>
         </div>
         <h1>@{{ p.handle }}</h1>
@@ -70,7 +74,13 @@
       </article>
     } @else {
       <article class="hero-card" data-testid="profile-full">
-        <div class="avatar avatar-lg">{{ initials(p) }}</div>
+        <div class="avatar avatar-lg">
+          @if (avatarUrl(); as src) {
+            <img [src]="src" alt="" data-testid="profile-avatar" />
+          } @else {
+            <span>{{ initials(p) }}</span>
+          }
+        </div>
         <div>
           <h1>{{ p.displayName || p.handle }}</h1>
           <p class="handle">@{{ p.handle }}</p>
