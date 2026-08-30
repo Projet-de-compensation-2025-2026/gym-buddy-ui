@@ -1,0 +1,56 @@
+<article class="card post-card" data-testid="post-card">
+  <header class="post-head">
+    <a class="who" [routerLink]="['/u', post().author.handle]">
+      <span class="avatar">
+        @if (avatarUrl(); as src) {
+          <img [src]="src" alt="" />
+        } @else {
+          {{ initials() }}
+        }
+      </span>
+      <span>
+        <strong>{{ post().author.displayName || post().author.handle }}</strong>
+        <span class="meta">{{ when() }}</span>
+      </span>
+    </a>
+  </header>
+  @if (post().body) {
+    <p class="body" data-testid="post-body">{{ post().body }}</p>
+  }
+  @if (post().mediaIds.length) {
+    <div class="media" data-testid="post-media">
+      @for (id of post().mediaIds; track id) {
+        @if (imageUrls()[id]; as src) {
+          <img [src]="src" alt="" />
+        }
+      }
+    </div>
+  }
+  <div class="counts">
+    <span data-testid="like-count">{{ post().likeCount }} Likes</span>
+    <a [routerLink]="['/posts', post().id]" data-testid="comment-count"
+      >{{ post().commentCount }} Comments</a
+    >
+  </div>
+  <div class="actions">
+    <button
+      type="button"
+      class="action"
+      [class.active]="post().liked"
+      data-testid="like-post"
+      (click)="like.emit(post())"
+    >
+      {{ post().liked ? 'Liked' : 'Like' }}
+    </button>
+    <button
+      type="button"
+      class="action"
+      [class.active]="post().reposted"
+      data-testid="repost-post"
+      (click)="repost.emit(post())"
+    >
+      {{ post().reposted ? 'Reposted' : 'Repost' }}
+    </button>
+    <a class="action" [routerLink]="['/posts', post().id]" data-testid="comment-post">Comment</a>
+  </div>
+</article>

@@ -1,0 +1,24 @@
+<section class="detail" data-testid="post-detail">
+  <p><a routerLink="/">← Feed</a></p>
+  @if (loading()) {
+    <p data-testid="post-detail-loading">Loading post…</p>
+  } @else if (error() && !post()) {
+    <p class="error" role="alert" data-testid="post-detail-error">{{ error() }}</p>
+  } @else if (post(); as row) {
+    @if (error()) {
+      <p class="error" role="alert" data-testid="post-detail-error">{{ error() }}</p>
+    }
+    <app-post-card
+      [post]="row"
+      [imageUrls]="imageUrls()"
+      (like)="toggleLike($event)"
+      (repost)="toggleRepost($event)"
+    />
+    <article class="card comments">
+      <h2>Comments</h2>
+      <p class="muted" data-testid="comments-placeholder">
+        Nested comments land in a later slice. Like and repost work on this post.
+      </p>
+    </article>
+  }
+</section>

@@ -1,0 +1,10 @@
+.detail {
+  max-width: 40rem;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.comments h2 {
+  margin: 0 0 0.5rem;
+}
