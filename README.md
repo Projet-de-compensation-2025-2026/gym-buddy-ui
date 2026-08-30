@@ -4,15 +4,15 @@ Angular 22 member app for Gym Buddies. Product decisions live in
 [`gym-buddy-documentation`](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-documentation).
 
 This slice is **sign-up**, **sign-in**, **profiles**, **friend requests**,
-**account settings**, **avatar upload**, **posts**, and **nested comments**
-(`/register`, `/login`, `/u/:handle`, `/friends`, `/settings/profile`,
-`/settings/privacy`, `/`, `/posts/:id`). The access JWT stays in memory; the
-refresh token is the API’s HttpOnly cookie (`path /api/v1/auth`). The friends
-news feed, events, and messaging are later tickets.
+**account settings**, **avatar upload**, **posts**, **nested comments**, and
+the **friends news feed** (`/register`, `/login`, `/u/:handle`, `/friends`,
+`/settings/profile`, `/settings/privacy`, `/`, `/posts/:id`). The access JWT
+stays in memory; the refresh token is the API’s HttpOnly cookie
+(`path /api/v1/auth`). Events and messaging are later tickets.
 
 The HTTP contract is the versioned
 [`gym-buddy-openapi`](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi)
-package (ticket #62 pins develop SHA `01ab3d50195833296b10e8ca44aa89d1e046683a`
+package (ticket #63 pins develop SHA `82d0eadb592c023fe3934836c7ce0ca15ca56abd`
 until the next 0.1.x tag). This repo does **not** vendor `openapi.yaml` or
 `bundled.yaml`.
 

@@ -3,6 +3,7 @@ import { authGuard } from './auth/auth.guard';
 import { FriendsPage } from './pages/friends/friends.component';
 import { HomePage } from './pages/home/home.component';
 import { PostDetailPage } from './pages/post-detail/post-detail.component';
+import { SuggestionsPage } from './pages/suggestions/suggestions.component';
 import { ProfilePage } from './pages/profile/profile.component';
 import { SettingsPrivacyPage } from './pages/settings-privacy/settings-privacy.component';
 import { SettingsProfilePage } from './pages/settings-profile/settings-profile.component';
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'register', component: SignUpPage },
   { path: 'login', component: SignInPage },
   { path: 'friends', component: FriendsPage, canActivate: [authGuard] },
+  { path: 'suggestions', component: SuggestionsPage, canActivate: [authGuard] },
   { path: 'posts/:id', component: PostDetailPage, canActivate: [authGuard] },
   { path: 'u/:handle', component: ProfilePage, canActivate: [authGuard] },
   { path: 'settings/profile', component: SettingsProfilePage, canActivate: [authGuard] },
