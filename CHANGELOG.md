@@ -22,6 +22,8 @@ Versioning: [Semantic Versioning](https://semver.org/).
   member `404.html`. Ticket #75.
 - Search people `q` is sent when the member types or presses Enter, not only on
   Apply Filters (ticket #101, FS-SRCH-02).
+- Search **Events** tab stays on `/search` and calls `GET /search/events` (ticket
+  #102, FS-SRCH-01). It does not navigate to `/events`.
 
 ## [1.0.0] — 2026-08-30
 
