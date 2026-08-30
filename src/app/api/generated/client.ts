@@ -21,6 +21,9 @@ import { environment } from '../../../environments/environment';
 import type {
   GetCommentsIdReplies200,
   GetCommentsIdRepliesParams,
+  GetEvents200,
+  GetEventsId200,
+  GetEventsParams,
   GetFeed200,
   GetFeedParams,
   GetFriendships200,
@@ -35,10 +38,13 @@ import type {
   GetProfilesHandle200,
   GetProfilesMe200,
   GetReadyz200,
+  PatchEventsId200,
+  PatchEventsIdBody,
   PatchPostsId200,
   PatchPostsIdBody,
   PatchProfilesMe200,
   PatchProfilesMeBody,
+  PostApplicationsIdAccept200,
   PostAuthLogin200,
   PostAuthLoginBody,
   PostAuthPasswordBody,
@@ -46,6 +52,12 @@ import type {
   PostAuthRegister201,
   PostAuthRegisterBody,
   PostBlocksBody,
+  PostEvents201,
+  PostEventsBody,
+  PostEventsIdApplications201,
+  PostEventsIdApplicationsBody,
+  PostEventsIdCancel200,
+  PostEventsIdCancelBody,
   PostFriendships201,
   PostFriendshipsBody,
   PostFriendshipsIdAccept200,
@@ -1746,5 +1758,447 @@ export class GymBuddyAPIService {
       observe: 'body',
       params: filteredParams,
     });
+  }
+
+  /**
+   * FS-EVT list. Visibility-filtered upcoming sessions. `kind=instant|recurring`
+   * optional. Window defaults to now .. now+90 days. Cursor `after` is opaque
+   * (`page.next`). Default size 20, max 50. Friends-only and private events
+   * the caller may not see are omitted (no existence leak).
+   * @summary List visible events
+   */
+  getEvents<TData = GetEvents200>(
+    params?: GetEventsParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getEvents<TData = GetEvents200>(
+    params?: GetEventsParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getEvents<TData = GetEvents200>(
+    params?: GetEventsParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getEvents<TData = GetEvents200>(
+    params?: GetEventsParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/events`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/events`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/events`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-EVT-01..04. Authenticated member. Instant when `recurrence` is empty.
+   * Recurring MVP `FREQ=WEEKLY;BYDAY=...` with optional `UNTIL`. Start in the
+   * past is VALIDATION. Invalid RRULE is VALIDATION. Cover `coverMediaId` must
+   * be a ready `kind=event` image owned by the caller.
+   * @summary Create an instant or recurring event
+   */
+  postEvents<TData = PostEvents201>(
+    postEventsBody: PostEventsBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postEvents<TData = PostEvents201>(
+    postEventsBody: PostEventsBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postEvents<TData = PostEvents201>(
+    postEventsBody: PostEventsBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postEvents<TData = PostEvents201>(
+    postEventsBody: PostEventsBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/events`, postEventsBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/events`, postEventsBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/events`, postEventsBody, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-EVT-03, FS-EVT-12, FS-EVT-13. `canView`: organizer; `public` any
+   * member; `friends` accepted friends; `private` invitees and accepted
+   * participants. Past occurrences stay readable to participants. Organizer
+   * also receives `pendingApplicants` ordered by matching score. Unknown,
+   * hidden, or not visible is NOT_FOUND.
+   * @summary Read an event and its 90-day occurrences
+   */
+  getEventsId<TData = GetEventsId200>(
+    id: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getEventsId<TData = GetEventsId200>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getEventsId<TData = GetEventsId200>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getEventsId<TData = GetEventsId200>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/events/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/events/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/events/${id}`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-EVT-09. Organizer only, before start. If anyone is accepted, sets
+   * `updatedAfterAccept`. Other callers get NOT_FOUND.
+   * @summary Update place or time
+   */
+  patchEventsId<TData = PatchEventsId200>(
+    id: string,
+    patchEventsIdBody: PatchEventsIdBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  patchEventsId<TData = PatchEventsId200>(
+    id: string,
+    patchEventsIdBody: PatchEventsIdBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  patchEventsId<TData = PatchEventsId200>(
+    id: string,
+    patchEventsIdBody: PatchEventsIdBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  patchEventsId<TData = PatchEventsId200>(
+    id: string,
+    patchEventsIdBody: PatchEventsIdBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.patch<TData>(`${environment.apiBaseUrl}/events/${id}`, patchEventsIdBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.patch<TData>(`${environment.apiBaseUrl}/events/${id}`, patchEventsIdBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.patch<TData>(`${environment.apiBaseUrl}/events/${id}`, patchEventsIdBody, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-EVT-08. Organizer only. Body `occurrenceId` cancels that occurrence;
+   * omit it to cancel the series. Applications on cancelled occurrences
+   * become `cancelled`. Other callers get NOT_FOUND.
+   * @summary Cancel a series or one occurrence
+   */
+  postEventsIdCancel<TData = PostEventsIdCancel200>(
+    id: string,
+    postEventsIdCancelBody?: PostEventsIdCancelBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postEventsIdCancel<TData = PostEventsIdCancel200>(
+    id: string,
+    postEventsIdCancelBody?: PostEventsIdCancelBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postEventsIdCancel<TData = PostEventsIdCancel200>(
+    id: string,
+    postEventsIdCancelBody?: PostEventsIdCancelBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postEventsIdCancel<TData = PostEventsIdCancel200>(
+    id: string,
+    postEventsIdCancelBody?: PostEventsIdCancelBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/events/${id}/cancel`,
+        postEventsIdCancelBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/events/${id}/cancel`,
+        postEventsIdCancelBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/events/${id}/cancel`,
+      postEventsIdCancelBody,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
+  }
+
+  /**
+   * FS-EVT-05, FS-EVT-11, FS-EVT-12. Caller must `canView`. Once per
+   * occurrence. Organizer applying to their own event is FORBIDDEN. Past
+   * occurrence is VALIDATION. Double apply is CONFLICT. Stranger on
+   * friends-only or private is NOT_FOUND.
+   * @summary Apply to an occurrence
+   */
+  postEventsIdApplications<TData = PostEventsIdApplications201>(
+    id: string,
+    postEventsIdApplicationsBody?: PostEventsIdApplicationsBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postEventsIdApplications<TData = PostEventsIdApplications201>(
+    id: string,
+    postEventsIdApplicationsBody?: PostEventsIdApplicationsBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postEventsIdApplications<TData = PostEventsIdApplications201>(
+    id: string,
+    postEventsIdApplicationsBody?: PostEventsIdApplicationsBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postEventsIdApplications<TData = PostEventsIdApplications201>(
+    id: string,
+    postEventsIdApplicationsBody?: PostEventsIdApplicationsBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/events/${id}/applications`,
+        postEventsIdApplicationsBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/events/${id}/applications`,
+        postEventsIdApplicationsBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/events/${id}/applications`,
+      postEventsIdApplicationsBody,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
+  }
+
+  /**
+   * FS-EVT-10. Applicant only, while `pending` or `accepted` and before start.
+   * Frees a seat if accepted. Other callers get NOT_FOUND.
+   * @summary Withdraw an application
+   */
+  deleteApplicationsId<TData = void>(
+    id: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  deleteApplicationsId<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  deleteApplicationsId<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  deleteApplicationsId<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/applications/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/applications/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.delete<TData>(`${environment.apiBaseUrl}/applications/${id}`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-EVT-06, FS-EVT-07. Organizer only. Transactional seat check
+   * (`SELECT FOR UPDATE` or equivalent) on the occurrence. When accepted
+   * count reaches capacity, further accepts are CONFLICT. Two concurrent
+   * last-seat accepts yield exactly one `accepted` and one CONFLICT.
+   * Non-organizer callers get NOT_FOUND.
+   * @summary Accept a pending application
+   */
+  postApplicationsIdAccept<TData = PostApplicationsIdAccept200>(
+    id: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postApplicationsIdAccept<TData = PostApplicationsIdAccept200>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postApplicationsIdAccept<TData = PostApplicationsIdAccept200>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postApplicationsIdAccept<TData = PostApplicationsIdAccept200>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/applications/${id}/accept`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/applications/${id}/accept`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/applications/${id}/accept`, undefined, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-EVT-06. Organizer only. Sets status declined. Non-organizer is NOT_FOUND.
+   * @summary Decline a pending application
+   */
+  postApplicationsIdDecline<TData = void>(
+    id: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postApplicationsIdDecline<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postApplicationsIdDecline<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postApplicationsIdDecline<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/applications/${id}/decline`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/applications/${id}/decline`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/applications/${id}/decline`,
+      undefined,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
   }
 }

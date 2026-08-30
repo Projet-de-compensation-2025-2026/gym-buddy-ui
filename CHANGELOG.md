@@ -7,6 +7,7 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Events pages `/events`, `/events/new`, `/events/:id` (FS-EVT-01..13). Ticket #64. Instant / Recurring filters, create form, apply/accept, 90-day occurrences, organizer applicant queue. Mockups 09–11.
 - Friends news feed on `/` (FS-FEED-01..07). Ticket #63. Composer plus reverse-chrono posts and reposts from the viewer and accepted friends. Empty feed links to `/suggestions`. Public non-friend posts stay off this feed.
 - Nested comments on `/posts/:id` (FS-CMT-01..07). Ticket #62. Nested indent,
   like/reply, author tombstone, load-more replies. Max depth 4. No media in
@@ -32,6 +33,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 - Release writes the computed SemVer into `package.json` before the tag
   (humans do not hand-edit that number). Auto bump still refuses `1.0.0`.
+- OpenAPI consumer pin is gym-buddy-openapi develop SHA
+  `2ebc892909eed2a79841a4aea572aef1968747b4` (ticket #64) until the next 0.1.x
+  tag. Not a `bundled.yaml` GET.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
   `3e63187727035b5277738db90c44744406057b4c` (ticket #60) until the next 0.1.x
   tag. Not a `bundled.yaml` GET.

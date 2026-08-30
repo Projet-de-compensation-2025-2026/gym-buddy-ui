@@ -27,8 +27,8 @@ importers:
         specifier: ^22.1.0
         version: 22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(@angular/platform-browser@22.1.2(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)))(rxjs@7.8.2)
       gym-buddy-openapi:
-        specifier: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#82d0eadb592c023fe3934836c7ce0ca15ca56abd
-        version: https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/82d0eadb592c023fe3934836c7ce0ca15ca56abd
+        specifier: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#2ebc892909eed2a79841a4aea572aef1968747b4
+        version: https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/2ebc892909eed2a79841a4aea572aef1968747b4
       rxjs:
         specifier: ~7.8.0
         version: 7.8.2
@@ -1981,8 +1981,8 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  gym-buddy-openapi@https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/82d0eadb592c023fe3934836c7ce0ca15ca56abd:
-    resolution: {gitHosted: true, integrity: sha512-AkNXbXpotSkXNtYtfRuS3lCU8mR+eMdht4u6m/V9qEjvKtBq7f+rhUJFkUASgMw7L2Up/2499ZLvZNNp/h2+GA==, tarball: https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/82d0eadb592c023fe3934836c7ce0ca15ca56abd}
+  gym-buddy-openapi@https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/2ebc892909eed2a79841a4aea572aef1968747b4:
+    resolution: {gitHosted: true, integrity: sha512-+xhsiZklVMloqG6EAUy7v5NOf4meW6AmBG22fN22ZYNFkX2cY3Eq17mmOIY123a3TZs9zLdQuV9xKbi7plwupQ==, tarball: https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/2ebc892909eed2a79841a4aea572aef1968747b4}
     version: 0.1.0
 
   has-flag@4.0.0:
@@ -4881,7 +4881,7 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  gym-buddy-openapi@https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/82d0eadb592c023fe3934836c7ce0ca15ca56abd: {}
+  gym-buddy-openapi@https://codeload.github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi/tar.gz/2ebc892909eed2a79841a4aea572aef1968747b4: {}
 
   has-flag@4.0.0: {}
 

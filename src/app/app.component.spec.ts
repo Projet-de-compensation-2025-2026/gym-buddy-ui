@@ -39,7 +39,7 @@ describe('App', () => {
     http.verify();
   });
 
-  it('links Friends when signed in', async () => {
+  it('links Events and Friends when signed in', async () => {
     const { root, session, detect, http } = await setup();
     const payload = btoa(
       JSON.stringify({ sub: '11111111-1111-1111-1111-111111111111', handle: 'alex' }),
@@ -56,12 +56,19 @@ describe('App', () => {
       req.flush({ data: [], page: { next: null, size: 20 } });
     }
     detect();
-    const link = Array.from(root.querySelectorAll('a')).find(
+    const events = Array.from(root.querySelectorAll('a')).find(
+      (el) => el.textContent?.trim() === 'Events',
+    );
+    const friends = Array.from(root.querySelectorAll('a')).find(
       (el) => el.textContent?.trim() === 'Friends',
     );
-    expect(link).toBeTruthy();
+    expect(events).toBeTruthy();
+    expect(friends).toBeTruthy();
     expect(
-      link?.getAttribute('href') ?? link?.getAttribute('ng-reflect-router-link') ?? '',
+      events?.getAttribute('href') ?? events?.getAttribute('ng-reflect-router-link') ?? '',
+    ).toContain('events');
+    expect(
+      friends?.getAttribute('href') ?? friends?.getAttribute('ng-reflect-router-link') ?? '',
     ).toContain('friends');
     http.verify();
   });

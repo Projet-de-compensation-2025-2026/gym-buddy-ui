@@ -1,0 +1,84 @@
+<section class="events-page" data-testid="events-page">
+  <header class="page-head">
+    <div>
+      <h1>Upcoming Sessions</h1>
+      <p class="muted">Join local training events or schedule your own.</p>
+    </div>
+    <a class="btn-primary" routerLink="/events/new" data-testid="create-event">+ Create Event</a>
+  </header>
+
+  <nav class="tabs" aria-label="Event kind">
+    <button
+      type="button"
+      [class.active]="kind() === ''"
+      data-testid="tab-all"
+      (click)="setKind('')"
+    >
+      All Events
+    </button>
+    <button
+      type="button"
+      [class.active]="kind() === 'instant'"
+      data-testid="tab-instant"
+      (click)="setKind('instant')"
+    >
+      Instant
+    </button>
+    <button
+      type="button"
+      [class.active]="kind() === 'recurring'"
+      data-testid="tab-recurring"
+      (click)="setKind('recurring')"
+    >
+      Recurring
+    </button>
+  </nav>
+
+  @if (error()) {
+    <p class="error" role="alert" data-testid="events-error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="state" data-testid="events-loading">Loading sessions…</p>
+  } @else {
+    <div class="events-grid" data-testid="events-list">
+      @for (event of events(); track event.id) {
+        <article class="card event-card" [class.featured]="event.coverMediaId">
+          <a [routerLink]="['/events', event.id]" class="event-link">
+            @if (event.coverMediaId; as mediaId) {
+              @if (coverUrls()[mediaId]; as src) {
+                <img class="cover" [src]="src" alt="" />
+              } @else {
+                <div class="cover placeholder"></div>
+              }
+            }
+            <span class="kind-chip">{{
+              event.kind === 'recurring' ? 'Recurring' : 'Instant'
+            }}</span>
+            <div class="event-body">
+              <div class="title-row">
+                <h2>{{ event.title }}</h2>
+                <span class="spots">{{ spots(event) }}</span>
+              </div>
+              <p class="meta">
+                <span>{{ event.activity }}</span>
+                <span>{{ event.place }}</span>
+              </p>
+              <p class="meta">
+                <span>{{ clockTime(event.startsAt) }}</span>
+                <span>{{ event.durationMin }} mins</span>
+              </p>
+              <p class="organizer">
+                <span class="avatar">{{ initials(event) }}</span>
+                {{ event.organizer.handle }}
+                <span class="visibility">{{ event.visibility }}</span>
+              </p>
+            </div>
+          </a>
+        </article>
+      } @empty {
+        <p class="muted" data-testid="events-empty">No upcoming sessions.</p>
+      }
+    </div>
+  }
+</section>
