@@ -19,6 +19,14 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 import type {
+  GetAdminAudit200,
+  GetAdminAuditParams,
+  GetAdminMedia200,
+  GetAdminMediaParams,
+  GetAdminReports200,
+  GetAdminReportsParams,
+  GetAdminUsers200,
+  GetAdminUsersParams,
   GetCommentsIdReplies200,
   GetCommentsIdRepliesParams,
   GetEvents200,
@@ -29,6 +37,7 @@ import type {
   GetFriendships200,
   GetFriendshipsParams,
   GetHealthz200,
+  GetMatchingMe200,
   GetMediaIdUrl200,
   GetPostsId200,
   GetPostsIdComments200,
@@ -38,12 +47,28 @@ import type {
   GetProfilesHandle200,
   GetProfilesMe200,
   GetReadyz200,
+  GetSearchEvents200,
+  GetSearchEventsParams,
+  GetSearchPeople200,
+  GetSearchPeopleParams,
+  GetSuggestions200,
+  GetSuggestionsParams,
+  PatchAdminUsersIdRole200,
+  PatchAdminUsersIdRoleBody,
   PatchEventsId200,
   PatchEventsIdBody,
   PatchPostsId200,
   PatchPostsIdBody,
   PatchProfilesMe200,
   PatchProfilesMeBody,
+  PostAdminContentTypeIdHideBody,
+  PostAdminContentTypeIdUnhideBody,
+  PostAdminReportsIdResolve200,
+  PostAdminReportsIdResolveBody,
+  PostAdminUsersIdLock200,
+  PostAdminUsersIdLockBody,
+  PostAdminUsersIdUnlock200,
+  PostAdminUsersIdUnlockBody,
   PostApplicationsIdAccept200,
   PostAuthLogin200,
   PostAuthLoginBody,
@@ -69,6 +94,8 @@ import type {
   PostPostsIdComments201,
   PostPostsIdCommentsBody,
   PostPostsIdReposts201,
+  PostReports201,
+  PostReportsBody,
 } from './model';
 
 interface HttpClientOptions {
@@ -2200,5 +2227,971 @@ export class GymBuddyAPIService {
         observe: 'body',
       },
     );
+  }
+
+  /**
+   * FS-SRCH-01..08. Authenticated members only. Filters AND across fields;
+   * `sports` is ANY inside the field. Private strangers, blocked users, closed
+   * accounts, and the caller never appear. Rank is α ts_rank + β recency +
+   * γ geo + δ social unless `sort` replaces it. Cursor `before` is opaque
+   * (`page.next`). Default size 20, max 50. API radius is kilometres.
+   * @summary Search people
+   */
+  getSearchPeople<TData = GetSearchPeople200>(
+    params?: GetSearchPeopleParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getSearchPeople<TData = GetSearchPeople200>(
+    params?: GetSearchPeopleParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getSearchPeople<TData = GetSearchPeople200>(
+    params?: GetSearchPeopleParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getSearchPeople<TData = GetSearchPeople200>(
+    params?: GetSearchPeopleParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/search/people`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/search/people`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/search/people`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-SRCH-01..08. Authenticated members only. Filters AND across fields.
+   * Events the caller may not see, hidden content, cancelled series, blocked
+   * organizers, and (when `remaining=true`) full events never appear. Rank is
+   * α ts_rank + β recency + γ geo + δ social unless `sort` replaces it.
+   * Cursor `before` is opaque (`page.next`). Default size 20, max 50. API
+   * radius is kilometres.
+   * @summary Search events
+   */
+  getSearchEvents<TData = GetSearchEvents200>(
+    params?: GetSearchEventsParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getSearchEvents<TData = GetSearchEvents200>(
+    params?: GetSearchEventsParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getSearchEvents<TData = GetSearchEvents200>(
+    params?: GetSearchEventsParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getSearchEvents<TData = GetSearchEvents200>(
+    params?: GetSearchEventsParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/search/events`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/search/events`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/search/events`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-SUGG-01..03, FS-SUGG-06, FS-SUGG-07. Two-stage generate-and-score
+   * (friends-of-friends ∪ same city∩sport ∪ co-participants last 90 days).
+   * Forbidden set: self, friends, pending, blocked, dismissed-30d,
+   * locked/closed. Each item has a plain-language `reason`. Default size 20,
+   * max 50. Cache older than 48 h is not served; fall back to on-the-fly
+   * top-k. Co-participants are an empty set when the events table is absent.
+   * @summary Personalized friend suggestions
+   */
+  getSuggestions<TData = GetSuggestions200>(
+    params?: GetSuggestionsParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getSuggestions<TData = GetSuggestions200>(
+    params?: GetSuggestionsParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getSuggestions<TData = GetSuggestions200>(
+    params?: GetSuggestionsParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getSuggestions<TData = GetSuggestions200>(
+    params?: GetSuggestionsParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/suggestions`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/suggestions`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/suggestions`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-SUGG-04. Suppresses this candidate for the caller until 30 days from
+   * now. Unknown, self, locked, or closed is NOT_FOUND. Repeat dismiss
+   * refreshes `until`.
+   * @summary Dismiss a suggestion for 30 days
+   */
+  postSuggestionsUserIdDismiss<TData = void>(
+    userId: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postSuggestionsUserIdDismiss<TData = void>(
+    userId: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postSuggestionsUserIdDismiss<TData = void>(
+    userId: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postSuggestionsUserIdDismiss<TData = void>(
+    userId: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/suggestions/${userId}/dismiss`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/suggestions/${userId}/dismiss`,
+        undefined,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/suggestions/${userId}/dismiss`,
+      undefined,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
+  }
+
+  /**
+   * FS-MATCH-01. Adds the caller to this ISO week's opt-in set (Monday UTC).
+   * Idempotent if already opted in. The greedy assignment runs nightly.
+   * @summary Opt into weekly buddy matching
+   */
+  postMatchingOptIn<TData = void>(options?: HttpClientBodyOptions): Observable<TData>;
+  postMatchingOptIn<TData = void>(options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+  postMatchingOptIn<TData = void>(
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postMatchingOptIn<TData = void>(
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/matching/opt-in`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/matching/opt-in`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/matching/opt-in`, undefined, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-MATCH-01. Removes the caller from this week's opt-in set. Idempotent
+   * if not opted in. An already-assigned pair for this week is left in place
+   * (human still accepts the draft session).
+   * @summary Opt out of weekly buddy matching
+   */
+  deleteMatchingOptIn<TData = void>(options?: HttpClientBodyOptions): Observable<TData>;
+  deleteMatchingOptIn<TData = void>(options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+  deleteMatchingOptIn<TData = void>(
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  deleteMatchingOptIn<TData = void>(
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/matching/opt-in`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/matching/opt-in`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.delete<TData>(`${environment.apiBaseUrl}/matching/opt-in`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-MATCH-02, FS-MATCH-03. Returns opt-in state, the proposed pair if the
+   * greedy job assigned one, and the draft instant event (capacity 1,
+   * visibility friends) at the overlapping window. `event.id` may be null
+   * when the events table is not on this deploy. No edge across a block;
+   * a person is assigned at most once.
+   * @summary Current weekly match
+   */
+  getMatchingMe<TData = GetMatchingMe200>(options?: HttpClientBodyOptions): Observable<TData>;
+  getMatchingMe<TData = GetMatchingMe200>(
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getMatchingMe<TData = GetMatchingMe200>(
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getMatchingMe<TData = GetMatchingMe200>(
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/matching/me`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/matching/me`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/matching/me`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-ADM, FS-ACCT-08/09. Staff only (`moderator` or `admin`). Search
+   * `q` matches handle, email, or display name (case-insensitive). Members
+   * get NOT_FOUND (do not advertise staff routes). Cursor `after` is opaque
+   * (`page.next`). Default size 20, max 50.
+   * @summary List accounts for staff
+   */
+  getAdminUsers<TData = GetAdminUsers200>(
+    params?: GetAdminUsersParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getAdminUsers<TData = GetAdminUsers200>(
+    params?: GetAdminUsersParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getAdminUsers<TData = GetAdminUsers200>(
+    params?: GetAdminUsersParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getAdminUsers<TData = GetAdminUsers200>(
+    params?: GetAdminUsersParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/admin/users`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/admin/users`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/admin/users`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-ACCT-08, FS-ADM-04. Staff. Locked users cannot authenticate
+   * (generic FORBIDDEN). Last remaining admin cannot lock themselves
+   * (CONFLICT). Members get NOT_FOUND. Writes `audit_events`.
+   * @summary Lock an account
+   */
+  postAdminUsersIdLock<TData = PostAdminUsersIdLock200>(
+    id: string,
+    postAdminUsersIdLockBody?: PostAdminUsersIdLockBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postAdminUsersIdLock<TData = PostAdminUsersIdLock200>(
+    id: string,
+    postAdminUsersIdLockBody?: PostAdminUsersIdLockBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postAdminUsersIdLock<TData = PostAdminUsersIdLock200>(
+    id: string,
+    postAdminUsersIdLockBody?: PostAdminUsersIdLockBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postAdminUsersIdLock<TData = PostAdminUsersIdLock200>(
+    id: string,
+    postAdminUsersIdLockBody?: PostAdminUsersIdLockBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/users/${id}/lock`,
+        postAdminUsersIdLockBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/users/${id}/lock`,
+        postAdminUsersIdLockBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/admin/users/${id}/lock`,
+      postAdminUsersIdLockBody,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
+  }
+
+  /**
+   * FS-ACCT-08. Staff. Sets `users.status=active`. Also restores `closed`.
+   * Members get NOT_FOUND. Writes `audit_events`.
+   * @summary Unlock an account
+   */
+  postAdminUsersIdUnlock<TData = PostAdminUsersIdUnlock200>(
+    id: string,
+    postAdminUsersIdUnlockBody?: PostAdminUsersIdUnlockBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postAdminUsersIdUnlock<TData = PostAdminUsersIdUnlock200>(
+    id: string,
+    postAdminUsersIdUnlockBody?: PostAdminUsersIdUnlockBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postAdminUsersIdUnlock<TData = PostAdminUsersIdUnlock200>(
+    id: string,
+    postAdminUsersIdUnlockBody?: PostAdminUsersIdUnlockBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postAdminUsersIdUnlock<TData = PostAdminUsersIdUnlock200>(
+    id: string,
+    postAdminUsersIdUnlockBody?: PostAdminUsersIdUnlockBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/users/${id}/unlock`,
+        postAdminUsersIdUnlockBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/users/${id}/unlock`,
+        postAdminUsersIdUnlockBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/admin/users/${id}/unlock`,
+      postAdminUsersIdUnlockBody,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
+  }
+
+  /**
+   * FS-ACCT-09, FS-ADM-02. Admin only. Moderators get FORBIDDEN. Last
+   * remaining admin cannot be demoted (CONFLICT). Members get NOT_FOUND.
+   * Writes `audit_events`.
+   * @summary Change an account role
+   */
+  patchAdminUsersIdRole<TData = PatchAdminUsersIdRole200>(
+    id: string,
+    patchAdminUsersIdRoleBody: PatchAdminUsersIdRoleBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  patchAdminUsersIdRole<TData = PatchAdminUsersIdRole200>(
+    id: string,
+    patchAdminUsersIdRoleBody: PatchAdminUsersIdRoleBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  patchAdminUsersIdRole<TData = PatchAdminUsersIdRole200>(
+    id: string,
+    patchAdminUsersIdRoleBody: PatchAdminUsersIdRoleBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  patchAdminUsersIdRole<TData = PatchAdminUsersIdRole200>(
+    id: string,
+    patchAdminUsersIdRoleBody: PatchAdminUsersIdRoleBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.patch<TData>(
+        `${environment.apiBaseUrl}/admin/users/${id}/role`,
+        patchAdminUsersIdRoleBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.patch<TData>(
+        `${environment.apiBaseUrl}/admin/users/${id}/role`,
+        patchAdminUsersIdRoleBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.patch<TData>(
+      `${environment.apiBaseUrl}/admin/users/${id}/role`,
+      patchAdminUsersIdRoleBody,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
+  }
+
+  /**
+   * FS-ADM-03. Staff. Hide is not a member delete: members see NOT_FOUND;
+   * staff still see the row plus reason. Missing reason is VALIDATION.
+   * `type=event` is NOT_FOUND until the events service is on develop.
+   * Members calling this path get NOT_FOUND. Writes `audit_events`.
+   * @summary Hide content from members
+   */
+  postAdminContentTypeIdHide<TData = void>(
+    type: 'post' | 'comment' | 'event' | 'media',
+    id: string,
+    postAdminContentTypeIdHideBody: PostAdminContentTypeIdHideBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postAdminContentTypeIdHide<TData = void>(
+    type: 'post' | 'comment' | 'event' | 'media',
+    id: string,
+    postAdminContentTypeIdHideBody: PostAdminContentTypeIdHideBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postAdminContentTypeIdHide<TData = void>(
+    type: 'post' | 'comment' | 'event' | 'media',
+    id: string,
+    postAdminContentTypeIdHideBody: PostAdminContentTypeIdHideBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postAdminContentTypeIdHide<TData = void>(
+    type: 'post' | 'comment' | 'event' | 'media',
+    id: string,
+    postAdminContentTypeIdHideBody: PostAdminContentTypeIdHideBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/content/${type}/${id}/hide`,
+        postAdminContentTypeIdHideBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/content/${type}/${id}/hide`,
+        postAdminContentTypeIdHideBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/admin/content/${type}/${id}/hide`,
+      postAdminContentTypeIdHideBody,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
+  }
+
+  /**
+   * FS-ADM-03. Staff. Clears `hidden_at` / `hidden_reason`. Members calling
+   * this path get NOT_FOUND. Writes `audit_events`.
+   * @summary Restore hidden content
+   */
+  postAdminContentTypeIdUnhide<TData = void>(
+    type: 'post' | 'comment' | 'event' | 'media',
+    id: string,
+    postAdminContentTypeIdUnhideBody?: PostAdminContentTypeIdUnhideBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postAdminContentTypeIdUnhide<TData = void>(
+    type: 'post' | 'comment' | 'event' | 'media',
+    id: string,
+    postAdminContentTypeIdUnhideBody?: PostAdminContentTypeIdUnhideBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postAdminContentTypeIdUnhide<TData = void>(
+    type: 'post' | 'comment' | 'event' | 'media',
+    id: string,
+    postAdminContentTypeIdUnhideBody?: PostAdminContentTypeIdUnhideBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postAdminContentTypeIdUnhide<TData = void>(
+    type: 'post' | 'comment' | 'event' | 'media',
+    id: string,
+    postAdminContentTypeIdUnhideBody?: PostAdminContentTypeIdUnhideBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/content/${type}/${id}/unhide`,
+        postAdminContentTypeIdUnhideBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/content/${type}/${id}/unhide`,
+        postAdminContentTypeIdUnhideBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/admin/content/${type}/${id}/unhide`,
+      postAdminContentTypeIdUnhideBody,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
+  }
+
+  /**
+   * FS-ADM-07. Staff. Default `status=open`. Members get NOT_FOUND. Cursor
+   * `after` is opaque (`page.next`). Default size 20, max 50.
+   * @summary List member reports
+   */
+  getAdminReports<TData = GetAdminReports200>(
+    params?: GetAdminReportsParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getAdminReports<TData = GetAdminReports200>(
+    params?: GetAdminReportsParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getAdminReports<TData = GetAdminReports200>(
+    params?: GetAdminReportsParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getAdminReports<TData = GetAdminReports200>(
+    params?: GetAdminReportsParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/admin/reports`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/admin/reports`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/admin/reports`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-ADM-07. Staff. Sets `status=resolved`. Members get NOT_FOUND.
+   * Writes `audit_events`. Idempotent if already resolved.
+   * @summary Close a report
+   */
+  postAdminReportsIdResolve<TData = PostAdminReportsIdResolve200>(
+    id: string,
+    postAdminReportsIdResolveBody?: PostAdminReportsIdResolveBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postAdminReportsIdResolve<TData = PostAdminReportsIdResolve200>(
+    id: string,
+    postAdminReportsIdResolveBody?: PostAdminReportsIdResolveBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postAdminReportsIdResolve<TData = PostAdminReportsIdResolve200>(
+    id: string,
+    postAdminReportsIdResolveBody?: PostAdminReportsIdResolveBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postAdminReportsIdResolve<TData = PostAdminReportsIdResolve200>(
+    id: string,
+    postAdminReportsIdResolveBody?: PostAdminReportsIdResolveBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/reports/${id}/resolve`,
+        postAdminReportsIdResolveBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/reports/${id}/resolve`,
+        postAdminReportsIdResolveBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/admin/reports/${id}/resolve`,
+      postAdminReportsIdResolveBody,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
+  }
+
+  /**
+   * FS-ADM-07. Authenticated member. Body `{ targetType, targetId, reason }`.
+   * Unknown or not-visible target is NOT_FOUND. Duplicate open report by the
+   * same reporter on the same target is CONFLICT.
+   * @summary Report a user, post, comment, or event
+   */
+  postReports<TData = PostReports201>(
+    postReportsBody: PostReportsBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postReports<TData = PostReports201>(
+    postReportsBody: PostReportsBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postReports<TData = PostReports201>(
+    postReportsBody: PostReportsBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postReports<TData = PostReports201>(
+    postReportsBody: PostReportsBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/reports`, postReportsBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/reports`, postReportsBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/reports`, postReportsBody, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-MED, FS-ADM. Staff. Inspect object keys, owner, kind, status, and
+   * hidden flag. Members get NOT_FOUND. Hide via
+   * `POST /admin/content/media/{id}/hide`. Cursor `after` is opaque
+   * (`page.next`). Default size 20, max 50.
+   * @summary List media for staff
+   */
+  getAdminMedia<TData = GetAdminMedia200>(
+    params?: GetAdminMediaParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getAdminMedia<TData = GetAdminMedia200>(
+    params?: GetAdminMediaParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getAdminMedia<TData = GetAdminMedia200>(
+    params?: GetAdminMediaParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getAdminMedia<TData = GetAdminMedia200>(
+    params?: GetAdminMediaParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/admin/media`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/admin/media`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/admin/media`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-ADM-05. Admin only. Disabled on the `prod` Spring profile
+   * (FORBIDDEN). Moderators get FORBIDDEN. Members get NOT_FOUND. Generating
+   * thousands of rows is ticket #70; this operation records the trigger
+   * (audit row) and may no-op until that ticket. Writes `audit_events`.
+   * @summary Trigger fixture generation
+   */
+  postAdminFixtures<TData = void>(options?: HttpClientBodyOptions): Observable<TData>;
+  postAdminFixtures<TData = void>(options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+  postAdminFixtures<TData = void>(
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postAdminFixtures<TData = void>(
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/admin/fixtures`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/admin/fixtures`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/admin/fixtures`, undefined, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-ADM-05. Admin only, non-`prod`, `--reset` equivalent. Disabled on
+   * the `prod` Spring profile (FORBIDDEN). Moderators get FORBIDDEN.
+   * Members get NOT_FOUND. Truncating thousands of rows is ticket #70;
+   * this operation records the trigger (audit row) and may no-op until
+   * that ticket. Writes `audit_events`.
+   * @summary Trigger fixture reset
+   */
+  postAdminFixturesReset<TData = void>(options?: HttpClientBodyOptions): Observable<TData>;
+  postAdminFixturesReset<TData = void>(
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postAdminFixturesReset<TData = void>(
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postAdminFixturesReset<TData = void>(
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/admin/fixtures/reset`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/admin/fixtures/reset`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/admin/fixtures/reset`, undefined, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-ADM-06. Admins see the full append-only log. Moderators see their
+   * own rows plus content hide/unhide. Members get NOT_FOUND. Cursor
+   * `after` is opaque (`page.next`). Default size 20, max 50.
+   * @summary List staff audit events
+   */
+  getAdminAudit<TData = GetAdminAudit200>(
+    params?: GetAdminAuditParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getAdminAudit<TData = GetAdminAudit200>(
+    params?: GetAdminAuditParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getAdminAudit<TData = GetAdminAudit200>(
+    params?: GetAdminAuditParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getAdminAudit<TData = GetAdminAudit200>(
+    params?: GetAdminAuditParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/admin/audit`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/admin/audit`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/admin/audit`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
   }
 }
