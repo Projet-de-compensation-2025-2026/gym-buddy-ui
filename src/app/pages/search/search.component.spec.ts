@@ -99,20 +99,48 @@ describe('SearchPage', () => {
     http.verify();
   });
 
-  it('FS-SRCH-01 switches to the events tab', async () => {
+  it('FS-SRCH-01 Events tab stays on search and calls GET /search/events', async () => {
     const { root, http, detect } = await setup();
     expectPeople(http).flush({ data: [], page: { next: null, size: 20 } });
     detect();
 
-    (root.querySelector('[data-testid="tab-events"]') as HTMLButtonElement).click();
+    const tab = root.querySelector('[data-testid="tab-events"]') as HTMLButtonElement;
+    expect(tab.tagName).toBe('BUTTON');
+    expect(tab.getAttribute('href')).toBeNull();
+    expect(tab.getAttribute('role')).toBe('tab');
+    tab.click();
     detect();
     const events = expectEvents(http);
+    expect(events.request.params.get('q')).toBeNull();
     events.flush({ data: [sampleEvent()], page: { next: null, size: 20 } });
     detect();
 
     expect(root.querySelector('[data-testid="events-results"]')?.textContent).toContain(
       'Weekend HIIT Bootcamp',
     );
+    expect(http.match((r) => r.url === `${environment.apiBaseUrl}/events`).length).toBe(0);
+    http.verify();
+  });
+
+  it('FS-SRCH-01 Events tab sends q to search/events and does not call GET /events', async () => {
+    const { root, http, detect } = await setup();
+    expectPeople(http).flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+
+    typeQuery(root, 'hiit');
+    detect();
+    expectPeople(http).flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+
+    (root.querySelector('[data-testid="tab-events"]') as HTMLButtonElement).click();
+    detect();
+    const events = expectEvents(http);
+    expect(events.request.params.get('q')).toBe('hiit');
+    events.flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+
+    expect(root.querySelector('[data-testid="events-empty"]')?.textContent).toContain('No events');
+    expect(http.match((r) => r.url === `${environment.apiBaseUrl}/events`).length).toBe(0);
     http.verify();
   });
 

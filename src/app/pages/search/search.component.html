@@ -92,9 +92,11 @@
   </aside>
 
   <div class="results">
-    <nav class="tabs" aria-label="Search index">
+    <nav class="tabs" role="tablist" aria-label="Search index">
       <button
         type="button"
+        role="tab"
+        [attr.aria-selected]="tab() === 'people'"
         [class.active]="tab() === 'people'"
         data-testid="tab-people"
         (click)="setTab('people')"
@@ -103,6 +105,8 @@
       </button>
       <button
         type="button"
+        role="tab"
+        [attr.aria-selected]="tab() === 'events'"
         [class.active]="tab() === 'events'"
         data-testid="tab-events"
         (click)="setTab('events')"
