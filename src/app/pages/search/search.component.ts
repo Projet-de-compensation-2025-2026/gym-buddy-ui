@@ -3,9 +3,11 @@ import { RouterLink } from '@angular/router';
 import { EventsApi } from '../../api/events-api.service';
 import { FriendsApi } from '../../api/friends-api.service';
 import { MediaApi } from '../../api/media-api.service';
+import { ProfilesApi } from '../../api/profiles-api.service';
 import { readApiError } from '../../api/models';
 import { SearchApi } from '../../api/search-api.service';
 import type {
+  GetProfilesMe200,
   GetSearchEvents200DataItem,
   GetSearchPeople200DataItem,
   GetSearchPeopleExperience,
@@ -24,11 +26,14 @@ export class SearchPage {
   private readonly friends = inject(FriendsApi);
   private readonly eventsApi = inject(EventsApi);
   private readonly media = inject(MediaApi);
+  private readonly profiles = inject(ProfilesApi);
+  private reloadSeq = 0;
 
   readonly tab = signal<SearchTab>('people');
   readonly q = signal('');
   readonly city = signal('');
   readonly radiusKm = signal(10);
+  readonly hasCoordinates = signal(false);
   readonly sports = signal<string[]>([]);
   readonly sportDraft = signal('');
   readonly experience = signal<GetSearchPeopleExperience[]>([]);
@@ -40,7 +45,7 @@ export class SearchPage {
   readonly busyKey = signal<string | null>(null);
 
   constructor() {
-    this.reload();
+    this.loadViewerThenSearch();
   }
 
   setTab(tab: SearchTab): void {
@@ -163,18 +168,39 @@ export class SearchPage {
     return `${hit.remainingSeats} spot${hit.remainingSeats === 1 ? '' : 's'} left`;
   }
 
+  private loadViewerThenSearch(): void {
+    this.loading.set(true);
+    this.profiles.me().subscribe({
+      next: (profile) => {
+        this.hasCoordinates.set(hasViewerCoordinates(profile));
+        this.reload();
+      },
+      error: () => {
+        this.hasCoordinates.set(false);
+        this.reload();
+      },
+    });
+  }
+
   private reload(): void {
+    const seq = ++this.reloadSeq;
     this.loading.set(true);
     this.error.set(null);
     if (this.tab() === 'people') {
       this.search.people(this.peopleParams()).subscribe({
         next: (page) => {
+          if (seq !== this.reloadSeq) {
+            return;
+          }
           this.people.set(page.data);
           this.events.set([]);
           this.loading.set(false);
           this.loadAvatars(page.data);
         },
         error: (err: unknown) => {
+          if (seq !== this.reloadSeq) {
+            return;
+          }
           this.error.set(readApiError(err));
           this.loading.set(false);
         },
@@ -183,11 +209,17 @@ export class SearchPage {
     }
     this.search.events(this.eventParams()).subscribe({
       next: (page) => {
+        if (seq !== this.reloadSeq) {
+          return;
+        }
         this.events.set(page.data);
         this.people.set([]);
         this.loading.set(false);
       },
       error: (err: unknown) => {
+        if (seq !== this.reloadSeq) {
+          return;
+        }
         this.error.set(readApiError(err));
         this.loading.set(false);
       },
@@ -202,7 +234,7 @@ export class SearchPage {
       sports: sports.length ? sports : undefined,
       experience: experience.length === 1 ? experience[0] : undefined,
       city: this.city().trim() || undefined,
-      radiusKm: this.city().trim() ? this.radiusKm() : undefined,
+      radiusKm: this.radiusParam(),
       size: 20,
     };
   }
@@ -212,9 +244,13 @@ export class SearchPage {
     return {
       q: this.q().trim() || undefined,
       activity: sports.length === 1 ? sports[0] : undefined,
-      radiusKm: this.city().trim() ? this.radiusKm() : undefined,
+      radiusKm: this.radiusParam(),
       size: 20,
     };
+  }
+
+  private radiusParam(): number | undefined {
+    return this.hasCoordinates() ? this.radiusKm() : undefined;
   }
 
   private loadAvatars(rows: GetSearchPeople200DataItem[]): void {
@@ -234,4 +270,8 @@ export class SearchPage {
 function inputValue(event: Event): string {
   const target = event.target;
   return target instanceof HTMLInputElement ? target.value : '';
+}
+
+function hasViewerCoordinates(profile: GetProfilesMe200): boolean {
+  return typeof profile.lat === 'number' && typeof profile.lng === 'number';
 }

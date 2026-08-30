@@ -23,9 +23,14 @@
   border-radius: 0.35rem;
 }
 
-.radius {
+.radius,
+.radius-unavailable {
   display: grid;
   gap: 0.25rem;
+}
+
+.radius-unavailable {
+  margin: 0;
 }
 
 .section-label {
