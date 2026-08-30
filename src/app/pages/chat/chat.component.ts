@@ -150,17 +150,15 @@ export class ChatPage implements OnDestroy {
       })
       .pipe(
         switchMap((created) =>
-          this.media
-            .putBytes(created.uploadUrl, file)
-            .pipe(
-              switchMap(() =>
-                this.api.send(id, {
-                  type,
-                  mediaId: created.mediaId,
-                  body: this.draft().trim() || null,
-                }),
-              ),
+          this.media.putBytes(created.uploadUrl, file).pipe(
+            switchMap(() =>
+              this.api.send(id, {
+                type,
+                mediaId: created.mediaId,
+                body: this.draft().trim() || null,
+              }),
             ),
+          ),
         ),
       )
       .subscribe({
