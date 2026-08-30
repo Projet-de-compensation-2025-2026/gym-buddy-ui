@@ -7,6 +7,12 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+### Changed
+
+## [1.0.0] — 2026-08-30
+
+### Added
+
 - Admin fixtures page generate/reset with Approved counts (ticket #70, FS-ADM-05, mockup 21). Uses orval `postAdminFixtures` / `postAdminFixturesReset`. Non-production only.
 - Inbox and chat at `/messages` and `/messages/:id` (aliases `/inbox`, `/inbox/:id`) (FS-MSG-01..10). Ticket #67. Text, image, and audio composer. Friends-only Message on `/u/:handle`. WebSocket live updates with HTTP poll every 10 s if the socket is down. Mockups 13–14.
 - Isolated Angular back-office (`gym-buddy-admin` bundle under `/admin`) for Users, Content, Reports, Media, Fixtures, and Audit (FS-ADM-01..09, FS-ACCT-08/09). Ticket #69. Members do not receive staff JS. Leftover chrome (Dashboard, Bookings, Analytics, Invite User, Export CSV, Billing, + New Session) is not implemented. Fixture generate/reset counts are ticket #70.
@@ -98,5 +104,6 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - Auth TypeScript types follow [gym-buddy-openapi](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi) 0.1.0 (`RegisteredUser.role`, login `403` FORBIDDEN, no `expiresIn`)
 
 [Unreleased]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui
+[1.0.0]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v1.0.0
 [0.1.1]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v0.1.0
