@@ -1,0 +1,73 @@
+<section class="profile-page">
+  @if (loading()) {
+    <p class="state" data-testid="profile-loading">Loading profile…</p>
+  } @else if (error()) {
+    <p class="error" role="alert" data-testid="profile-error">{{ error() }}</p>
+  } @else if (profile(); as p) {
+    @if (p.view === 'stub') {
+      <article class="stub-card" data-testid="profile-stub">
+        <div class="avatar avatar-lg locked">
+          <span>{{ initials(p) || '•' }}</span>
+          <span class="lock" aria-hidden="true">🔒</span>
+        </div>
+        <h1>@{{ p.handle }}</h1>
+        <p class="muted">This profile is private</p>
+        <p class="copy">
+          Only approved friends can see @{{ p.handle }}'s bio, sports, and location. Request to
+          follow them to see their fitness journey.
+        </p>
+        <button type="button" class="btn-primary" disabled>Request Friend</button>
+      </article>
+    } @else {
+      <article class="hero-card" data-testid="profile-full">
+        <div class="avatar avatar-lg">{{ initials(p) }}</div>
+        <div>
+          <h1>{{ p.displayName || p.handle }}</h1>
+          <p class="handle">@{{ p.handle }}</p>
+          @if (p.bio) {
+            <p class="bio" data-testid="profile-bio">{{ p.bio }}</p>
+          }
+          <div class="actions">
+            @if (!isOwner(p)) {
+              <button type="button" class="btn-primary" disabled>Add Friend</button>
+              <button type="button" class="btn-secondary" disabled>Message</button>
+            } @else {
+              <a class="btn-primary" routerLink="/settings/profile">Edit Profile</a>
+            }
+          </div>
+        </div>
+      </article>
+      <div class="grid">
+        <article class="card stats">
+          <h2>Stats</h2>
+          <div class="stat" data-testid="profile-friend-count">
+            <strong>{{ p.friendCount ?? 0 }}</strong>
+            <span>Friends</span>
+          </div>
+        </article>
+        <article class="card">
+          <h2>Sports &amp; Training</h2>
+          <div class="chips">
+            @for (sport of p.sports ?? []; track sport) {
+              <span class="chip">{{ sport }}</span>
+            } @empty {
+              <p class="muted">No sports listed yet.</p>
+            }
+          </div>
+        </article>
+        <article class="card">
+          <h2>Info</h2>
+          @if (p.city) {
+            <p data-testid="profile-city">{{ p.city }}</p>
+          }
+          @if (p.experienceLevel) {
+            <p>{{ p.experienceLevel }}</p>
+          }
+          <p>{{ windowsLabel(p) }}</p>
+        </article>
+      </div>
+    }
+  } @else {
+    <p class="state" data-testid="profile-empty">No profile to show.</p>
+  }
+</section>

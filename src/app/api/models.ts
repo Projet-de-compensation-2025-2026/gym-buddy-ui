@@ -1,13 +1,20 @@
 /**
  * Contract types come from the orval client generated in `./generated`.
- * Source: gym-buddy-openapi package tag v0.1.0 (`openapi/openapi.yaml` $ref tree).
+ * Source: gym-buddy-openapi develop SHA dc3488158a302de9475153f124f7f98a6e4dba9b
+ * (`openapi/openapi.yaml` $ref tree).
  */
 export type {
   AccessTokenResponse,
+  ChangePasswordRequest,
+  CloseAccountRequest,
   ErrorDetail,
   ErrorResponse,
+  GetProfilesHandle200,
+  GetProfilesMe200,
   HealthStatus,
   LoginRequest,
+  PatchProfilesMeBody,
+  Profile,
   RegisterRequest,
   RegisteredUser,
 } from './generated/model';

@@ -1,0 +1,94 @@
+<section class="settings">
+  <header class="settings-head">
+    <div>
+      <h1>Edit Profile</h1>
+      <p class="muted">Display name, username, bio, city, sports, and experience.</p>
+    </div>
+    <button
+      type="button"
+      class="btn-primary"
+      data-testid="save-profile"
+      (click)="save()"
+      [disabled]="saving() || loading()"
+    >
+      {{ saving() ? 'Saving…' : 'Save Changes' }}
+    </button>
+  </header>
+
+  <div class="settings-layout">
+    <nav class="settings-nav">
+      <a routerLink="/settings/profile" routerLinkActive="active">Profile</a>
+      <a routerLink="/settings/privacy" routerLinkActive="active">Privacy</a>
+    </nav>
+
+    @if (loading()) {
+      <p class="state" data-testid="settings-profile-loading">Loading profile…</p>
+    } @else {
+      <form class="stack" [formGroup]="form" (ngSubmit)="save()" novalidate>
+        @if (error()) {
+          <p class="error" role="alert" data-testid="settings-profile-error">{{ error() }}</p>
+        }
+        @if (notice()) {
+          <p class="notice" data-testid="settings-profile-notice">{{ notice() }}</p>
+        }
+        <article class="card">
+          <h2>Basic Information</h2>
+          <div class="two">
+            <label>
+              Display Name
+              <input formControlName="displayName" data-testid="settings-display-name" />
+            </label>
+            <label>
+              Username
+              <input formControlName="handle" data-testid="settings-handle" />
+            </label>
+          </div>
+          <label>
+            Bio
+            <textarea formControlName="bio" rows="4" data-testid="settings-bio"></textarea>
+          </label>
+          <label>
+            City / Location
+            <input formControlName="city" data-testid="settings-city" />
+          </label>
+        </article>
+        <article class="card">
+          <h2>Fitness Profile</h2>
+          <label>
+            Experience Level
+            <select formControlName="experienceLevel" data-testid="settings-experience">
+              <option value="">Not set</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </label>
+          <p>Favorite Sports / Activities</p>
+          <div class="chips">
+            @for (sport of sports(); track sport) {
+              <button type="button" class="chip" (click)="removeSport(sport)">{{ sport }} ×</button>
+            }
+          </div>
+          <div class="add-sport">
+            <input
+              [value]="sportDraft()"
+              (input)="sportDraft.set($any($event.target).value)"
+              placeholder="Add another activity…"
+              data-testid="settings-sport-draft"
+            />
+            <button type="button" class="btn-secondary" (click)="addSport(sportDraft())">
+              Add
+            </button>
+          </div>
+          <div class="chips muted-chips">
+            @for (sport of catalog; track sport) {
+              <button type="button" class="chip ghost" (click)="addSport(sport)">
+                {{ sport }}
+              </button>
+            }
+          </div>
+        </article>
+      </form>
+    }
+  </div>
+</section>

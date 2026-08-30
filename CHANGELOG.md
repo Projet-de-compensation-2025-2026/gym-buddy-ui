@@ -7,6 +7,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Public/private profile pages (`/u/:handle`), edit profile, and privacy settings
+  (visibility, password change, close account). Ticket #59. No Notifications,
+  Billing, or workout tracker.
 - Build generates an Angular `HttpClient` from the versioned
   [gym-buddy-openapi](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi)
   package tag `v0.1.0` (`openapi/openapi.yaml` `$ref` tree, orval 8.22.0).
@@ -16,8 +19,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 - Release writes the computed SemVer into `package.json` before the tag
   (humans do not hand-edit that number). Auto bump still refuses `1.0.0`.
-- OpenAPI consumer pin is the package tag `v0.1.0` (not a raw `develop` SHA
-  GET of `bundled.yaml`).
+- OpenAPI consumer pin is gym-buddy-openapi develop SHA
+  `dc3488158a302de9475153f124f7f98a6e4dba9b` (ticket #59) until the next 0.1.x
+  tag. Not a `bundled.yaml` GET.
 - Handwritten auth models / HTTP service are a thin wrapper over the generated
   `GymBuddyAPIService`. Register, login, refresh, logout, and healthz keep the
   same URLs and cookie credentials.

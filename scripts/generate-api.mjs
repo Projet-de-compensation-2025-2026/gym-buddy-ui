@@ -2,8 +2,8 @@
 /**
  * Generate the Angular HttpClient from the versioned gym-buddy-openapi package.
  *
- * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#v0.1.0
- * (annotated tag 6373a11 → main 9c7c123). Same pin as gym-buddy-service 3ffdef8.
+ * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#dc3488158a302de9475153f124f7f98a6e4dba9b
+ * (develop SHA after ticket #59). Same pin as gym-buddy-service until the next 0.1.x tag.
  *
  * Orval reads the $ref tree at
  * node_modules/gym-buddy-openapi/openapi/openapi.yaml so relative $refs
@@ -19,7 +19,7 @@ import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const OPENAPI_PACKAGE = 'gym-buddy-openapi';
-export const OPENAPI_TAG = 'v0.1.0';
+export const OPENAPI_TAG = 'dc3488158a302de9475153f124f7f98a6e4dba9b';
 export const OPENAPI_VERSION = '0.1.0';
 
 const root = fileURLToPath(new URL('..', import.meta.url));

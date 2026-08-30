@@ -1,5 +1,9 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './auth/auth.guard';
 import { HomePage } from './pages/home/home.component';
+import { ProfilePage } from './pages/profile/profile.component';
+import { SettingsPrivacyPage } from './pages/settings-privacy/settings-privacy.component';
+import { SettingsProfilePage } from './pages/settings-profile/settings-profile.component';
 import { SignInPage } from './pages/sign-in/sign-in.component';
 import { SignUpPage } from './pages/sign-up/sign-up.component';
 
@@ -7,5 +11,8 @@ export const routes: Routes = [
   { path: '', component: HomePage },
   { path: 'register', component: SignUpPage },
   { path: 'login', component: SignInPage },
+  { path: 'u/:handle', component: ProfilePage, canActivate: [authGuard] },
+  { path: 'settings/profile', component: SettingsProfilePage, canActivate: [authGuard] },
+  { path: 'settings/privacy', component: SettingsPrivacyPage, canActivate: [authGuard] },
   { path: '**', redirectTo: '' },
 ];
