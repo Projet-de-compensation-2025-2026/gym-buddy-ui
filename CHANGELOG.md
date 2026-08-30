@@ -9,6 +9,18 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- GitHub Pages Deploy copies the member `index.html` into known client-route
+  directories and sibling `.html` files so cold GETs of `/login`, `/register`,
+  `/events`, `/events/new`, `/friends`, `/search`, `/messages`, `/suggestions`,
+  `/settings/profile`, `/settings/privacy`, and the other static member paths
+  are HTTP 200. Site-root `404.html` remains the unknown-path fallback,
+  including parameterized `/u/:handle`, `/posts/:id`, `/events/:id`, and
+  `/messages/:id`. Ticket #99.
+- Isolated admin bundle routes (`/admin/login`, `/admin/users`,
+  `/admin/content`, `/admin/reports`, `/admin/media`, `/admin/fixtures`,
+  `/admin/audit`) are copied from `dist-admin` so they never fall through the
+  member `404.html`. Ticket #75.
+
 ## [1.0.0] — 2026-08-30
 
 ### Added

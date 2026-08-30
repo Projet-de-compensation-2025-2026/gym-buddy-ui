@@ -6,6 +6,7 @@ bundled.yaml
 
 # Compiled output
 /dist
+/_site
 /tmp
 /out-tsc
 /bazel-out
@@ -35,6 +36,7 @@ yarn-error.log
 .history/*
 
 # Miscellaneous
+__pycache__/
 /.angular/cache
 .sass-cache/
 /connect.lock
