@@ -36,7 +36,6 @@
           >
             Image
           </button>
-          <span class="nav-disabled" title="Video posts are out of scope">Video</span>
           <input
             #fileInput
             type="file"
@@ -74,7 +73,7 @@
     } @else if (items().length === 0) {
       <article class="card empty" data-testid="empty-feed">
         <p>Your feed is quiet. Find gym buddies to see their posts here.</p>
-        <a class="btn-primary" routerLink="/suggestions" data-testid="empty-feed-cta"
+        <a class="btn-primary" routerLink="/friends/suggestions" data-testid="empty-feed-cta"
           >Find suggestions</a
         >
       </article>

@@ -133,10 +133,10 @@ export class ProfilePage {
       .join('');
   }
 
-  windowsLabel(profile: GetProfilesHandle200): string {
+  windowsLabel(profile: GetProfilesHandle200): string | null {
     const windows = profile.preferredWindows ?? [];
     if (windows.length === 0) {
-      return 'Flexible';
+      return null;
     }
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     return windows

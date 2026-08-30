@@ -1,13 +1,16 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { convertToParamMap, provideRouter, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AUTH_COPY } from '../../auth/auth-errors';
 import { AuthSession } from '../../auth/auth-session.service';
 import { SignInPage } from './sign-in.component';
 
 describe('SignInPage', () => {
-  async function setup(): Promise<{
+  async function setup(query: Record<string, string> = {}): Promise<{
     page: SignInPage;
     root: HTMLElement;
     http: HttpTestingController;
@@ -17,7 +20,18 @@ describe('SignInPage', () => {
   }> {
     await TestBed.configureTestingModule({
       imports: [SignInPage],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { queryParamMap: convertToParamMap(query) },
+            queryParamMap: of(convertToParamMap(query)),
+          },
+        },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(SignInPage);
@@ -61,6 +75,43 @@ describe('SignInPage', () => {
     expect(toggle.getAttribute('aria-pressed')).toBe('true');
   });
 
+  it('matches mockup 02: centered card, teal Log In, no Remember me / Forgot password', async () => {
+    const { root } = await setup();
+    expect(root.querySelector('.auth-card')).toBeTruthy();
+    expect(root.querySelector('[data-testid="sign-in-submit"]')?.textContent).toContain('Log In');
+    expect(
+      root.querySelector('[data-testid="sign-in-submit"]')?.classList.contains('btn-primary'),
+    ).toBeTrue();
+    expect(root.textContent).not.toContain('Remember me');
+    expect(root.textContent).not.toContain('Forgot password');
+  });
+
+  it('maps empty submit to field errors instead of a shared banner', async () => {
+    const { root, page, detect } = await setup();
+    page.submit();
+    detect();
+    expect(page.error()).toBeNull();
+    expect(root.querySelector('[data-testid="sign-in-email-error"]')?.textContent).toContain(
+      AUTH_COPY.emailRequired,
+    );
+    expect(root.querySelector('[data-testid="sign-in-password-error"]')?.textContent).toContain(
+      AUTH_COPY.passwordRequired,
+    );
+    expect(root.querySelector('[data-testid="sign-in-error"]')).toBeNull();
+  });
+
+  it('FS-ACCT-01 shows account-created copy and prefills email after register', async () => {
+    const { root, page } = await setup({ registered: '1', email: 'alex@example.com' });
+    expect(page.registered()).toBeTrue();
+    expect(page.form.controls.email.value).toBe('alex@example.com');
+    expect(root.querySelector('[data-testid="sign-in-registered"]')?.textContent).toContain(
+      'Account created',
+    );
+    expect((root.querySelector('[data-testid="sign-in-email"]') as HTMLInputElement).value).toBe(
+      'alex@example.com',
+    );
+  });
+
   it('FS-ACCT-04 posts login, stores the access JWT in memory, and does not write localStorage', async () => {
     const { root, http, page, router, session } = await setup();
     const navigate = spyOn(router, 'navigateByUrl').and.resolveTo(true);
@@ -89,7 +140,7 @@ describe('SignInPage', () => {
   });
 
   it('FS-ACCT-04 surfaces FORBIDDEN 403 for invalid credentials (generic message)', async () => {
-    const { root, http, page, session } = await setup();
+    const { root, http, page, session, detect } = await setup();
 
     fill(root, {
       'sign-in-email': 'alex@example.com',
@@ -103,8 +154,12 @@ describe('SignInPage', () => {
         { error: { code: 'FORBIDDEN', message: 'invalid credentials' } },
         { status: 403, statusText: 'Forbidden' },
       );
+    detect();
 
-    expect(page.error()).toBe('invalid credentials');
+    expect(page.error()).toBe(AUTH_COPY.invalidCredentials);
+    expect(root.querySelector('[data-testid="sign-in-error"]')?.textContent).not.toContain(
+      'invalid credentials',
+    );
     expect(session.accessToken()).toBeNull();
     http.verify();
   });
@@ -125,7 +180,8 @@ describe('SignInPage', () => {
         { status: 403, statusText: 'Forbidden' },
       );
 
-    expect(page.error()).toBe('account is locked');
+    expect(page.error()).toBe(AUTH_COPY.invalidCredentials);
+    expect(page.error()).not.toBe('account is locked');
     expect(session.accessToken()).toBeNull();
     http.verify();
   });

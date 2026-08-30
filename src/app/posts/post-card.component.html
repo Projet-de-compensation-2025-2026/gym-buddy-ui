@@ -27,10 +27,8 @@
     </div>
   }
   <div class="counts">
-    <span data-testid="like-count">{{ post().likeCount }} Likes</span>
-    <a [routerLink]="['/posts', post().id]" data-testid="comment-count"
-      >{{ post().commentCount }} Comments</a
-    >
+    <span data-testid="like-count">{{ likeLabel() }}</span>
+    <a [routerLink]="['/posts', post().id]" data-testid="comment-count">{{ commentLabel() }}</a>
   </div>
   <div class="actions">
     <button

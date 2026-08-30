@@ -53,6 +53,35 @@ describe('EventsPage', () => {
     );
     http.verify();
   });
+
+  it('shows an error and retry without the empty state when the list fails', async () => {
+    const { root, http, detect } = await setup();
+    http
+      .expectOne(`${environment.apiBaseUrl}/events?size=50`)
+      .flush(
+        { error: { code: 'VALIDATION', message: 'boom' } },
+        { status: 500, statusText: 'Server Error' },
+      );
+    detect();
+    expect(root.querySelector('[data-testid="events-error"]')).toBeTruthy();
+    expect(root.querySelector('[data-testid="events-retry"]')).toBeTruthy();
+    expect(root.querySelector('[data-testid="events-empty"]')).toBeNull();
+    http.verify();
+  });
+
+  it('shows the empty state without an error on a true empty list', async () => {
+    const { root, http, detect } = await setup();
+    http.expectOne(`${environment.apiBaseUrl}/events?size=50`).flush({
+      data: [],
+      page: { next: null, size: 50 },
+    });
+    detect();
+    expect(root.querySelector('[data-testid="events-empty"]')?.textContent).toContain(
+      'No upcoming sessions',
+    );
+    expect(root.querySelector('[data-testid="events-error"]')).toBeNull();
+    http.verify();
+  });
 });
 
 function sample(kind: 'instant' | 'recurring', title: string) {

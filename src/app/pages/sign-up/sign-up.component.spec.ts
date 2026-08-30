@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { AUTH_COPY } from '../../auth/auth-errors';
 import { SignUpPage } from './sign-up.component';
 
 describe('SignUpPage', () => {
@@ -58,9 +59,51 @@ describe('SignUpPage', () => {
     expect(toggle.getAttribute('aria-pressed')).toBe('true');
   });
 
+  it('matches mockup 01 field order Display name → Handle → Email → Password', async () => {
+    const { root } = await setup();
+    const labels = Array.from(root.querySelectorAll('label')).map((el) =>
+      el.childNodes[0]?.textContent?.trim(),
+    );
+    expect(labels.slice(0, 4)).toEqual([
+      'Display name',
+      'Handle',
+      'Email',
+      'Password (min 10 characters)',
+    ]);
+    expect(root.querySelector('[data-testid="sign-up-submit"]')?.textContent).toContain('Register');
+    expect(
+      root.querySelector('[data-testid="sign-up-submit"]')?.classList.contains('btn-primary'),
+    ).toBeTrue();
+  });
+
+  it('maps empty submit and short password to the failing fields', async () => {
+    const { root, page, detect, http } = await setup();
+    page.submit();
+    detect();
+    expect(page.error()).toBeNull();
+    expect(root.querySelector('[data-testid="sign-up-display-name-error"]')).toBeTruthy();
+    expect(root.querySelector('[data-testid="sign-up-handle-error"]')).toBeTruthy();
+    expect(root.querySelector('[data-testid="sign-up-email-error"]')).toBeTruthy();
+    expect(root.querySelector('[data-testid="sign-up-password-error"]')).toBeTruthy();
+    expect(root.querySelector('[data-testid="sign-up-error"]')).toBeNull();
+
+    fill(root, {
+      'sign-up-email': 'alex@example.com',
+      'sign-up-handle': 'alex',
+      'sign-up-password': 'short',
+      'sign-up-display-name': 'Alex',
+    });
+    page.submit();
+    detect();
+    expect(root.querySelector('[data-testid="sign-up-password-error"]')?.textContent).toContain(
+      AUTH_COPY.passwordMin,
+    );
+    http.expectNone(`${environment.apiBaseUrl}/auth/register`);
+  });
+
   it('FS-ACCT-01 posts email, handle, password, and display name to register', async () => {
     const { root, http, router, page } = await setup();
-    const navigate = spyOn(router, 'navigateByUrl').and.resolveTo(true);
+    const navigate = spyOn(router, 'navigate').and.resolveTo(true);
 
     fill(root, {
       'sign-up-email': 'alex@example.com',
@@ -89,7 +132,10 @@ describe('SignUpPage', () => {
       { status: 201, statusText: 'Created' },
     );
 
-    expect(navigate).toHaveBeenCalledWith('/login', { state: { registered: true } });
+    expect(navigate).toHaveBeenCalledWith(['/login'], {
+      queryParams: { registered: '1', email: 'alex@example.com' },
+      state: { registered: true, email: 'alex@example.com' },
+    });
     http.verify();
   });
 
@@ -119,8 +165,8 @@ describe('SignUpPage', () => {
     http.verify();
   });
 
-  it('FS-ACCT-02 shows CONFLICT when email or handle is already taken', async () => {
-    const { root, http, page } = await setup();
+  it('FS-ACCT-02 shows CONFLICT on the email field when details.path is email', async () => {
+    const { root, http, page, detect } = await setup();
 
     fill(root, {
       'sign-up-email': 'alex@example.com',
@@ -130,14 +176,23 @@ describe('SignUpPage', () => {
     });
     page.submit();
 
-    http
-      .expectOne(`${environment.apiBaseUrl}/auth/register`)
-      .flush(
-        { error: { code: 'CONFLICT', message: 'Email or handle already exists' } },
-        { status: 409, statusText: 'Conflict' },
-      );
+    http.expectOne(`${environment.apiBaseUrl}/auth/register`).flush(
+      {
+        error: {
+          code: 'CONFLICT',
+          message: 'email already registered',
+          details: [{ path: 'email', issue: 'duplicate' }],
+        },
+      },
+      { status: 409, statusText: 'Conflict' },
+    );
+    detect();
 
-    expect(page.error()).toBe('Email or handle already exists');
+    expect(page.error()).toBeNull();
+    expect(root.querySelector('[data-testid="sign-up-email-error"]')?.textContent).toContain(
+      AUTH_COPY.emailTaken,
+    );
+    expect(root.textContent).not.toContain('email already registered');
     http.verify();
   });
 });

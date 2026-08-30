@@ -13,6 +13,7 @@ import { ProfilePage } from './pages/profile/profile.component';
 import { SearchPage } from './pages/search/search.component';
 import { SettingsPrivacyPage } from './pages/settings-privacy/settings-privacy.component';
 import { SettingsProfilePage } from './pages/settings-profile/settings-profile.component';
+import { NotFoundPage } from './pages/not-found/not-found.component';
 import { SignInPage } from './pages/sign-in/sign-in.component';
 import { SignUpPage } from './pages/sign-up/sign-up.component';
 
@@ -24,6 +25,11 @@ export const routes: Routes = [
   { path: 'events/new', component: EventNewPage, canActivate: [authGuard] },
   { path: 'events/:id', component: EventDetailPage, canActivate: [authGuard] },
   { path: 'friends', component: FriendsPage, canActivate: [authGuard] },
+  {
+    path: 'friends/suggestions',
+    component: SuggestionsPage,
+    canActivate: [authGuard],
+  },
   { path: 'search', component: SearchPage, canActivate: [authGuard] },
   { path: 'messages', component: InboxPage, canActivate: [authGuard] },
   { path: 'messages/:id', component: ChatPage, canActivate: [authGuard] },
@@ -32,7 +38,8 @@ export const routes: Routes = [
   { path: 'suggestions', component: SuggestionsPage, canActivate: [authGuard] },
   { path: 'posts/:id', component: PostDetailPage, canActivate: [authGuard] },
   { path: 'u/:handle', component: ProfilePage, canActivate: [authGuard] },
+  { path: 'settings', redirectTo: 'settings/profile', pathMatch: 'full' },
   { path: 'settings/profile', component: SettingsProfilePage, canActivate: [authGuard] },
   { path: 'settings/privacy', component: SettingsPrivacyPage, canActivate: [authGuard] },
-  { path: '**', redirectTo: '' },
+  { path: '**', component: NotFoundPage },
 ];
