@@ -47,10 +47,6 @@ import type {
   GetProfilesHandle200,
   GetProfilesMe200,
   GetReadyz200,
-  GetSearchEvents200,
-  GetSearchEventsParams,
-  GetSearchPeople200,
-  GetSearchPeopleParams,
   GetSuggestions200,
   GetSuggestionsParams,
   PatchAdminUsersIdRole200,
@@ -2227,105 +2223,6 @@ export class GymBuddyAPIService {
         observe: 'body',
       },
     );
-  }
-
-  /**
-   * FS-SRCH-01..08. Authenticated members only. Filters AND across fields;
-   * `sports` is ANY inside the field. Private strangers, blocked users, closed
-   * accounts, and the caller never appear. Rank is α ts_rank + β recency +
-   * γ geo + δ social unless `sort` replaces it. Cursor `before` is opaque
-   * (`page.next`). Default size 20, max 50. API radius is kilometres.
-   * @summary Search people
-   */
-  getSearchPeople<TData = GetSearchPeople200>(
-    params?: GetSearchPeopleParams,
-    options?: HttpClientBodyOptions,
-  ): Observable<TData>;
-  getSearchPeople<TData = GetSearchPeople200>(
-    params?: GetSearchPeopleParams,
-    options?: HttpClientEventOptions,
-  ): Observable<HttpEvent<TData>>;
-  getSearchPeople<TData = GetSearchPeople200>(
-    params?: GetSearchPeopleParams,
-    options?: HttpClientResponseOptions,
-  ): Observable<AngularHttpResponse<TData>>;
-  getSearchPeople<TData = GetSearchPeople200>(
-    params?: GetSearchPeopleParams,
-    options?: HttpClientObserveOptions,
-  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
-    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
-
-    if (options?.observe === 'events') {
-      return this.http.get<TData>(`${environment.apiBaseUrl}/search/people`, {
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-        params: filteredParams,
-      });
-    }
-
-    if (options?.observe === 'response') {
-      return this.http.get<TData>(`${environment.apiBaseUrl}/search/people`, {
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-        params: filteredParams,
-      });
-    }
-
-    return this.http.get<TData>(`${environment.apiBaseUrl}/search/people`, {
-      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-      observe: 'body',
-      params: filteredParams,
-    });
-  }
-
-  /**
-   * FS-SRCH-01..08. Authenticated members only. Filters AND across fields.
-   * Events the caller may not see, hidden content, cancelled series, blocked
-   * organizers, and (when `remaining=true`) full events never appear. Rank is
-   * α ts_rank + β recency + γ geo + δ social unless `sort` replaces it.
-   * Cursor `before` is opaque (`page.next`). Default size 20, max 50. API
-   * radius is kilometres.
-   * @summary Search events
-   */
-  getSearchEvents<TData = GetSearchEvents200>(
-    params?: GetSearchEventsParams,
-    options?: HttpClientBodyOptions,
-  ): Observable<TData>;
-  getSearchEvents<TData = GetSearchEvents200>(
-    params?: GetSearchEventsParams,
-    options?: HttpClientEventOptions,
-  ): Observable<HttpEvent<TData>>;
-  getSearchEvents<TData = GetSearchEvents200>(
-    params?: GetSearchEventsParams,
-    options?: HttpClientResponseOptions,
-  ): Observable<AngularHttpResponse<TData>>;
-  getSearchEvents<TData = GetSearchEvents200>(
-    params?: GetSearchEventsParams,
-    options?: HttpClientObserveOptions,
-  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
-    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
-
-    if (options?.observe === 'events') {
-      return this.http.get<TData>(`${environment.apiBaseUrl}/search/events`, {
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-        params: filteredParams,
-      });
-    }
-
-    if (options?.observe === 'response') {
-      return this.http.get<TData>(`${environment.apiBaseUrl}/search/events`, {
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-        params: filteredParams,
-      });
-    }
-
-    return this.http.get<TData>(`${environment.apiBaseUrl}/search/events`, {
-      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-      observe: 'body',
-      params: filteredParams,
-    });
   }
 
   /**

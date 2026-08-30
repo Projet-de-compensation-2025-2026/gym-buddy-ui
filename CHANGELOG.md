@@ -7,6 +7,7 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Isolated Angular back-office (`gym-buddy-admin` bundle under `/admin`) for Users, Content, Reports, Media, Fixtures, and Audit (FS-ADM-01..09, FS-ACCT-08/09). Ticket #69. Members do not receive staff JS. Leftover chrome (Dashboard, Bookings, Analytics, Invite User, Export CSV, Billing, + New Session) is not implemented. Fixture buttons are triggers only.
 - Search page `/search` (FS-SRCH-01..08). Ticket #65. Filters (q, city, radius km, sports, experience), People / Events tabs, CONNECT and JOIN EVENT. Empty, loading, and error states. Mockup 12. API radius is kilometres.
 - Events pages `/events`, `/events/new`, `/events/:id` (FS-EVT-01..13). Ticket #64. Instant / Recurring filters, create form, apply/accept, 90-day occurrences, organizer applicant queue. Mockups 09–11.
 - Friends news feed on `/` (FS-FEED-01..07). Ticket #63. Composer plus reverse-chrono posts and reposts from the viewer and accepted friends. Empty feed links to `/suggestions`. Public non-friend posts stay off this feed.
@@ -35,6 +36,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - Release writes the computed SemVer into `package.json` before the tag
   (humans do not hand-edit that number). Auto bump still refuses `1.0.0`.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
+  `964c4135332c8c01986cda70b657a9872108dd74` (ticket #69) until the next 0.1.x
+  tag. Not a `bundled.yaml` GET.
+- OpenAPI consumer pin is gym-buddy-openapi develop SHA
   `2550b32f95dcb881b0bfaa37e30f130595dbe9d3` (ticket #65) until the next 0.1.x
   tag. Not a `bundled.yaml` GET.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
@@ -45,6 +49,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
   tag. Not a `bundled.yaml` GET.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
   `edca075cdf1e1eb6caf6f094e02cadaba7c480b5` (ticket #68) until the next 0.1.x
+  tag. Not a `bundled.yaml` GET.
+- OpenAPI consumer pin is gym-buddy-openapi develop SHA
+  `964c4135332c8c01986cda70b657a9872108dd74` (ticket #69) until the next 0.1.x
   tag. Not a `bundled.yaml` GET.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
   `82d0eadb592c023fe3934836c7ce0ca15ca56abd` (ticket #63) until the next 0.1.x

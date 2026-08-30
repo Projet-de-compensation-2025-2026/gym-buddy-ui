@@ -25,6 +25,9 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./admin/tsconfig.app.json"
     }
   ]
 }
