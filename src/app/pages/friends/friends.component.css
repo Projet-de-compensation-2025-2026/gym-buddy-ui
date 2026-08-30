@@ -1,0 +1,184 @@
+.friends-page {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.page-head h1 {
+  margin-bottom: 0.25rem;
+}
+
+.layout {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(16rem, 20rem) 1fr;
+  align-items: start;
+}
+
+.pending-card h2 {
+  margin: 0 0 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7e9;
+}
+
+.section-label {
+  margin: 0.75rem 0 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6e7174;
+}
+
+.stack-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.pending-row,
+.friend-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.pending-row {
+  padding: 0.35rem 0;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.who span {
+  display: grid;
+  min-width: 0;
+}
+
+.handle {
+  color: #6e7174;
+  font-size: 0.875rem;
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: #cdf2f1;
+  color: #00535b;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.pending-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.35rem;
+  padding: 0;
+  font-weight: 700;
+}
+
+.icon-btn.accept {
+  background: #006d77;
+  color: #fff;
+  border: 0;
+}
+
+.icon-btn.decline {
+  background: #fff;
+  border: 1px solid #e5e7e9;
+}
+
+.text-danger {
+  background: none;
+  border: 0;
+  color: #8d302f;
+  padding: 0.25rem 0.35rem;
+}
+
+.friends-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.friends-head h2 {
+  margin: 0;
+}
+
+.search input {
+  min-width: 14rem;
+  border: 1px solid #e5e7e9;
+  border-radius: 0.35rem;
+  background: #fff;
+}
+
+.friends-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}
+
+.friend-card {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.friend-card .who {
+  flex: 1;
+}
+
+.friend-card .chips {
+  width: 100%;
+  padding-left: 3.15rem;
+}
+
+.friend-actions {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: end;
+}
+
+.btn-compact {
+  padding: 0.4rem 0.85rem;
+}
+
+.empty {
+  list-style: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+@media (max-width: 50rem) {
+  .layout,
+  .friends-head {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .search input {
+    min-width: 0;
+    width: 100%;
+  }
+}

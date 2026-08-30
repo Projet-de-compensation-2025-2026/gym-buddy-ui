@@ -7,6 +7,10 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Friends management (`/friends`): inbound accept/decline, outbound cancel,
+  unfriend, block, and client-side search. Add Friend / Request Friend on
+  `/u/:handle`. Ticket #60. Avatars stay placeholders until media (#68).
+  Message stays disabled until messaging (#67).
 - Public/private profile pages (`/u/:handle`), edit profile, and privacy settings
   (visibility, password change, close account). Ticket #59. No Notifications,
   Billing, or workout tracker.
@@ -20,7 +24,7 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - Release writes the computed SemVer into `package.json` before the tag
   (humans do not hand-edit that number). Auto bump still refuses `1.0.0`.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
-  `dc3488158a302de9475153f124f7f98a6e4dba9b` (ticket #59) until the next 0.1.x
+  `3e63187727035b5277738db90c44744406057b4c` (ticket #60) until the next 0.1.x
   tag. Not a `bundled.yaml` GET.
 - Handwritten auth models / HTTP service are a thin wrapper over the generated
   `GymBuddyAPIService`. Register, login, refresh, logout, and healthz keep the

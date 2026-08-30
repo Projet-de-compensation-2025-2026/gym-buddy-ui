@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
+import { FriendsPage } from './pages/friends/friends.component';
 import { HomePage } from './pages/home/home.component';
 import { ProfilePage } from './pages/profile/profile.component';
 import { SettingsPrivacyPage } from './pages/settings-privacy/settings-privacy.component';
@@ -11,6 +12,7 @@ export const routes: Routes = [
   { path: '', component: HomePage },
   { path: 'register', component: SignUpPage },
   { path: 'login', component: SignInPage },
+  { path: 'friends', component: FriendsPage, canActivate: [authGuard] },
   { path: 'u/:handle', component: ProfilePage, canActivate: [authGuard] },
   { path: 'settings/profile', component: SettingsProfilePage, canActivate: [authGuard] },
   { path: 'settings/privacy', component: SettingsPrivacyPage, canActivate: [authGuard] },

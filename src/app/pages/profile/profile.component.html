@@ -16,7 +16,57 @@
           Only approved friends can see @{{ p.handle }}'s bio, sports, and location. Request to
           follow them to see their fitness journey.
         </p>
-        <button type="button" class="btn-primary" disabled>Request Friend</button>
+        @if (!isOwner(p)) {
+          <div class="actions center">
+            @switch (relation()) {
+              @case ('outgoing') {
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  data-testid="cancel-request"
+                  [disabled]="busy()"
+                  (click)="cancelOrUnfriend()"
+                >
+                  Cancel request
+                </button>
+              }
+              @case ('incoming') {
+                <button
+                  type="button"
+                  class="btn-primary"
+                  data-testid="accept-friend"
+                  [disabled]="busy()"
+                  (click)="accept()"
+                >
+                  Accept
+                </button>
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  data-testid="decline-friend"
+                  [disabled]="busy()"
+                  (click)="decline()"
+                >
+                  Decline
+                </button>
+              }
+              @case ('blocked') {
+                <p class="muted">Blocked</p>
+              }
+              @default {
+                <button
+                  type="button"
+                  class="btn-primary"
+                  data-testid="request-friend"
+                  [disabled]="busy()"
+                  (click)="addFriend(p)"
+                >
+                  Request Friend
+                </button>
+              }
+            }
+          </div>
+        }
       </article>
     } @else {
       <article class="hero-card" data-testid="profile-full">
@@ -29,8 +79,76 @@
           }
           <div class="actions">
             @if (!isOwner(p)) {
-              <button type="button" class="btn-primary" disabled>Add Friend</button>
-              <button type="button" class="btn-secondary" disabled>Message</button>
+              @switch (relation()) {
+                @case ('outgoing') {
+                  <button
+                    type="button"
+                    class="btn-secondary"
+                    data-testid="cancel-request"
+                    [disabled]="busy()"
+                    (click)="cancelOrUnfriend()"
+                  >
+                    Cancel request
+                  </button>
+                }
+                @case ('incoming') {
+                  <button
+                    type="button"
+                    class="btn-primary"
+                    data-testid="accept-friend"
+                    [disabled]="busy()"
+                    (click)="accept()"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-secondary"
+                    data-testid="decline-friend"
+                    [disabled]="busy()"
+                    (click)="decline()"
+                  >
+                    Decline
+                  </button>
+                }
+                @case ('accepted') {
+                  <button
+                    type="button"
+                    class="btn-secondary"
+                    data-testid="unfriend"
+                    [disabled]="busy()"
+                    (click)="cancelOrUnfriend()"
+                  >
+                    Unfriend
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-danger"
+                    data-testid="block-friend"
+                    [disabled]="busy()"
+                    (click)="block()"
+                  >
+                    Block
+                  </button>
+                }
+                @case ('blocked') {
+                  <p class="muted">Blocked</p>
+                }
+                @default {
+                  <button
+                    type="button"
+                    class="btn-primary"
+                    data-testid="add-friend"
+                    [disabled]="busy()"
+                    (click)="addFriend(p)"
+                  >
+                    Add Friend
+                  </button>
+                }
+              }
+              @if (relation() !== 'blocked') {
+                <button type="button" class="btn-secondary" disabled>Message</button>
+              }
             } @else {
               <a class="btn-primary" routerLink="/settings/profile">Edit Profile</a>
             }

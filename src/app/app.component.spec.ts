@@ -14,6 +14,7 @@ describe('App', () => {
     http: HttpTestingController;
     router: Router;
     session: AuthSession;
+    detect: () => void;
   }> {
     await TestBed.configureTestingModule({
       imports: [App],
@@ -28,12 +29,33 @@ describe('App', () => {
       http: TestBed.inject(HttpTestingController),
       router: TestBed.inject(Router),
       session: TestBed.inject(AuthSession),
+      detect: () => fixture.detectChanges(),
     };
   }
 
   it('renders the Gym Buddy shell', async () => {
     const { root, http } = await setup();
     expect(root.querySelector('.brand')?.textContent).toContain('Gym Buddy');
+    http.verify();
+  });
+
+  it('links Friends when signed in', async () => {
+    const { root, session, detect, http } = await setup();
+    const payload = btoa(
+      JSON.stringify({ sub: '11111111-1111-1111-1111-111111111111', handle: 'alex' }),
+    )
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    session.setAccessToken(`hdr.${payload}.sig`);
+    detect();
+    const link = Array.from(root.querySelectorAll('a')).find(
+      (el) => el.textContent?.trim() === 'Friends',
+    );
+    expect(link).toBeTruthy();
+    expect(
+      link?.getAttribute('href') ?? link?.getAttribute('ng-reflect-router-link') ?? '',
+    ).toContain('friends');
     http.verify();
   });
 
