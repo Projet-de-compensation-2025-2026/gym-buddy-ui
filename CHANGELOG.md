@@ -7,6 +7,7 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Friend suggestions on `/suggestions` (FS-SUGG-01..07, FS-MATCH-01..03). Ticket #66. Cards with reason line, sports chips, Add Friend / Dismiss, and a weekly “Match me this week” toggle. Empty feed still links here.
 - Search page `/search` (FS-SRCH-01..08). Ticket #65. Filters (q, city, radius km, sports, experience), People / Events tabs, CONNECT and JOIN EVENT. Empty, loading, and error states. Mockup 12. API radius is kilometres.
 - Events pages `/events`, `/events/new`, `/events/:id` (FS-EVT-01..13). Ticket #64. Instant / Recurring filters, create form, apply/accept, 90-day occurrences, organizer applicant queue. Mockups 09–11.
 - Friends news feed on `/` (FS-FEED-01..07). Ticket #63. Composer plus reverse-chrono posts and reposts from the viewer and accepted friends. Empty feed links to `/suggestions`. Public non-friend posts stay off this feed.
@@ -35,7 +36,7 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - Release writes the computed SemVer into `package.json` before the tag
   (humans do not hand-edit that number). Auto bump still refuses `1.0.0`.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
-  `2550b32f95dcb881b0bfaa37e30f130595dbe9d3` (ticket #65) until the next 0.1.x
+  `2550b32f95dcb881b0bfaa37e30f130595dbe9d3` (tickets #66 suggestions and #65 search) until the next 0.1.x
   tag. Not a `bundled.yaml` GET.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
   `2ebc892909eed2a79841a4aea572aef1968747b4` (ticket #64) until the next 0.1.x

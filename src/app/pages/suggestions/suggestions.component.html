@@ -1,0 +1,83 @@
+<section class="suggestions-page" data-testid="suggestions-page">
+  <header class="page-head">
+    <div>
+      <h1>Friend Suggestions</h1>
+      <p class="muted">Find new workout partners based on your gym times and sports.</p>
+    </div>
+    <label class="opt-in" data-testid="matching-opt-in">
+      <input
+        type="checkbox"
+        [checked]="matching()?.optedIn === true"
+        [disabled]="toggling() || matching() === null"
+        (change)="toggleOptIn()"
+      />
+      <span>Match me this week</span>
+    </label>
+  </header>
+
+  @if (matching()?.pair; as pair) {
+    <article class="card match-banner" data-testid="matching-pair">
+      <p>
+        This week's buddy:
+        <a [routerLink]="['/u', pair.handle]">{{ pair.displayName || pair.handle }}</a>
+        @if (matching()?.event; as event) {
+          <span class="muted">
+            · {{ event.activity }} at {{ event.startsAt }} (capacity {{ event.capacity }})
+          </span>
+        }
+      </p>
+      <p class="muted">Accept the draft session when you are ready — matching never auto-books.</p>
+    </article>
+  }
+
+  @if (error()) {
+    <p class="error" role="alert" data-testid="suggestions-error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="state" data-testid="suggestions-loading">Loading suggestions…</p>
+  } @else {
+    <div class="cards" data-testid="suggestions-list">
+      @for (card of items(); track card.userId) {
+        <article class="card suggestion-card" data-testid="suggestion-card">
+          <a class="who" [routerLink]="['/u', card.handle]">
+            <span class="avatar">{{ initials(card) }}</span>
+            <span>
+              <strong>{{ card.displayName || card.handle }}</strong>
+              <span class="reason">{{ reasonLabel(card) }}</span>
+            </span>
+          </a>
+          <div class="chips">
+            @for (sport of card.sports; track sport) {
+              <span class="chip">{{ sport }}</span>
+            }
+          </div>
+          <div class="actions">
+            <button
+              type="button"
+              class="btn-primary btn-compact"
+              data-testid="add-friend"
+              [disabled]="busyId() === card.userId"
+              (click)="addFriend(card)"
+            >
+              Add Friend
+            </button>
+            <button
+              type="button"
+              class="btn-secondary btn-compact"
+              data-testid="dismiss-suggestion"
+              [disabled]="busyId() === card.userId"
+              (click)="dismiss(card)"
+            >
+              Dismiss
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <p class="muted" data-testid="suggestions-empty">
+          No suggestions right now. Check back after you add friends or sports.
+        </p>
+      }
+    </div>
+  }
+</section>
