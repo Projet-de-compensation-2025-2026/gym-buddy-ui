@@ -12,6 +12,7 @@ import type {
   GetAdminUsersParams,
   PatchAdminUsersIdRole200,
   PatchAdminUsersIdRoleBody,
+  PostAdminFixturesBody,
   PostAdminReportsIdResolve200,
   PostAdminUsersIdLock200,
   PostAdminUsersIdLockBody,
@@ -19,6 +20,8 @@ import type {
   PostAdminUsersIdUnlockBody,
   PostAdminContentTypeIdHideBody,
 } from '../../../src/app/api/generated/model';
+
+export type FixtureCounts = PostAdminFixturesBody;
 
 @Injectable({ providedIn: 'root' })
 export class AdminApi {
@@ -67,8 +70,8 @@ export class AdminApi {
     return this.client.getAdminMedia(params);
   }
 
-  generateFixtures(): Observable<void> {
-    return this.client.postAdminFixtures();
+  generateFixtures(body?: PostAdminFixturesBody): Observable<void> {
+    return this.client.postAdminFixtures(body);
   }
 
   resetFixtures(): Observable<void> {
