@@ -1,0 +1,157 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { environment } from '../../../environments/environment';
+import { SearchPage } from './search.component';
+import type {
+  GetSearchEvents200DataItem,
+  GetSearchPeople200DataItem,
+} from '../../api/generated/model';
+
+describe('SearchPage', () => {
+  async function setup(): Promise<{
+    root: HTMLElement;
+    http: HttpTestingController;
+    detect: () => void;
+  }> {
+    await TestBed.configureTestingModule({
+      imports: [SearchPage],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SearchPage);
+    fixture.detectChanges();
+    return {
+      root: fixture.nativeElement as HTMLElement,
+      http: TestBed.inject(HttpTestingController),
+      detect: () => fixture.detectChanges(),
+    };
+  }
+
+  it('FS-SRCH-01 shows a loading state then people cards', async () => {
+    const { root, http, detect } = await setup();
+    expect(root.querySelector('[data-testid="search-loading"]')?.textContent).toContain('Loading');
+
+    const req = http.expectOne(
+      (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
+    );
+    req.flush({ data: [samplePerson()], page: { next: null, size: 20 } });
+    detect();
+
+    expect(root.querySelector('[data-testid="people-results"]')?.textContent).toContain('Sarah J.');
+    expect(root.querySelector('[data-testid="connect"]')?.textContent).toContain('Connect');
+    http.verify();
+  });
+
+  it('FS-SRCH-01 switches to the events tab', async () => {
+    const { root, http, detect } = await setup();
+    http
+      .expectOne(
+        (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
+      )
+      .flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+
+    (root.querySelector('[data-testid="tab-events"]') as HTMLButtonElement).click();
+    detect();
+    const events = http.expectOne(
+      (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/events`),
+    );
+    events.flush({ data: [sampleEvent()], page: { next: null, size: 20 } });
+    detect();
+
+    expect(root.querySelector('[data-testid="events-results"]')?.textContent).toContain(
+      'Weekend HIIT Bootcamp',
+    );
+    http.verify();
+  });
+
+  it('shows empty and error states', async () => {
+    const { root, http, detect } = await setup();
+    http
+      .expectOne(
+        (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
+      )
+      .flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+    expect(root.querySelector('[data-testid="people-empty"]')?.textContent).toContain('No people');
+
+    (root.querySelector('[data-testid="apply-filters"]') as HTMLButtonElement).click();
+    detect();
+    http
+      .expectOne(
+        (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
+      )
+      .flush(
+        { error: { code: 'VALIDATION', message: 'radiusKm must be between 1 and 50' } },
+        { status: 422, statusText: 'Unprocessable Entity' },
+      );
+    detect();
+    expect(root.querySelector('[data-testid="search-error"]')?.textContent).toContain('radiusKm');
+    http.verify();
+  });
+
+  it('CONNECT posts a friendship request', async () => {
+    const { root, http, detect } = await setup();
+    const person = samplePerson();
+    http
+      .expectOne(
+        (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
+      )
+      .flush({ data: [person], page: { next: null, size: 20 } });
+    detect();
+
+    (root.querySelector('[data-testid="connect"]') as HTMLButtonElement).click();
+    const post = http.expectOne(`${environment.apiBaseUrl}/friendships`);
+    expect(post.request.method).toBe('POST');
+    expect(post.request.body).toEqual({ handle: 'sarahj' });
+    post.flush({
+      id: '11111111-1111-1111-1111-111111111111',
+      status: 'pending',
+      peer: {
+        userId: '22222222-2222-2222-2222-222222222222',
+        handle: 'sarahj',
+        displayName: 'Sarah J.',
+      },
+    });
+    http
+      .expectOne(
+        (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
+      )
+      .flush({ data: [{ ...person, friendState: 'pending' }], page: { next: null, size: 20 } });
+    detect();
+    expect(root.textContent).toContain('Pending');
+    http.verify();
+  });
+});
+
+function samplePerson(): GetSearchPeople200DataItem {
+  return {
+    handle: 'sarahj',
+    displayName: 'Sarah J.',
+    visibility: 'public',
+    sports: ['weightlifting'],
+    experienceLevel: 'intermediate',
+    city: 'Lyon',
+    distanceKm: 2,
+    friendState: 'none',
+  };
+}
+
+function sampleEvent(): GetSearchEvents200DataItem {
+  return {
+    id: '33333333-3333-3333-3333-333333333333',
+    title: 'Weekend HIIT Bootcamp',
+    activity: 'hiit',
+    place: 'Central Park',
+    startsAt: '2026-10-14T09:00:00Z',
+    remainingSeats: 4,
+    capacity: 8,
+    organizer: {
+      userId: '44444444-4444-4444-4444-444444444444',
+      handle: 'coach',
+      displayName: 'Coach',
+    },
+  };
+}

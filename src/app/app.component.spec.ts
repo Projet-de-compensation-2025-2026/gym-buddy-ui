@@ -39,7 +39,7 @@ describe('App', () => {
     http.verify();
   });
 
-  it('links Events and Friends when signed in', async () => {
+  it('links Events, Friends, and Search when signed in', async () => {
     const { root, session, detect, http } = await setup();
     const payload = btoa(
       JSON.stringify({ sub: '11111111-1111-1111-1111-111111111111', handle: 'alex' }),
@@ -62,14 +62,21 @@ describe('App', () => {
     const friends = Array.from(root.querySelectorAll('a')).find(
       (el) => el.textContent?.trim() === 'Friends',
     );
+    const search = Array.from(root.querySelectorAll('a')).find(
+      (el) => el.textContent?.trim() === 'Search',
+    );
     expect(events).toBeTruthy();
     expect(friends).toBeTruthy();
+    expect(search).toBeTruthy();
     expect(
       events?.getAttribute('href') ?? events?.getAttribute('ng-reflect-router-link') ?? '',
     ).toContain('events');
     expect(
       friends?.getAttribute('href') ?? friends?.getAttribute('ng-reflect-router-link') ?? '',
     ).toContain('friends');
+    expect(
+      search?.getAttribute('href') ?? search?.getAttribute('ng-reflect-router-link') ?? '',
+    ).toContain('search');
     http.verify();
   });
 

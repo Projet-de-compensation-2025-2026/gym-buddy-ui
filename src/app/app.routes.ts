@@ -8,6 +8,7 @@ import { HomePage } from './pages/home/home.component';
 import { PostDetailPage } from './pages/post-detail/post-detail.component';
 import { SuggestionsPage } from './pages/suggestions/suggestions.component';
 import { ProfilePage } from './pages/profile/profile.component';
+import { SearchPage } from './pages/search/search.component';
 import { SettingsPrivacyPage } from './pages/settings-privacy/settings-privacy.component';
 import { SettingsProfilePage } from './pages/settings-profile/settings-profile.component';
 import { SignInPage } from './pages/sign-in/sign-in.component';
@@ -21,6 +22,7 @@ export const routes: Routes = [
   { path: 'events/new', component: EventNewPage, canActivate: [authGuard] },
   { path: 'events/:id', component: EventDetailPage, canActivate: [authGuard] },
   { path: 'friends', component: FriendsPage, canActivate: [authGuard] },
+  { path: 'search', component: SearchPage, canActivate: [authGuard] },
   { path: 'suggestions', component: SuggestionsPage, canActivate: [authGuard] },
   { path: 'posts/:id', component: PostDetailPage, canActivate: [authGuard] },
   { path: 'u/:handle', component: ProfilePage, canActivate: [authGuard] },
