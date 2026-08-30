@@ -1,0 +1,90 @@
+<article class="thread" [attr.data-depth]="current().depth" data-testid="comment-thread">
+  @if (current().deleted) {
+    <p class="tombstone" data-testid="comment-tombstone">This comment was deleted by the user.</p>
+  } @else {
+    <header class="head">
+      <a class="who" [routerLink]="['/u', current().author.handle]">
+        <span class="avatar">
+          @if (avatarUrl(); as src) {
+            <img [src]="src" alt="" />
+          } @else {
+            {{ initials() }}
+          }
+        </span>
+        <span>
+          <strong>{{ current().author.displayName || current().author.handle }}</strong>
+          <span class="meta"> · {{ when() }}</span>
+        </span>
+      </a>
+      @if (isAuthor()) {
+        <button type="button" class="text-btn" data-testid="delete-comment" (click)="deleteOwn()">
+          Delete
+        </button>
+      }
+    </header>
+    <p class="body" data-testid="comment-body">{{ current().body }}</p>
+    <div class="actions">
+      <button
+        type="button"
+        class="text-btn"
+        [class.active]="current().liked"
+        data-testid="like-comment"
+        (click)="toggleLike()"
+      >
+        ♡ {{ current().likeCount || '' }}
+      </button>
+      @if (canReply()) {
+        <button
+          type="button"
+          class="text-btn"
+          data-testid="reply-comment"
+          (click)="replyOpen.set(!replyOpen())"
+        >
+          Reply
+        </button>
+      }
+    </div>
+  }
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  @if (replyOpen() && canReply()) {
+    <form class="reply-form" (submit)="$event.preventDefault(); submitReply()">
+      <label class="sr-only" [attr.for]="'reply-' + current().id">Reply</label>
+      <input
+        [id]="'reply-' + current().id"
+        data-testid="reply-body"
+        maxlength="1000"
+        [ngModel]="replyBody()"
+        (ngModelChange)="replyBody.set($event)"
+        name="reply"
+        placeholder="Write a reply…"
+      />
+      <button type="submit" class="btn-primary" data-testid="submit-reply" [disabled]="busy()">
+        Post
+      </button>
+    </form>
+  }
+  @if (repliesOpen()) {
+    <div class="children">
+      @for (child of replies(); track child.id) {
+        <app-comment-thread [comment]="child" (created)="created.emit($event)" />
+      }
+    </div>
+  }
+  @if ((!repliesOpen() && current().replyCount > 0) || (repliesOpen() && repliesNext())) {
+    <button
+      type="button"
+      class="load-more"
+      data-testid="load-replies"
+      [disabled]="busy()"
+      (click)="loadReplies()"
+    >
+      @if (!repliesOpen()) {
+        Load {{ remainingReplies() }} {{ remainingReplies() === 1 ? 'reply' : 'replies' }}
+      } @else {
+        Load more replies
+      }
+    </button>
+  }
+</article>

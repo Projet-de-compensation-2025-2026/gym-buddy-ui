@@ -1,0 +1,75 @@
+.feed {
+  max-width: 40rem;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.composer textarea {
+  width: 100%;
+  border: 0;
+  resize: vertical;
+  min-height: 4.5rem;
+}
+
+.composer-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  border-top: 1px solid #e5e7e9;
+  padding-top: 0.75rem;
+}
+
+.composer-tools,
+.composer-submit {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.icon-btn {
+  background: #fff;
+  border: 1px solid #e5e7e9;
+  border-radius: 0.25rem;
+}
+
+.pending {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pending li {
+  background: #f3f4f6;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.empty {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+.repost-by {
+  margin: 0 0 0.35rem 0.25rem;
+  color: #6e7174;
+  font-size: 0.875rem;
+  font-weight: 600;
+}

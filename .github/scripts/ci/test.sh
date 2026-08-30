@@ -2,10 +2,13 @@
 set -euo pipefail
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$root"
+python3 .github/scripts/ci/test_release_version.py
 if [[ -f angular.json ]]; then
   pnpm install --frozen-lockfile
+  pnpm generate:api
   export CHROME_BIN="${CHROME_BIN:-$(command -v google-chrome-stable || command -v google-chrome || true)}"
-  pnpm exec ng test --watch=false --browsers=ChromeHeadless
+  pnpm exec ng test gym-buddy-ui --watch=false --browsers=ChromeHeadless
+  pnpm exec ng test gym-buddy-admin --watch=false --browsers=ChromeHeadless
   exit 0
 fi
 python3 - <<'PY'
@@ -19,6 +22,8 @@ required = [
     Path(".github/scripts/ci/smoke.sh"),
     Path(".github/scripts/ci/next_version.py"),
     Path(".github/scripts/ci/prepare_changelog.py"),
+    Path(".github/scripts/ci/sync_package_version.py"),
+    Path(".github/scripts/ci/test_release_version.py"),
     Path("CHANGELOG.md"),
 ]
 missing = [str(p) for p in required if not p.is_file()]

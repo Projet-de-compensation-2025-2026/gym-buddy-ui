@@ -1,0 +1,140 @@
+.events-page {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.page-head h1 {
+  margin-bottom: 0.25rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid #e5e7e9;
+}
+
+.tabs button {
+  background: none;
+  border: 0;
+  padding: 0.5rem 0;
+  color: #6e7174;
+  font-weight: 600;
+}
+
+.tabs button.active {
+  color: #006d77;
+  border-bottom: 2px solid #006d77;
+}
+
+.events-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1.4fr 1fr;
+}
+
+.event-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.event-link {
+  display: grid;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+}
+
+.cover {
+  width: 100%;
+  height: 10rem;
+  object-fit: cover;
+  background: #dce8f7;
+}
+
+.cover.placeholder {
+  height: 4rem;
+}
+
+.kind-chip {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.event-body {
+  padding: 1rem 1.25rem 1.25rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.title-row h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.spots {
+  color: #006d77;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.meta {
+  margin: 0;
+  color: #6e7174;
+  display: flex;
+  gap: 1rem;
+}
+
+.organizer {
+  margin: 0.5rem 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: #cdf2f1;
+  color: #00535b;
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+}
+
+.visibility {
+  margin-left: auto;
+  color: #6e7174;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+@media (max-width: 50rem) {
+  .page-head,
+  .events-grid {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+}

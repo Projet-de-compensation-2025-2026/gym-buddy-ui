@@ -1,0 +1,76 @@
+<section class="chat-page" data-testid="chat-page">
+  <header class="chat-head">
+    <a routerLink="/messages" aria-label="Back to inbox">←</a>
+    <h1>{{ peerName() }}</h1>
+  </header>
+
+  @if (error()) {
+    <p class="error" role="alert" data-testid="chat-error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="state" data-testid="chat-loading">Loading messages…</p>
+  } @else {
+    <ol class="bubbles" data-testid="chat-messages">
+      @for (row of messages(); track row.id) {
+        <li class="bubble" [class.mine]="mine(row)" [class.theirs]="!mine(row)">
+          @if (row.deleted) {
+            <em>Message deleted</em>
+          } @else if (row.type === 'image' && mediaUrl(row.mediaId)) {
+            <img [src]="mediaUrl(row.mediaId)!" alt="" />
+            @if (row.body) {
+              <p>{{ row.body }}</p>
+            }
+          } @else if (row.type === 'audio' && mediaUrl(row.mediaId)) {
+            <audio controls [src]="mediaUrl(row.mediaId)!"></audio>
+          } @else {
+            <p>{{ row.body }}</p>
+          }
+          <span class="stamp">{{ row.createdAt }}</span>
+          @if (canDelete(row)) {
+            <button type="button" class="tombstone" (click)="tombstone(row)">Delete</button>
+          }
+        </li>
+      } @empty {
+        <li class="muted" data-testid="chat-empty">Say hi — this thread is empty.</li>
+      }
+    </ol>
+
+    <form class="composer" (submit)="$event.preventDefault(); sendText()">
+      <label class="icon">
+        <span class="visually-hidden">Attach image</span>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          data-testid="chat-image"
+          (change)="attachImage($event)"
+        />
+      </label>
+      <label class="icon">
+        <span class="visually-hidden">Attach audio</span>
+        <input
+          type="file"
+          accept="audio/webm,audio/mpeg"
+          data-testid="chat-audio"
+          (change)="attachAudio($event)"
+        />
+      </label>
+      <input
+        type="text"
+        maxlength="4000"
+        placeholder="Message…"
+        data-testid="chat-draft"
+        [value]="draft()"
+        (input)="onDraft($event)"
+      />
+      <button
+        type="submit"
+        class="send"
+        data-testid="chat-send"
+        [disabled]="busy() || draft().trim().length < 1"
+      >
+        Send
+      </button>
+    </form>
+  }
+</section>

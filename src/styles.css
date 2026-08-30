@@ -1,13 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
   color-scheme: light;
-  font-family: system-ui, sans-serif;
+  font-family: Inter, system-ui, sans-serif;
   line-height: 1.5;
+  color: #212325;
+  background: #f4f6f8;
+  --primary: #006d77;
+  --on-primary: #ffffff;
+  --text-secondary: #6e7174;
+  --border: #e5e7e9;
+  --danger: #8d302f;
 }
 
 body {
   margin: 0 auto;
-  max-width: 40rem;
-  padding: 1.25rem;
+  max-width: 64rem;
+  padding: 0 1.25rem 3rem;
 }
 
 a {
@@ -25,7 +34,9 @@ label {
 }
 
 input,
-button {
+button,
+textarea,
+select {
   font: inherit;
   padding: 0.5rem 0.65rem;
 }
@@ -34,14 +45,157 @@ button {
   cursor: pointer;
 }
 
-button:disabled {
+button:disabled,
+a[aria-disabled='true'] {
   cursor: wait;
 }
 
 .error {
-  color: #8b1212;
+  color: #8d302f;
 }
 
 .notice {
   color: #14532d;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: #006d77;
+  color: #fff;
+  border: 0;
+}
+
+.btn-secondary {
+  background: #fff;
+  border: 2px solid #212325;
+}
+
+.btn-danger {
+  background: #fff;
+  color: #8d302f;
+  border: 1px solid #8d302f;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7e9;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+}
+
+.settings-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  gap: 1.25rem;
+}
+
+.settings-nav {
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.settings-nav a {
+  text-decoration: none;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.5rem;
+}
+
+.settings-nav a.active {
+  background: #e9edff;
+  color: #006d77;
+  font-weight: 600;
+}
+
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  background: #f3f4f6;
+  border: 0;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.65rem;
+}
+
+.chip.ghost {
+  background: transparent;
+  border: 1px dashed #bec8ca;
+}
+
+.add-sport {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.visibility {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.choice {
+  text-align: left;
+  background: #fff;
+  border: 1px solid #e5e7e9;
+  border-radius: 0.5rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.choice.selected {
+  border-color: #006d77;
+  box-shadow: 0 0 0 1px #006d77;
+}
+
+.danger {
+  border-color: #fedad6;
+}
+
+.danger h2 {
+  color: #8d302f;
+}
+
+.muted {
+  color: #6e7174;
+}
+
+@media (max-width: 40rem) {
+  .settings-layout,
+  .two,
+  .visibility {
+    grid-template-columns: 1fr;
+  }
 }

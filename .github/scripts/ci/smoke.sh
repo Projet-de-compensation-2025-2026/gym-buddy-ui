@@ -7,7 +7,13 @@ if [[ -f angular.json ]]; then
   if [[ ! -d node_modules ]]; then
     pnpm install --frozen-lockfile
   fi
-  pnpm exec ng build
+  pnpm generate:api
+  pnpm exec ng build gym-buddy-ui
+  pnpm exec ng build gym-buddy-admin
+  mkdir -p dist/admin
+  if [[ -d dist-admin ]]; then
+    cp -a dist-admin/. dist/admin/
+  fi
 fi
 
 if [[ -d dist/gym-buddy-ui/browser ]]; then

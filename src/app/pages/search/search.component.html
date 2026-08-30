@@ -1,0 +1,190 @@
+<section class="search-page" data-testid="search-page">
+  <aside class="card filters" data-testid="search-filters">
+    <h1>Filters</h1>
+    <label>
+      Search
+      <input
+        type="search"
+        placeholder="Search names, keywords…"
+        data-testid="search-q"
+        [value]="q()"
+        (input)="onQuery($event)"
+      />
+    </label>
+    <label>
+      Location
+      <input
+        type="text"
+        placeholder="City"
+        data-testid="search-city"
+        [value]="city()"
+        (input)="onCity($event)"
+      />
+    </label>
+    <label class="radius">
+      <span class="muted">{{ radiusKm() }} km</span>
+      <input
+        type="range"
+        min="1"
+        max="50"
+        data-testid="search-radius"
+        [value]="radiusKm()"
+        (input)="onRadius($event)"
+      />
+    </label>
+    <div>
+      <p class="section-label">Sports &amp; Activities</p>
+      <div class="chips">
+        @for (sport of sports(); track sport) {
+          <button type="button" class="chip" (click)="removeSport(sport)">{{ sport }}</button>
+        }
+        <div class="add-sport">
+          <input
+            type="text"
+            placeholder="+ Add"
+            data-testid="search-sport"
+            [value]="sportDraft()"
+            (input)="onSportDraft($event)"
+            (keydown.enter)="addSport(); $event.preventDefault()"
+          />
+          <button type="button" class="chip ghost" data-testid="add-sport" (click)="addSport()">
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+    <fieldset>
+      <legend class="section-label">Experience Level</legend>
+      <label class="check">
+        <input
+          type="checkbox"
+          data-testid="exp-beginner"
+          [checked]="experience().includes('beginner')"
+          (change)="toggleExperience('beginner')"
+        />
+        Beginner
+      </label>
+      <label class="check">
+        <input
+          type="checkbox"
+          data-testid="exp-intermediate"
+          [checked]="experience().includes('intermediate')"
+          (change)="toggleExperience('intermediate')"
+        />
+        Intermediate
+      </label>
+      <label class="check">
+        <input
+          type="checkbox"
+          data-testid="exp-advanced"
+          [checked]="experience().includes('advanced')"
+          (change)="toggleExperience('advanced')"
+        />
+        Advanced
+      </label>
+    </fieldset>
+    <button type="button" class="btn-primary" data-testid="apply-filters" (click)="applyFilters()">
+      Apply Filters
+    </button>
+  </aside>
+
+  <div class="results">
+    <nav class="tabs" aria-label="Search index">
+      <button
+        type="button"
+        [class.active]="tab() === 'people'"
+        data-testid="tab-people"
+        (click)="setTab('people')"
+      >
+        People
+      </button>
+      <button
+        type="button"
+        [class.active]="tab() === 'events'"
+        data-testid="tab-events"
+        (click)="setTab('events')"
+      >
+        Events
+      </button>
+    </nav>
+
+    @if (error()) {
+      <p class="error" role="alert" data-testid="search-error">{{ error() }}</p>
+    }
+
+    @if (loading()) {
+      <p class="state" data-testid="search-loading">Loading results…</p>
+    } @else if (tab() === 'people') {
+      <div class="cards" data-testid="people-results">
+        @for (hit of people(); track hit.handle) {
+          <article class="card result-card">
+            <a class="who" [routerLink]="['/u', hit.handle]">
+              <span class="avatar">
+                @if (hit.avatarMediaId && avatarUrls()[hit.avatarMediaId]; as src) {
+                  <img [src]="src" alt="" />
+                } @else {
+                  {{ initials(hit.displayName || hit.handle) }}
+                }
+              </span>
+              <span>
+                <strong>{{ hit.displayName || hit.handle }}</strong>
+                @if (distanceLabel(hit.distanceKm); as distance) {
+                  <span class="muted">{{ distance }}</span>
+                }
+              </span>
+            </a>
+            <div class="chips">
+              @for (sport of hit.sports; track sport) {
+                <span class="chip">{{ sport }}</span>
+              }
+              @if (hit.experienceLevel) {
+                <span class="chip">{{ hit.experienceLevel }}</span>
+              }
+            </div>
+            @if (hit.friendState === 'none') {
+              <button
+                type="button"
+                class="btn-secondary btn-compact"
+                data-testid="connect"
+                [disabled]="busyKey() === hit.handle"
+                (click)="connect(hit)"
+              >
+                Connect
+              </button>
+            } @else {
+              <span class="muted cap">{{
+                hit.friendState === 'friends' ? 'Friends' : 'Pending'
+              }}</span>
+            }
+          </article>
+        } @empty {
+          <p class="muted" data-testid="people-empty">No people match those filters.</p>
+        }
+      </div>
+    } @else {
+      <div class="cards" data-testid="events-results">
+        @for (hit of events(); track hit.id) {
+          <article class="card result-card">
+            <a [routerLink]="['/events', hit.id]" class="event-who">
+              <strong>{{ hit.title }}</strong>
+              <span class="muted">{{ eventWhen(hit.startsAt) }}</span>
+              <span class="muted">{{ hit.place }}</span>
+            </a>
+            <p class="spots">{{ spots(hit) }}</p>
+            <button
+              type="button"
+              class="btn-secondary btn-compact"
+              data-testid="join-event"
+              [disabled]="hit.remainingSeats <= 0 || busyKey() === hit.id"
+              (click)="join(hit)"
+            >
+              Join Event
+            </button>
+          </article>
+        } @empty {
+          <p class="muted" data-testid="events-empty">No events match those filters.</p>
+        }
+      </div>
+    }
+  </div>
+</section>

@@ -1,12 +1,116 @@
-<section>
+<section class="feed" data-testid="feed-page">
   @if (session.signedIn()) {
-    <h1>Signed in</h1>
-    <p data-testid="home-signed-in">
-      The access token is held in memory for this tab. Use Log out to revoke the refresh cookie.
-    </p>
+    <article class="card composer" data-testid="post-composer">
+      <label class="sr-only" for="composer-body">What's on your mind, athlete?</label>
+      <textarea
+        id="composer-body"
+        data-testid="composer-body"
+        rows="3"
+        maxlength="2000"
+        placeholder="What's on your mind, athlete?"
+        [ngModel]="body()"
+        (ngModelChange)="body.set($event)"
+      ></textarea>
+      @if (pendingFiles().length) {
+        <ul class="pending" data-testid="composer-previews">
+          @for (file of pendingFiles(); track $index) {
+            <li>
+              {{ file.name }}
+              <button type="button" (click)="removePending($index)" aria-label="Remove image">
+                ×
+              </button>
+            </li>
+          }
+        </ul>
+      }
+      @if (error()) {
+        <p class="error" role="alert" data-testid="composer-error">{{ error() }}</p>
+      }
+      <div class="composer-bar">
+        <div class="composer-tools">
+          <button
+            type="button"
+            class="icon-btn"
+            data-testid="attach-image"
+            (click)="openFilePicker()"
+          >
+            Image
+          </button>
+          <span class="nav-disabled" title="Video posts are out of scope">Video</span>
+          <input
+            #fileInput
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            hidden
+            data-testid="composer-file"
+            (change)="onFileInput($event)"
+          />
+        </div>
+        <div class="composer-submit">
+          <select
+            data-testid="composer-visibility"
+            [ngModel]="visibility()"
+            (ngModelChange)="visibility.set($event)"
+          >
+            <option value="friends">Friends</option>
+            <option value="public">Public</option>
+          </select>
+          <button
+            type="button"
+            class="btn-primary"
+            data-testid="publish-post"
+            [disabled]="posting()"
+            (click)="publish()"
+          >
+            {{ posting() ? 'Posting…' : 'Post' }}
+          </button>
+        </div>
+      </div>
+    </article>
+
+    @if (loading()) {
+      <p class="muted" data-testid="feed-loading">Loading your feed…</p>
+    } @else if (items().length === 0) {
+      <article class="card empty" data-testid="empty-feed">
+        <p>Your feed is quiet. Find gym buddies to see their posts here.</p>
+        <a class="btn-primary" routerLink="/suggestions" data-testid="empty-feed-cta"
+          >Find suggestions</a
+        >
+      </article>
+    }
+    <div class="stack" data-testid="feed-list">
+      @for (item of items(); track item.id) {
+        <div class="feed-item">
+          @if (item.kind === 'repost') {
+            <p class="repost-by" data-testid="repost-actor">
+              {{ item.actor.displayName || item.actor.handle }} reposted
+            </p>
+          }
+          <app-post-card
+            [post]="item.post"
+            [activityAt]="item.activityAt"
+            [imageUrls]="imageUrls()"
+            (like)="toggleLike($event)"
+            (repost)="toggleRepost($event)"
+          />
+        </div>
+      }
+    </div>
+    @if (next()) {
+      <button
+        type="button"
+        class="btn-secondary"
+        data-testid="feed-load-more"
+        [disabled]="loadingMore()"
+        (click)="loadMore()"
+      >
+        {{ loadingMore() ? 'Loading…' : 'Load more' }}
+      </button>
+    }
   } @else {
     <h1>Gym Buddy</h1>
-    <p>Basic sign-up and sign-in. Friends, feed, and events are not in this slice.</p>
+    <p>Sign-up, sign-in, profiles, friends, and your friends news feed.</p>
     <p>
       <a routerLink="/register">Sign up</a>
       ·

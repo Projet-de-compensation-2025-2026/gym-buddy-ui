@@ -1,0 +1,167 @@
+<section class="detail-page" data-testid="event-detail-page">
+  @if (error()) {
+    <p class="error" role="alert" data-testid="event-detail-error">{{ error() }}</p>
+  }
+  @if (loading()) {
+    <p class="state" data-testid="event-detail-loading">Loading event…</p>
+  } @else if (event(); as event) {
+    <div class="hero card">
+      @if (coverUrl(); as src) {
+        <img class="hero-cover" [src]="src" alt="" />
+      } @else {
+        <div class="hero-cover placeholder"></div>
+      }
+      <div class="hero-copy">
+        <p class="chips">
+          <span>{{ event.visibility === 'friends' ? 'Friends-only' : event.visibility }}</span>
+          <span>{{ event.activity }}</span>
+        </p>
+        <h1>{{ event.title }}</h1>
+        <p class="muted">
+          Organized by {{ event.organizer.displayName || event.organizer.handle }}
+        </p>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="main">
+        <div class="facts">
+          <article class="card fact">
+            <p class="muted">Date & Time</p>
+            <strong>{{ when(event.startsAt) }}</strong>
+          </article>
+          <article class="card fact">
+            <p class="muted">Duration</p>
+            <strong>{{ event.durationMin }} min</strong>
+          </article>
+          <article class="card fact">
+            <p class="muted">Location</p>
+            <strong>{{ event.place }}</strong>
+          </article>
+        </div>
+        <article class="card">
+          <h2>About the Session</h2>
+          <p>{{ event.description || 'No description yet.' }}</p>
+          @if (event.updatedAfterAccept) {
+            <p class="notice">This session was updated after people were accepted.</p>
+          }
+          <p class="muted">Focus Areas</p>
+          <div class="chips">
+            <span>{{ event.activity }}</span>
+            @for (tag of event.tags; track tag) {
+              <span>{{ tag }}</span>
+            }
+          </div>
+        </article>
+      </div>
+
+      <aside class="side">
+        <article class="card">
+          <p class="muted">Availability</p>
+          <p class="spots" data-testid="spots-left">
+            {{ spotsLabel(event.remainingSeats) }}
+            <span class="muted"> / {{ event.capacity }} total</span>
+          </p>
+          @if (event.visibility === 'friends') {
+            <p class="muted">Friends-only event. Organizer must approve.</p>
+          }
+          @if (organizerView) {
+            <p class="muted">You are the organizer.</p>
+          } @else if (event.viewerApplication?.status === 'pending') {
+            <button
+              type="button"
+              class="btn-secondary"
+              data-testid="withdraw"
+              [disabled]="busy()"
+              (click)="withdraw()"
+            >
+              Withdraw
+            </button>
+          } @else if (event.viewerApplication?.status === 'accepted') {
+            <p class="notice">You’re in. See you there.</p>
+            <button
+              type="button"
+              class="btn-secondary"
+              data-testid="withdraw"
+              [disabled]="busy()"
+              (click)="withdraw()"
+            >
+              Withdraw
+            </button>
+          } @else if (event.remainingSeats <= 0) {
+            <p class="muted">This session is full.</p>
+          } @else {
+            <button
+              type="button"
+              class="btn-primary"
+              data-testid="apply"
+              [disabled]="busy()"
+              (click)="apply()"
+            >
+              Apply to Join
+            </button>
+          }
+        </article>
+
+        @if (organizerView) {
+          <article class="card" data-testid="applicant-queue">
+            <h2>
+              Applicant Queue
+              <span class="pending-count">{{ event.pendingApplicants.length }} Pending</span>
+            </h2>
+            <ul class="queue">
+              @for (row of event.pendingApplicants; track row.application.id) {
+                <li>
+                  <span>
+                    <strong>{{
+                      row.application.applicant.displayName || row.application.applicant.handle
+                    }}</strong>
+                    <span class="muted">score {{ row.matchingScore.toFixed(2) }}</span>
+                  </span>
+                  <span class="queue-actions">
+                    <button
+                      type="button"
+                      class="icon-btn"
+                      data-testid="decline-applicant"
+                      [disabled]="busy()"
+                      (click)="decline(row)"
+                    >
+                      ×
+                    </button>
+                    <button
+                      type="button"
+                      class="icon-btn accept"
+                      data-testid="accept-applicant"
+                      [disabled]="busy()"
+                      (click)="accept(row)"
+                    >
+                      ✓
+                    </button>
+                  </span>
+                </li>
+              } @empty {
+                <li class="muted">No pending applicants.</li>
+              }
+            </ul>
+          </article>
+        }
+
+        <article class="card">
+          <h2>Next 90 Days</h2>
+          <ul class="occurrences" data-testid="occurrences">
+            @for (row of event.occurrences; track row.id) {
+              <li>
+                <span>{{ when(row.startsAt) }}</span>
+                <span [class.full]="row.remainingSeats === 0">{{
+                  spotsLabel(row.remainingSeats)
+                }}</span>
+              </li>
+            } @empty {
+              <li class="muted">No upcoming occurrences.</li>
+            }
+          </ul>
+        </article>
+      </aside>
+    </div>
+  }
+</section>

@@ -1,0 +1,129 @@
+.profile-page {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.hero-card,
+.stub-card,
+.card {
+  background: #fff;
+  border: 1px solid #e5e7e9;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.03);
+}
+
+.hero-card {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.stub-card {
+  max-width: 28rem;
+  margin: 2rem auto;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  background: #cdf2f1;
+  color: #00535b;
+  font-weight: 700;
+  border-radius: 0.5rem;
+}
+
+.avatar-lg {
+  width: 7rem;
+  height: 7rem;
+  font-size: 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar.locked {
+  filter: blur(0);
+  background: #dce2f7;
+}
+
+.lock {
+  position: absolute;
+  right: -0.35rem;
+  bottom: -0.35rem;
+  background: #006d77;
+  color: #fff;
+  border-radius: 999px;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+}
+
+.handle,
+.muted,
+.copy {
+  color: #6e7174;
+}
+
+.bio {
+  max-width: 40rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.actions.center {
+  justify-content: center;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  background: #f3f4f6;
+  color: #4b5563;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.875rem;
+}
+
+.stat {
+  display: grid;
+}
+
+.stat strong {
+  font-size: 1.75rem;
+  color: #006d77;
+}
+
+.stat span {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  color: #6e7174;
+}
+
+.state {
+  color: #6e7174;
+}

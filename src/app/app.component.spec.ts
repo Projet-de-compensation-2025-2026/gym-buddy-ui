@@ -14,6 +14,7 @@ describe('App', () => {
     http: HttpTestingController;
     router: Router;
     session: AuthSession;
+    detect: () => void;
   }> {
     await TestBed.configureTestingModule({
       imports: [App],
@@ -28,12 +29,54 @@ describe('App', () => {
       http: TestBed.inject(HttpTestingController),
       router: TestBed.inject(Router),
       session: TestBed.inject(AuthSession),
+      detect: () => fixture.detectChanges(),
     };
   }
 
   it('renders the Gym Buddy shell', async () => {
     const { root, http } = await setup();
     expect(root.querySelector('.brand')?.textContent).toContain('Gym Buddy');
+    http.verify();
+  });
+
+  it('links Events, Friends, and Search when signed in', async () => {
+    const { root, session, detect, http } = await setup();
+    const payload = btoa(
+      JSON.stringify({ sub: '11111111-1111-1111-1111-111111111111', handle: 'alex' }),
+    )
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    session.setAccessToken(`hdr.${payload}.sig`);
+    detect();
+    const feed = http.match(
+      (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/feed`),
+    );
+    for (const req of feed) {
+      req.flush({ data: [], page: { next: null, size: 20 } });
+    }
+    detect();
+    const events = Array.from(root.querySelectorAll('a')).find(
+      (el) => el.textContent?.trim() === 'Events',
+    );
+    const friends = Array.from(root.querySelectorAll('a')).find(
+      (el) => el.textContent?.trim() === 'Friends',
+    );
+    const search = Array.from(root.querySelectorAll('a')).find(
+      (el) => el.textContent?.trim() === 'Search',
+    );
+    expect(events).toBeTruthy();
+    expect(friends).toBeTruthy();
+    expect(search).toBeTruthy();
+    expect(
+      events?.getAttribute('href') ?? events?.getAttribute('ng-reflect-router-link') ?? '',
+    ).toContain('events');
+    expect(
+      friends?.getAttribute('href') ?? friends?.getAttribute('ng-reflect-router-link') ?? '',
+    ).toContain('friends');
+    expect(
+      search?.getAttribute('href') ?? search?.getAttribute('ng-reflect-router-link') ?? '',
+    ).toContain('search');
     http.verify();
   });
 

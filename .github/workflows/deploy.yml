@@ -48,7 +48,13 @@ jobs:
         run: |
           if [[ -f angular.json ]]; then
             pnpm install --frozen-lockfile
-            pnpm exec ng build
+            pnpm generate:api
+            pnpm exec ng build gym-buddy-ui
+            pnpm exec ng build gym-buddy-admin
+            mkdir -p dist/admin
+            if [[ -d dist-admin ]]; then
+              cp -a dist-admin/. dist/admin/
+            fi
           fi
 
       - name: Stage static files

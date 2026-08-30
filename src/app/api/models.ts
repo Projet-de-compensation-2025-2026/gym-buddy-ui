@@ -1,49 +1,30 @@
 /**
- * HTTP shapes from the canonical contract:
- * https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi
- * (`openapi/openapi.yaml` on develop, 0.1.0).
+ * Contract types come from the orval client generated in `./generated`.
+ * Source: gym-buddy-openapi develop SHA f849a1dcd498c12fd9507b83f9d50d375d651347
+ * (`openapi/openapi.yaml` $ref tree).
  */
+export type {
+  AccessTokenResponse,
+  ChangePasswordRequest,
+  CloseAccountRequest,
+  ErrorDetail,
+  ErrorResponse,
+  Friendship,
+  GetFriendships200,
+  GetProfilesHandle200,
+  GetProfilesMe200,
+  HealthStatus,
+  LoginRequest,
+  PatchProfilesMeBody,
+  Post,
+  Profile,
+  RegisterRequest,
+  RegisteredUser,
+} from './generated/model';
+export type { ErrorResponseErrorCode as ErrorCode } from './generated/model';
+export type { RegisteredUserRole as MemberRole } from './generated/model';
 
-export interface RegisterRequest {
-  email: string;
-  handle: string;
-  password: string;
-  displayName: string;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export type MemberRole = 'member' | 'moderator' | 'admin';
-
-export interface RegisteredUser {
-  id: string;
-  email: string;
-  handle: string;
-  displayName: string;
-  role: MemberRole;
-}
-
-export interface AccessTokenResponse {
-  accessToken: string;
-}
-
-export type ErrorCode = 'UNAUTHENTICATED' | 'FORBIDDEN' | 'CONFLICT' | 'VALIDATION';
-
-export interface ErrorDetail {
-  path: string;
-  issue: string;
-}
-
-export interface ErrorResponse {
-  error: {
-    code: ErrorCode;
-    message: string;
-    details?: ErrorDetail[];
-  };
-}
+import type { ErrorResponse } from './generated/model';
 
 export function readApiError(err: unknown): string {
   if (isHttpError(err) && isErrorResponse(err.error)) {

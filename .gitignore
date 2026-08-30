@@ -1,3 +1,7 @@
+# OpenAPI YAML is owned by gym-buddy-openapi. Never vendor it here (ticket #48).
+openapi.yaml
+bundled.yaml
+
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 # Compiled output
