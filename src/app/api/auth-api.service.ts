@@ -3,6 +3,8 @@ import { Observable } from 'rxjs';
 import { GymBuddyAPIService } from './generated/client';
 import type {
   AccessTokenResponse,
+  ChangePasswordRequest,
+  CloseAccountRequest,
   HealthStatus,
   LoginRequest,
   RegisterRequest,
@@ -33,6 +35,14 @@ export class AuthApi {
 
   logout(): Observable<void> {
     return this.client.postAuthLogout(cookieAuth);
+  }
+
+  changePassword(body: ChangePasswordRequest): Observable<void> {
+    return this.client.postAuthPassword(body);
+  }
+
+  closeAccount(body: CloseAccountRequest): Observable<void> {
+    return this.client.postMeClose(body);
   }
 
   health(): Observable<HealthStatus> {

@@ -1,9 +1,16 @@
 <section>
   @if (session.signedIn()) {
-    <h1>Signed in</h1>
-    <p data-testid="home-signed-in">
-      The access token is held in memory for this tab. Use Log out to revoke the refresh cookie.
-    </p>
+    <h1>Feed</h1>
+    <p data-testid="home-signed-in">Your friends feed lands in a later slice.</p>
+    @if (session.handle(); as handle) {
+      <p>
+        <a [routerLink]="['/u', handle]">Your profile</a>
+        ·
+        <a routerLink="/settings/profile">Edit profile</a>
+        ·
+        <a routerLink="/settings/privacy">Privacy</a>
+      </p>
+    }
   } @else {
     <h1>Gym Buddy</h1>
     <p>Basic sign-up and sign-in. Friends, feed, and events are not in this slice.</p>

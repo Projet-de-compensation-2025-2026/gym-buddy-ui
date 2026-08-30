@@ -1,0 +1,118 @@
+<section class="settings">
+  <header class="settings-head">
+    <div>
+      <h1>Privacy Settings</h1>
+      <p class="muted">Manage your account security and visibility.</p>
+    </div>
+  </header>
+
+  <div class="settings-layout">
+    <nav class="settings-nav">
+      <a routerLink="/settings/profile" routerLinkActive="active">Profile</a>
+      <a routerLink="/settings/privacy" routerLinkActive="active">Privacy</a>
+    </nav>
+
+    <div class="stack">
+      @if (loading()) {
+        <p class="state" data-testid="settings-privacy-loading">Loading privacy settings…</p>
+      }
+      @if (error()) {
+        <p class="error" role="alert" data-testid="settings-privacy-error">{{ error() }}</p>
+      }
+      @if (notice()) {
+        <p class="notice">{{ notice() }}</p>
+      }
+
+      <article class="card">
+        <h2>Profile Visibility</h2>
+        <p class="muted">Control who can see your bio, sports, and location.</p>
+        <div class="visibility">
+          <button
+            type="button"
+            class="choice"
+            [class.selected]="visibility() === 'public'"
+            data-testid="visibility-public"
+            (click)="setVisibility('public')"
+          >
+            <strong>Public</strong>
+            <span>Anyone on Gym Buddy can view your full profile.</span>
+          </button>
+          <button
+            type="button"
+            class="choice"
+            [class.selected]="visibility() === 'private'"
+            data-testid="visibility-private"
+            (click)="setVisibility('private')"
+          >
+            <strong>Private</strong>
+            <span>Only approved friends can see your bio and details.</span>
+          </button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Change Password</h2>
+        <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()" novalidate class="stack">
+          <label>
+            Current Password
+            <app-password-field
+              [control]="passwordForm.controls.currentPassword"
+              autocomplete="current-password"
+              testId="settings-current-password"
+            />
+          </label>
+          <label>
+            New Password
+            <app-password-field
+              [control]="passwordForm.controls.newPassword"
+              autocomplete="new-password"
+              testId="settings-new-password"
+            />
+          </label>
+          <label>
+            Confirm Password
+            <app-password-field
+              [control]="passwordForm.controls.confirmPassword"
+              autocomplete="new-password"
+              testId="settings-confirm-password"
+            />
+          </label>
+          <button
+            type="submit"
+            class="btn-primary"
+            data-testid="update-password"
+            [disabled]="passwordBusy()"
+          >
+            {{ passwordBusy() ? 'Updating…' : 'Update Password' }}
+          </button>
+        </form>
+      </article>
+
+      <article class="card danger">
+        <h2>Danger Zone</h2>
+        <p>
+          Closing your account hides your profile from other members. You cannot recover it by
+          signing in again — staff can restore a closed account.
+        </p>
+        <form [formGroup]="closeForm" (ngSubmit)="closeAccount()" novalidate class="stack">
+          <label>
+            Confirm with your password
+            <app-password-field
+              [control]="closeForm.controls.password"
+              autocomplete="current-password"
+              testId="settings-close-password"
+            />
+          </label>
+          <button
+            type="submit"
+            class="btn-danger"
+            data-testid="close-account"
+            [disabled]="closeBusy()"
+          >
+            {{ closeBusy() ? 'Closing…' : 'Close Account' }}
+          </button>
+        </form>
+      </article>
+    </div>
+  </div>
+</section>

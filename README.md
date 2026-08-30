@@ -3,23 +3,24 @@
 Angular 22 member app for Gym Buddies. Product decisions live in
 [`gym-buddy-documentation`](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-documentation).
 
-This slice is basic **sign-up**, **sign-in**, and **log-out** (`/register`, `/login`).
-It calls `POST /api/v1/auth/register`, `/login`, and `/logout`. The access JWT stays
-in memory; the refresh token is the API’s HttpOnly cookie (`path /api/v1/auth`).
-Friends, feed, and events are out of scope.
+This slice is **sign-up**, **sign-in**, **profiles**, and **account settings**
+(`/register`, `/login`, `/u/:handle`, `/settings/profile`, `/settings/privacy`).
+The access JWT stays in memory; the refresh token is the API’s HttpOnly cookie
+(`path /api/v1/auth`). Friends, feed, events, and messaging are later tickets.
 
 The HTTP contract is the versioned
 [`gym-buddy-openapi`](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi)
-package (`github:Projet-de-compensation-2025-2026/gym-buddy-openapi#v0.1.0`).
-This repo does **not** vendor `openapi.yaml` or `bundled.yaml`.
+package (ticket #59 pins develop SHA `dc3488158a302de9475153f124f7f98a6e4dba9b`
+until the next 0.1.x tag). This repo does **not** vendor `openapi.yaml` or
+`bundled.yaml`.
 
 `pnpm generate:api` (also run by `pnpm start`, `pnpm build`, and `pnpm test`)
 points [orval](https://orval.dev) `8.22.0` (`client: 'angular'`) at
 `node_modules/gym-buddy-openapi/openapi/openapi.yaml` so the `$ref` tree
-resolves from that tagged checkout, then writes `src/app/api/generated/`.
-Do not generate from `bundled.yaml` or a raw `develop` SHA. Auth pages use a
-thin `AuthApi` wrapper over the generated `GymBuddyAPIService` so login /
-refresh / logout still send the HttpOnly refresh cookie.
+resolves from that package checkout, then writes `src/app/api/generated/`.
+Do not generate from `bundled.yaml`. Auth pages use a thin `AuthApi` wrapper
+over the generated `GymBuddyAPIService` so login / refresh / logout still send
+the HttpOnly refresh cookie.
 
 | Workflow | Trigger                | Promise                                                                   |
 | -------- | ---------------------- | ------------------------------------------------------------------------- |
