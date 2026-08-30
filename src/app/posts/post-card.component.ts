@@ -44,6 +44,16 @@ export class PostCard {
       .join('');
   }
 
+  likeLabel(): string {
+    const n = this.post().likeCount;
+    return `${n} ${n === 1 ? 'Like' : 'Likes'}`;
+  }
+
+  commentLabel(): string {
+    const n = this.post().commentCount;
+    return `${n} ${n === 1 ? 'Comment' : 'Comments'}`;
+  }
+
   when(): string {
     const created = Date.parse(this.activityAt() ?? this.post().createdAt);
     if (Number.isNaN(created)) {

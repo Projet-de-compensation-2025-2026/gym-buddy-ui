@@ -1,4 +1,4 @@
-<div class="shell">
+<div class="shell" [class.shell-nav]="session.signedIn() && session.isStaff()">
   @if (session.signedIn() && session.isStaff()) {
     <aside class="nav">
       <p class="brand">Admin Portal</p>
@@ -8,8 +8,10 @@
         <a routerLink="/content" routerLinkActive="active">Content</a>
         <a routerLink="/reports" routerLinkActive="active">Reports</a>
         <a routerLink="/media" routerLinkActive="active">Media</a>
-        <a routerLink="/fixtures" routerLinkActive="active">Fixtures</a>
-        <a routerLink="/audit" routerLinkActive="active">Audit</a>
+        @if (session.isAdmin()) {
+          <a routerLink="/fixtures" routerLinkActive="active">Fixtures</a>
+          <a routerLink="/audit" routerLinkActive="active">Audit</a>
+        }
       </nav>
       <div class="staff">
         <span>{{ session.handle() }}</span>

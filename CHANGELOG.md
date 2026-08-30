@@ -9,6 +9,69 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+## [1.1.0] — 2026-08-30
+
+### Added
+
+- Admin login password visibility toggle (ticket #77) and sign-in by fixture handle or email (ticket #87).
+- Content Moderation lists hideable posts, comments, events, and media with hide/unhide (tickets #80, #81).
+- Media Management inspects product ACL and revokes signed GET with a staff-entered reason (tickets #82, #84).
+
+### Changed
+
+- GitHub Pages Deploy copies the member `index.html` into known client-route
+  directories and sibling `.html` files so cold GETs of `/login`, `/register`,
+  `/events`, `/events/new`, `/friends`, `/search`, `/messages`, `/suggestions`,
+  `/settings/profile`, `/settings/privacy`, and the other static member paths
+  are HTTP 200. Site-root `404.html` remains the unknown-path fallback,
+  including parameterized `/u/:handle`, `/posts/:id`, `/events/:id`, and
+  `/messages/:id`. Ticket #99.
+- Isolated admin bundle routes (`/admin/login`, `/admin/users`,
+  `/admin/content`, `/admin/reports`, `/admin/media`, `/admin/fixtures`,
+  `/admin/audit`) are copied from `dist-admin` so they never fall through the
+  member `404.html`. Ticket #75.
+- Search people `q` is sent when the member types or presses Enter, not only on
+  Apply Filters (ticket #101, FS-SRCH-02).
+- Search **Events** tab stays on `/search` and calls `GET /search/events` (ticket
+  #102, FS-SRCH-01). It does not navigate to `/events`.
+- Search radius control is hidden and `radiusKm` is omitted until the viewer has
+  coordinates (ticket #109, FS-SRCH-03).
+- Signed-out admin login is a single column; the 14rem nav track is only applied when the aside is rendered (ticket #76).
+- Member orval client excludes Admin-tagged operations so `getAdminUsers` / `postAdminFixtures` stay out of the member bundle (ticket #79, FS-ADM-09). Staff client is generated into `gym-buddy-admin`.
+- Fixtures surface shows Approved spec target counts and drops leftover ticket #70 copy (ticket #83).
+- Lock/hide reasons are collected in the UI instead of hardcoded strings (ticket #84).
+- Fixtures and Audit nav (and routes) are admin-only; moderators keep Users, Content, Reports, Media (ticket #86).
+- OpenAPI consumer pin is gym-buddy-openapi SHA `f92465f0361fadb152018b31b3bf7f9426ba9867` (ticket #80).
+
+### Fixed
+
+- Auth screens map VALIDATION / CONFLICT / FORBIDDEN to field-level visitor copy
+  (`details[].path`) instead of a shared banner or raw API `error.message`
+  (ticket #90).
+- Login and register match mockups 01–02: centered card, Display name → Handle →
+  Email → Password (min 10 + eye), teal `btn-primary` **Log In** / **Register**.
+  Remember me / Forgot password are not implemented (ticket #91).
+- Successful register confirms the account and prefills email on `/login`
+  (ticket #92).
+- Empty-feed (and friends) suggestions CTA uses `/friends/suggestions`;
+  `/suggestions` remains an alias (ticket #93).
+- Feed composer is images only (max 4); the Video control is removed (ticket #94).
+- Unknown client routes render a not-found page instead of rewriting to `/`
+  (ticket #95).
+- Events shows either an error + retry or the empty state, not both (ticket #97).
+- Like and comment counts pluralize (`1 Like` / `1 Comment`; 0 and many stay
+  plural) (ticket #104).
+- Profile omits preferred-window copy when `preferredWindows` is empty
+  (ticket #105).
+- Member chrome and composer stay usable at 390×844 without a broken wrap
+  (ticket #106).
+- Suggestions is the active nav item on `/suggestions` and `/friends/suggestions`
+  (ticket #107).
+- Unauthenticated `/friends/suggestions` and `/settings` go to `/login`
+  (ticket #108).
+- App boot calls `POST /auth/refresh` with credentials so a refresh cookie can
+  restore the session; 401 stays logged out with no banner.
+
 ## [1.0.0] — 2026-08-30
 
 ### Added
@@ -104,6 +167,7 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - Auth TypeScript types follow [gym-buddy-openapi](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi) 0.1.0 (`RegisteredUser.role`, login `403` FORBIDDEN, no `expiresIn`)
 
 [Unreleased]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui
+[1.1.0]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v1.0.0
 [0.1.1]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v0.1.0

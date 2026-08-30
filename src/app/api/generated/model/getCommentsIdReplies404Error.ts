@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 1.0.0
  */
 import type { GetCommentsIdReplies404ErrorCode } from './getCommentsIdReplies404ErrorCode';
 import type { GetCommentsIdReplies404ErrorDetailsItem } from './getCommentsIdReplies404ErrorDetailsItem';

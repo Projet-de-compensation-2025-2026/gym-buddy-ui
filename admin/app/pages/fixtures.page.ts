@@ -7,7 +7,10 @@ import { AuthSession } from '../../../src/app/auth/auth-session.service';
   selector: 'admin-fixtures',
   template: `
     <h1>Database Fixtures</h1>
-    <p class="muted">Manage non-production test data generation.</p>
+    <p class="muted">
+      Approved spec targets: users 3 000, friendships 12 000, posts 15 000, comments 20 000, events
+      800, applications 4 000, messages 10 000, media metadata 5 000.
+    </p>
     <p class="warn">
       Non-production only. Generating fixtures will append synthetic rows. Reset truncates domain
       tables and cannot be undone. Disabled on prod (FORBIDDEN).

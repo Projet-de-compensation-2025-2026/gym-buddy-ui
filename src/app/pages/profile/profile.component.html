@@ -199,7 +199,9 @@
           @if (p.experienceLevel) {
             <p>{{ p.experienceLevel }}</p>
           }
-          <p>{{ windowsLabel(p) }}</p>
+          @if (windowsLabel(p); as windows) {
+            <p data-testid="profile-windows">{{ windows }}</p>
+          }
         </article>
       </div>
     }

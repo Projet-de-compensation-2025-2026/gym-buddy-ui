@@ -2,9 +2,10 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminApi } from '../api/admin-api.service';
 import { readApiError } from '../../../src/app/api/models';
-import type { GetAdminReports200 } from '../../../src/app/api/generated/model';
+import type { GetAdminContent200 } from '../api/generated/model';
 
-type ReportRow = GetAdminReports200['data'][number];
+type ContentType = 'post' | 'comment' | 'event' | 'media';
+type ContentRow = GetAdminContent200['data'][number];
 
 @Component({
   selector: 'admin-content',
@@ -12,7 +13,8 @@ type ReportRow = GetAdminReports200['data'][number];
   template: `
     <h1>Content Moderation</h1>
     <p class="muted">
-      Hide posts, comments, events, or media with a reason. Members then see NOT_FOUND.
+      Review posts, comments, events, and media. Hide requires a reason; members then see NOT_FOUND.
+      Staff still see the row and can unhide it.
     </p>
     @if (error()) {
       <p class="error" role="alert">{{ error() }}</p>
@@ -20,44 +22,56 @@ type ReportRow = GetAdminReports200['data'][number];
     @if (notice()) {
       <p class="notice">{{ notice() }}</p>
     }
-    <form class="card" (ngSubmit)="hideTyped()">
-      <label
-        >Type
-        <select [(ngModel)]="type" name="type">
-          <option value="post">Post</option>
-          <option value="comment">Comment</option>
-          <option value="event">Event</option>
-          <option value="media">Media</option>
-        </select>
-      </label>
-      <label>Id <input [(ngModel)]="targetId" name="id" required /></label>
-      <label>Reason <input [(ngModel)]="reason" name="reason" required /></label>
-      <button class="btn-primary" type="submit" [disabled]="busy()">Hide content</button>
-    </form>
-    <h2>Open reports</h2>
+    <div class="tabs" role="tablist">
+      @for (tab of tabs; track tab.type) {
+        <button
+          type="button"
+          role="tab"
+          [class.active]="type() === tab.type"
+          (click)="selectType(tab.type)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+    <label class="search"
+      >Search
+      <input
+        type="search"
+        [value]="query()"
+        (input)="onQuery($event)"
+        placeholder="Search by author, text, or id"
+    /></label>
+    <label class="search"
+      >Hide reason
+      <input [(ngModel)]="reason" name="reason" placeholder="Required to hide" />
+    </label>
     @if (loading()) {
-      <p class="muted">Loading reports…</p>
-    } @else if (reports().length === 0) {
-      <p class="muted">No open reports.</p>
+      <p class="muted">Loading {{ type() }}s…</p>
+    } @else if (rows().length === 0) {
+      <p class="muted">No {{ type() }}s match this search.</p>
     } @else {
       <div class="grid">
-        @for (row of reports(); track row.id) {
+        @for (row of rows(); track row.id) {
           <article class="card">
             <p>
-              <strong>{{ row.reporterHandle }}</strong> · {{ row.targetType }} {{ row.targetId }}
+              <strong>{{ row.authorHandle }}</strong> · {{ row.type }}
+              @if (row.hidden) {
+                <span class="badge">Hidden</span>
+              }
             </p>
-            <p>{{ row.reason }}</p>
-            @if (row.targetType !== 'user') {
-              <button
-                type="button"
-                class="btn-primary"
-                (click)="hideReport(row)"
-                [disabled]="busy()"
-              >
+            <p>{{ row.summary || '—' }}</p>
+            <p class="muted">{{ row.id }}</p>
+            @if (row.hidden && row.hiddenReason) {
+              <p class="muted">Reason: {{ row.hiddenReason }}</p>
+            }
+            @if (row.hidden) {
+              <button type="button" (click)="unhide(row)" [disabled]="busy()">Unhide</button>
+            } @else {
+              <button type="button" class="btn-primary" (click)="hide(row)" [disabled]="busy()">
                 Hide content
               </button>
             }
-            <button type="button" (click)="resolve(row)" [disabled]="busy()">Close report</button>
           </article>
         }
       </div>
@@ -72,15 +86,36 @@ type ReportRow = GetAdminReports200['data'][number];
       display: grid;
       gap: 0.65rem;
       margin: 1rem 0;
+      min-width: 0;
     }
     .grid {
       display: grid;
       gap: 1rem;
       grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
     }
-    label {
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .tabs button.active {
+      background: #cdf2f1;
+      color: #006d77;
+      font-weight: 600;
+    }
+    .search {
       display: grid;
-      gap: 0.25rem;
+      gap: 0.35rem;
+      max-width: 28rem;
+      margin-bottom: 0.75rem;
+    }
+    .badge {
+      background: #fedad6;
+      color: #8d302f;
+      border-radius: 0.25rem;
+      padding: 0.1rem 0.4rem;
+      font-size: 0.75rem;
     }
     .btn-primary {
       background: #006d77;
@@ -89,29 +124,48 @@ type ReportRow = GetAdminReports200['data'][number];
       border-radius: 0.25rem;
       padding: 0.5rem 1rem;
       font-weight: 600;
+      width: max-content;
     }
   `,
 })
 export class ContentPage {
   private readonly api = inject(AdminApi);
+  readonly tabs: { type: ContentType; label: string }[] = [
+    { type: 'post', label: 'Posts' },
+    { type: 'comment', label: 'Comments' },
+    { type: 'event', label: 'Events' },
+    { type: 'media', label: 'Media' },
+  ];
+  readonly type = signal<ContentType>('post');
+  readonly query = signal('');
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly notice = signal<string | null>(null);
   readonly busy = signal(false);
-  readonly reports = signal<ReportRow[]>([]);
-  type = 'post';
-  targetId = '';
+  readonly rows = signal<ContentRow[]>([]);
   reason = '';
 
   constructor() {
     this.reload();
   }
 
+  selectType(type: ContentType): void {
+    this.type.set(type);
+    this.reload();
+  }
+
+  onQuery(event: Event): void {
+    this.query.set((event.target as HTMLInputElement).value);
+    this.reload();
+  }
+
   reload(): void {
     this.loading.set(true);
-    this.api.listReports({ status: 'open', size: 50 }).subscribe({
+    this.error.set(null);
+    const q = this.query().trim();
+    this.api.listContent({ type: this.type(), q: q || undefined, size: 50 }).subscribe({
       next: (page) => {
-        this.reports.set(page.data);
+        this.rows.set(page.data);
         this.loading.set(false);
       },
       error: (err: unknown) => {
@@ -121,20 +175,17 @@ export class ContentPage {
     });
   }
 
-  hideTyped(): void {
-    this.runHide(this.type, this.targetId, this.reason);
-  }
-
-  hideReport(row: ReportRow): void {
-    this.runHide(row.targetType, row.targetId, row.reason);
-  }
-
-  resolve(row: ReportRow): void {
+  hide(row: ContentRow): void {
+    this.error.set(null);
+    if (!this.reason.trim()) {
+      this.error.set('A hide reason is required.');
+      return;
+    }
     this.busy.set(true);
-    this.api.resolve(row.id).subscribe({
+    this.api.hide(row.type, row.id, { reason: this.reason.trim() }).subscribe({
       next: () => {
         this.busy.set(false);
-        this.notice.set('Report closed.');
+        this.notice.set('Content hidden.');
         this.reload();
       },
       error: (err: unknown) => {
@@ -144,17 +195,13 @@ export class ContentPage {
     });
   }
 
-  private runHide(type: string, id: string, reason: string): void {
+  unhide(row: ContentRow): void {
     this.error.set(null);
-    if (!id.trim() || !reason.trim()) {
-      this.error.set('Type, id, and reason are required.');
-      return;
-    }
     this.busy.set(true);
-    this.api.hide(type, id.trim(), { reason: reason.trim() }).subscribe({
+    this.api.unhide(row.type, row.id).subscribe({
       next: () => {
         this.busy.set(false);
-        this.notice.set('Content hidden.');
+        this.notice.set('Content restored.');
         this.reload();
       },
       error: (err: unknown) => {

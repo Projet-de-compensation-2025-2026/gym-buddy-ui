@@ -1,97 +1,109 @@
 <section class="search-page" data-testid="search-page">
   <aside class="card filters" data-testid="search-filters">
-    <h1>Filters</h1>
-    <label>
-      Search
-      <input
-        type="search"
-        placeholder="Search names, keywords…"
-        data-testid="search-q"
-        [value]="q()"
-        (input)="onQuery($event)"
-      />
-    </label>
-    <label>
-      Location
-      <input
-        type="text"
-        placeholder="City"
-        data-testid="search-city"
-        [value]="city()"
-        (input)="onCity($event)"
-      />
-    </label>
-    <label class="radius">
-      <span class="muted">{{ radiusKm() }} km</span>
-      <input
-        type="range"
-        min="1"
-        max="50"
-        data-testid="search-radius"
-        [value]="radiusKm()"
-        (input)="onRadius($event)"
-      />
-    </label>
-    <div>
-      <p class="section-label">Sports &amp; Activities</p>
-      <div class="chips">
-        @for (sport of sports(); track sport) {
-          <button type="button" class="chip" (click)="removeSport(sport)">{{ sport }}</button>
-        }
-        <div class="add-sport">
+    <form (submit)="$event.preventDefault(); applyFilters()">
+      <h1>Filters</h1>
+      <label>
+        Search
+        <input
+          type="search"
+          name="q"
+          placeholder="Search names, keywords…"
+          data-testid="search-q"
+          [value]="q()"
+          (input)="onQuery($event)"
+          (keydown.enter)="onQueryEnter($event)"
+        />
+      </label>
+      <label>
+        Location
+        <input
+          type="text"
+          name="city"
+          placeholder="City"
+          data-testid="search-city"
+          [value]="city()"
+          (input)="onCity($event)"
+        />
+      </label>
+      @if (hasCoordinates()) {
+        <label class="radius">
+          <span class="muted">{{ radiusKm() }} km</span>
           <input
-            type="text"
-            placeholder="+ Add"
-            data-testid="search-sport"
-            [value]="sportDraft()"
-            (input)="onSportDraft($event)"
-            (keydown.enter)="addSport(); $event.preventDefault()"
+            type="range"
+            min="1"
+            max="50"
+            name="radiusKm"
+            data-testid="search-radius"
+            [value]="radiusKm()"
+            (input)="onRadius($event)"
           />
-          <button type="button" class="chip ghost" data-testid="add-sport" (click)="addSport()">
-            Add
-          </button>
+        </label>
+      } @else {
+        <p class="muted radius-unavailable" data-testid="search-radius-unavailable">
+          Set coordinates on your profile to filter by distance.
+        </p>
+      }
+      <div>
+        <p class="section-label">Sports &amp; Activities</p>
+        <div class="chips">
+          @for (sport of sports(); track sport) {
+            <button type="button" class="chip" (click)="removeSport(sport)">{{ sport }}</button>
+          }
+          <div class="add-sport">
+            <input
+              type="text"
+              placeholder="+ Add"
+              data-testid="search-sport"
+              [value]="sportDraft()"
+              (input)="onSportDraft($event)"
+              (keydown.enter)="addSport(); $event.preventDefault()"
+            />
+            <button type="button" class="chip ghost" data-testid="add-sport" (click)="addSport()">
+              Add
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-    <fieldset>
-      <legend class="section-label">Experience Level</legend>
-      <label class="check">
-        <input
-          type="checkbox"
-          data-testid="exp-beginner"
-          [checked]="experience().includes('beginner')"
-          (change)="toggleExperience('beginner')"
-        />
-        Beginner
-      </label>
-      <label class="check">
-        <input
-          type="checkbox"
-          data-testid="exp-intermediate"
-          [checked]="experience().includes('intermediate')"
-          (change)="toggleExperience('intermediate')"
-        />
-        Intermediate
-      </label>
-      <label class="check">
-        <input
-          type="checkbox"
-          data-testid="exp-advanced"
-          [checked]="experience().includes('advanced')"
-          (change)="toggleExperience('advanced')"
-        />
-        Advanced
-      </label>
-    </fieldset>
-    <button type="button" class="btn-primary" data-testid="apply-filters" (click)="applyFilters()">
-      Apply Filters
-    </button>
+      <fieldset>
+        <legend class="section-label">Experience Level</legend>
+        <label class="check">
+          <input
+            type="checkbox"
+            data-testid="exp-beginner"
+            [checked]="experience().includes('beginner')"
+            (change)="toggleExperience('beginner')"
+          />
+          Beginner
+        </label>
+        <label class="check">
+          <input
+            type="checkbox"
+            data-testid="exp-intermediate"
+            [checked]="experience().includes('intermediate')"
+            (change)="toggleExperience('intermediate')"
+          />
+          Intermediate
+        </label>
+        <label class="check">
+          <input
+            type="checkbox"
+            data-testid="exp-advanced"
+            [checked]="experience().includes('advanced')"
+            (change)="toggleExperience('advanced')"
+          />
+          Advanced
+        </label>
+      </fieldset>
+      <button type="submit" class="btn-primary" data-testid="apply-filters">Apply Filters</button>
+    </form>
   </aside>
 
   <div class="results">
-    <nav class="tabs" aria-label="Search index">
+    <nav class="tabs" role="tablist" aria-label="Search index">
       <button
         type="button"
+        role="tab"
+        [attr.aria-selected]="tab() === 'people'"
         [class.active]="tab() === 'people'"
         data-testid="tab-people"
         (click)="setTab('people')"
@@ -100,6 +112,8 @@
       </button>
       <button
         type="button"
+        role="tab"
+        [attr.aria-selected]="tab() === 'events'"
         [class.active]="tab() === 'events'"
         data-testid="tab-events"
         (click)="setTab('events')"

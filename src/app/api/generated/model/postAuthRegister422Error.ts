@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 1.0.0
  */
 import type { PostAuthRegister422ErrorCode } from './postAuthRegister422ErrorCode';
 import type { PostAuthRegister422ErrorDetailsItem } from './postAuthRegister422ErrorDetailsItem';

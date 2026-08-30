@@ -36,8 +36,10 @@ Live site: https://projet-de-compensation-2025-2026.github.io/gym-buddy-ui/
 Production `apiBaseUrl` is `https://vps-c39cdf03.vps.ovh.net/api/v1` (the VPS API, not
 a Pages URL). This does not claim that register/login from the Pages origin succeeds
 (CORS / UFW / SameSite=Lax honesty gate is after this lands; Sentinel re-curls).
-Client routes like `/register` may return HTTP 404 with the same index body (GitHub
-Pages SPA fallback via 404.html). That is expected.
+Known static client routes (`/login`, `/register`, `/admin/login`, …) are copied as
+real files so a cold GET is HTTP 200. Site-root `404.html` remains the fallback for
+unknown paths and parameterized routes (`/u/:handle`, `/posts/:id`). GitHub Pages
+has no SPA rewrite.
 
 ## Run locally
 

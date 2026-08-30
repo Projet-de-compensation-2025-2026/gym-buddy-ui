@@ -14,12 +14,23 @@
 
 .composer-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: space-between;
   gap: 0.75rem;
   align-items: center;
   border-top: 1px solid #e5e7e9;
   padding-top: 0.75rem;
+}
+
+@media (max-width: 30rem) {
+  .composer-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .composer-submit {
+    justify-content: flex-end;
+  }
 }
 
 .composer-tools,

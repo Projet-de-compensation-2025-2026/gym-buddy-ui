@@ -192,6 +192,72 @@ a[aria-disabled='true'] {
   color: #6e7174;
 }
 
+.auth-page {
+  min-height: calc(100vh - 4rem);
+  display: grid;
+  place-items: center;
+  padding: 1.5rem 0;
+}
+
+.auth-brand {
+  margin: 0;
+  color: #006d77;
+  font-weight: 700;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.auth-brand-page {
+  margin-bottom: 1rem;
+}
+
+.auth-card {
+  width: min(100%, 26rem);
+  display: grid;
+  gap: 1rem;
+}
+
+.auth-card h1 {
+  margin: 0;
+  text-align: center;
+}
+
+.auth-card .lede {
+  margin: 0;
+  text-align: center;
+  color: #6e7174;
+}
+
+.auth-card .btn-primary {
+  width: 100%;
+}
+
+.auth-card input,
+.auth-card app-password-field input {
+  border: 1px solid #e5e7e9;
+  border-radius: 0.25rem;
+  background: #fff;
+}
+
+.auth-card input.invalid {
+  border-color: #8d302f;
+}
+
+.auth-switch {
+  margin: 0;
+  text-align: center;
+}
+
+.auth-switch a {
+  color: #006d77;
+  font-weight: 600;
+}
+
+.field-error {
+  color: #8d302f;
+  font-size: 0.875rem;
+}
+
 @media (max-width: 40rem) {
   .settings-layout,
   .two,

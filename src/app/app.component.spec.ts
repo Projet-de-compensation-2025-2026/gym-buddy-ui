@@ -97,4 +97,64 @@ describe('App', () => {
     expect(navigate).toHaveBeenCalledWith('/login');
     http.verify();
   });
+
+  it('renders a not-found page for unknown client routes without rewriting to /', async () => {
+    const { root, http, router, detect } = await setup();
+    await router.navigateByUrl('/does-not-exist');
+    detect();
+    expect(router.url).toBe('/does-not-exist');
+    expect(root.querySelector('[data-testid="not-found"]')?.textContent).toContain(
+      'does not exist',
+    );
+    http.verify();
+  });
+
+  it('sends unauthenticated visitors of /friends/suggestions and /settings to /login', async () => {
+    const { http, router, detect } = await setup();
+    await router.navigateByUrl('/friends/suggestions');
+    detect();
+    expect(router.url).toBe('/login');
+
+    await router.navigateByUrl('/settings');
+    detect();
+    expect(router.url).toBe('/login');
+    http.verify();
+  });
+
+  it('marks Suggestions as the active nav item on /suggestions', async () => {
+    const { root, session, detect, http, router } = await setup();
+    const payload = btoa(
+      JSON.stringify({ sub: '11111111-1111-1111-1111-111111111111', handle: 'alex' }),
+    )
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    session.setAccessToken(`hdr.${payload}.sig`);
+    detect();
+    for (const req of http.match(
+      (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/feed`),
+    )) {
+      req.flush({ data: [], page: { next: null, size: 20 } });
+    }
+    await router.navigateByUrl('/suggestions');
+    detect();
+    for (const req of http.match(() => true)) {
+      if (req.request.url.includes('/suggestions')) {
+        req.flush({ data: [], page: { size: 20, next: null } });
+      } else if (req.request.url.includes('/matching/me')) {
+        req.flush({ optedIn: false, weekStart: '2026-08-24' });
+      } else {
+        req.flush({ data: [], page: { next: null, size: 20 } });
+      }
+    }
+    detect();
+    const friends = Array.from(root.querySelectorAll('a')).find(
+      (el) => el.textContent?.trim() === 'Friends',
+    );
+    const suggestions = root.querySelector('[data-testid="nav-suggestions"]');
+    expect(suggestions).toBeTruthy();
+    expect(suggestions?.classList.contains('active')).toBeTrue();
+    expect(friends?.classList.contains('active')).toBeFalse();
+    http.verify();
+  });
 });

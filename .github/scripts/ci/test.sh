@@ -3,6 +3,7 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$root"
 python3 .github/scripts/ci/test_release_version.py
+python3 .github/scripts/ci/test_stage_pages.py
 if [[ -f angular.json ]]; then
   pnpm install --frozen-lockfile
   pnpm generate:api
@@ -24,6 +25,8 @@ required = [
     Path(".github/scripts/ci/prepare_changelog.py"),
     Path(".github/scripts/ci/sync_package_version.py"),
     Path(".github/scripts/ci/test_release_version.py"),
+    Path(".github/scripts/ci/stage_pages.py"),
+    Path(".github/scripts/ci/test_stage_pages.py"),
     Path("CHANGELOG.md"),
 ]
 missing = [str(p) for p in required if not p.is_file()]

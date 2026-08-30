@@ -1,38 +1,46 @@
-<header class="site-header">
-  <a routerLink="/" class="brand">Gym Buddy</a>
-  <nav class="primary-nav">
-    @if (session.signedIn()) {
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
-        >Feed</a
-      >
-      <a routerLink="/events" routerLinkActive="active">Events</a>
-      <a routerLink="/friends" [class.active]="friendsNavActive()">Friends</a>
-      <a routerLink="/search" routerLinkActive="active">Search</a>
-      <a routerLink="/messages" routerLinkActive="active">Messages</a>
-    } @else {
-      <a routerLink="/login" routerLinkActive="active">Sign in</a>
-      <a routerLink="/register" routerLinkActive="active">Sign up</a>
-    }
-  </nav>
-  <div class="header-actions">
-    @if (session.signedIn()) {
-      @if (session.handle(); as handle) {
-        <a
-          class="avatar-link"
-          [routerLink]="['/u', handle]"
-          [attr.data-testid]="'header-profile'"
-          >{{ handle[0]?.toUpperCase() }}</a
+@if (!authScreen()) {
+  <header class="site-header">
+    <a routerLink="/" class="brand">Gym Buddy</a>
+    <nav class="primary-nav">
+      @if (session.signedIn()) {
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+          >Feed</a
         >
+        <a routerLink="/events" routerLinkActive="active">Events</a>
+        <a routerLink="/friends" [class.active]="friendsNavActive()">Friends</a>
+        <a
+          routerLink="/friends/suggestions"
+          [class.active]="suggestionsNavActive()"
+          data-testid="nav-suggestions"
+          >Suggestions</a
+        >
+        <a routerLink="/search" routerLinkActive="active">Search</a>
+        <a routerLink="/messages" routerLinkActive="active">Messages</a>
+      } @else {
+        <a routerLink="/login" routerLinkActive="active">Sign in</a>
+        <a routerLink="/register" routerLinkActive="active">Sign up</a>
       }
-      <a routerLink="/settings/profile">Settings</a>
-      <button type="button" data-testid="log-out" (click)="logout()" [disabled]="session.busy()">
-        {{ session.busy() ? 'Signing out…' : 'Log out' }}
-      </button>
-    }
-  </div>
-</header>
+    </nav>
+    <div class="header-actions">
+      @if (session.signedIn()) {
+        @if (session.handle(); as handle) {
+          <a
+            class="avatar-link"
+            [routerLink]="['/u', handle]"
+            [attr.data-testid]="'header-profile'"
+            >{{ handle[0]?.toUpperCase() }}</a
+          >
+        }
+        <a routerLink="/settings/profile">Settings</a>
+        <button type="button" data-testid="log-out" (click)="logout()" [disabled]="session.busy()">
+          {{ session.busy() ? 'Signing out…' : 'Log out' }}
+        </button>
+      }
+    </div>
+  </header>
+}
 
-@if (session.error()) {
+@if (session.error() && !authScreen()) {
   <p class="error" role="alert" data-testid="session-error">{{ session.error() }}</p>
 }
 

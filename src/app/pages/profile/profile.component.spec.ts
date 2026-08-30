@@ -160,6 +160,21 @@ describe('ProfilePage', () => {
     expect(root.textContent).toContain('Edit Profile');
     http.verify();
   });
+
+  it('does not invent Flexible when preferredWindows is empty', async () => {
+    const { root, http, detect } = await setup('blake', 'blake');
+    http.expectOne(`${environment.apiBaseUrl}/profiles/blake`).flush({
+      view: 'full',
+      handle: 'blake',
+      displayName: 'Blake',
+      visibility: 'public',
+      preferredWindows: [],
+    });
+    detect();
+    expect(root.textContent).not.toContain('Flexible');
+    expect(root.querySelector('[data-testid="profile-windows"]')).toBeNull();
+    http.verify();
+  });
 });
 
 function flushFriendLists(

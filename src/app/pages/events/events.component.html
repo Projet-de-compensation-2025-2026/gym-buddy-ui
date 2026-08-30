@@ -36,9 +36,10 @@
 
   @if (error()) {
     <p class="error" role="alert" data-testid="events-error">{{ error() }}</p>
-  }
-
-  @if (loading()) {
+    <button type="button" class="btn-secondary" data-testid="events-retry" (click)="reload()">
+      Retry
+    </button>
+  } @else if (loading()) {
     <p class="state" data-testid="events-loading">Loading sessions…</p>
   } @else {
     <div class="events-grid" data-testid="events-list">

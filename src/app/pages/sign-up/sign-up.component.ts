@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthApi } from '../../api/auth-api.service';
-import { readApiError } from '../../api/models';
+import { clientRegisterErrors, mapAuthApiError, type AuthField } from '../../auth/auth-errors';
 import { PasswordField } from '../../auth/password-field';
 import { fsAcct03PasswordValidator } from '../../auth/password-rules';
 
@@ -19,35 +19,45 @@ export class SignUpPage {
 
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
+  readonly fieldErrors = signal<Partial<Record<AuthField, string>>>({});
 
   readonly form = this.fb.nonNullable.group(
     {
-      email: ['', [Validators.required, Validators.email]],
-      handle: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(10)]],
       displayName: ['', Validators.required],
+      handle: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(10)]],
     },
     { validators: fsAcct03PasswordValidator('email', 'handle', 'password') },
   );
 
+  fieldError(name: AuthField): string | null {
+    return this.fieldErrors()[name] ?? null;
+  }
+
   submit(): void {
     this.error.set(null);
+    this.fieldErrors.set({});
+    this.form.markAllAsTouched();
     if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.error.set(
-        'Check email, handle, password (10+ characters, not email or handle), and display name.',
-      );
+      this.fieldErrors.set(clientRegisterErrors(this.form));
       return;
     }
     this.submitting.set(true);
-    this.api.register(this.form.getRawValue()).subscribe({
+    const value = this.form.getRawValue();
+    this.api.register(value).subscribe({
       next: () => {
         this.submitting.set(false);
-        void this.router.navigateByUrl('/login', { state: { registered: true } });
+        void this.router.navigate(['/login'], {
+          queryParams: { registered: '1', email: value.email },
+          state: { registered: true, email: value.email },
+        });
       },
       error: (err: unknown) => {
         this.submitting.set(false);
-        this.error.set(readApiError(err));
+        const mapped = mapAuthApiError(err);
+        this.error.set(mapped.formError);
+        this.fieldErrors.set(mapped.fieldErrors);
       },
     });
   }

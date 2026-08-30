@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prove Release writes package.json and never auto-picks 1.0.0."""
+"""Prove Release writes package.json; auto bump never picks 1.0.0+."""
 
 from __future__ import annotations
 
@@ -68,11 +68,11 @@ def test_release_yml_wires_sync() -> None:
         fail("release.yml must compute version, write package.json, then tag")
 
 
-def test_package_json_stays_0yz() -> None:
+def test_package_json_matches_shipped_tag() -> None:
     pkg = json.loads(PACKAGE.read_text(encoding="utf-8"))
     ver = str(pkg.get("version", ""))
-    if not ver.startswith("0."):
-        fail(f"package.json version {ver!r} must stay 0.y.z (do not invent 1.0.0)")
+    if ver != "1.0.0":
+        fail(f"package.json version {ver!r} must match shipped v1.0.0")
 
 
 def test_sync_writes_package_json() -> None:
@@ -129,7 +129,7 @@ def main() -> None:
         if not required.is_file():
             fail(f"missing {required}")
     test_release_yml_wires_sync()
-    test_package_json_stays_0yz()
+    test_package_json_matches_shipped_tag()
     test_sync_writes_package_json()
     test_auto_bump_never_picks_1_0_0()
     print("TEST OK: Release writes package.json; auto bump never picks 1.0.0")
