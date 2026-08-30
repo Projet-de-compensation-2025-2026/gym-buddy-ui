@@ -5,7 +5,8 @@
   align-items: start;
 }
 
-.filters {
+.filters,
+.filters form {
   display: grid;
   gap: 0.85rem;
 }

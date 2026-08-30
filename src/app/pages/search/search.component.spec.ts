@@ -33,9 +33,8 @@ describe('SearchPage', () => {
     const { root, http, detect } = await setup();
     expect(root.querySelector('[data-testid="search-loading"]')?.textContent).toContain('Loading');
 
-    const req = http.expectOne(
-      (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
-    );
+    const req = expectPeople(http);
+    expect(req.request.params.get('q')).toBeNull();
     req.flush({ data: [samplePerson()], page: { next: null, size: 20 } });
     detect();
 
@@ -44,20 +43,70 @@ describe('SearchPage', () => {
     http.verify();
   });
 
+  it('FS-SRCH-02 sends q when the member types', async () => {
+    const { root, http, detect } = await setup();
+    expectPeople(http).flush({ data: [samplePerson()], page: { next: null, size: 20 } });
+    detect();
+
+    typeQuery(root, 'alex');
+    detect();
+    const req = expectPeople(http);
+    expect(req.request.params.get('q')).toBe('alex');
+    req.flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+
+    expect(root.querySelector('[data-testid="people-empty"]')?.textContent).toContain('No people');
+    http.verify();
+  });
+
+  it('FS-SRCH-02 sends q when the member presses Enter', async () => {
+    const { root, http, detect } = await setup();
+    expectPeople(http).flush({ data: [samplePerson()], page: { next: null, size: 20 } });
+    detect();
+
+    const input = root.querySelector('[data-testid="search-q"]') as HTMLInputElement;
+    input.value = 'demo.alex';
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+    );
+    detect();
+    const req = expectPeople(http);
+    expect(req.request.params.get('q')).toBe('demo.alex');
+    req.flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+
+    expect(root.querySelector('[data-testid="people-empty"]')?.textContent).toContain('No people');
+    http.verify();
+  });
+
+  it('FS-SRCH-02 Apply Filters still sends q', async () => {
+    const { root, http, detect } = await setup();
+    expectPeople(http).flush({ data: [samplePerson()], page: { next: null, size: 20 } });
+    detect();
+
+    typeQuery(root, 'alex');
+    detect();
+    expectPeople(http).flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+
+    (root.querySelector('[data-testid="apply-filters"]') as HTMLButtonElement).click();
+    detect();
+    const req = expectPeople(http);
+    expect(req.request.params.get('q')).toBe('alex');
+    req.flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+    expect(root.querySelector('[data-testid="people-empty"]')).toBeTruthy();
+    http.verify();
+  });
+
   it('FS-SRCH-01 switches to the events tab', async () => {
     const { root, http, detect } = await setup();
-    http
-      .expectOne(
-        (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
-      )
-      .flush({ data: [], page: { next: null, size: 20 } });
+    expectPeople(http).flush({ data: [], page: { next: null, size: 20 } });
     detect();
 
     (root.querySelector('[data-testid="tab-events"]') as HTMLButtonElement).click();
     detect();
-    const events = http.expectOne(
-      (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/events`),
-    );
+    const events = expectEvents(http);
     events.flush({ data: [sampleEvent()], page: { next: null, size: 20 } });
     detect();
 
@@ -69,24 +118,16 @@ describe('SearchPage', () => {
 
   it('shows empty and error states', async () => {
     const { root, http, detect } = await setup();
-    http
-      .expectOne(
-        (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
-      )
-      .flush({ data: [], page: { next: null, size: 20 } });
+    expectPeople(http).flush({ data: [], page: { next: null, size: 20 } });
     detect();
     expect(root.querySelector('[data-testid="people-empty"]')?.textContent).toContain('No people');
 
     (root.querySelector('[data-testid="apply-filters"]') as HTMLButtonElement).click();
     detect();
-    http
-      .expectOne(
-        (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
-      )
-      .flush(
-        { error: { code: 'VALIDATION', message: 'radiusKm must be between 1 and 50' } },
-        { status: 422, statusText: 'Unprocessable Entity' },
-      );
+    expectPeople(http).flush(
+      { error: { code: 'VALIDATION', message: 'radiusKm must be between 1 and 50' } },
+      { status: 422, statusText: 'Unprocessable Entity' },
+    );
     detect();
     expect(root.querySelector('[data-testid="search-error"]')?.textContent).toContain('radiusKm');
     http.verify();
@@ -95,11 +136,7 @@ describe('SearchPage', () => {
   it('CONNECT posts a friendship request', async () => {
     const { root, http, detect } = await setup();
     const person = samplePerson();
-    http
-      .expectOne(
-        (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
-      )
-      .flush({ data: [person], page: { next: null, size: 20 } });
+    expectPeople(http).flush({ data: [person], page: { next: null, size: 20 } });
     detect();
 
     (root.querySelector('[data-testid="connect"]') as HTMLButtonElement).click();
@@ -115,16 +152,33 @@ describe('SearchPage', () => {
         displayName: 'Sarah J.',
       },
     });
-    http
-      .expectOne(
-        (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
-      )
-      .flush({ data: [{ ...person, friendState: 'pending' }], page: { next: null, size: 20 } });
+    expectPeople(http).flush({
+      data: [{ ...person, friendState: 'pending' }],
+      page: { next: null, size: 20 },
+    });
     detect();
     expect(root.textContent).toContain('Pending');
     http.verify();
   });
 });
+
+function expectPeople(http: HttpTestingController) {
+  return http.expectOne(
+    (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/people`),
+  );
+}
+
+function expectEvents(http: HttpTestingController) {
+  return http.expectOne(
+    (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/search/events`),
+  );
+}
+
+function typeQuery(root: HTMLElement, value: string): void {
+  const input = root.querySelector('[data-testid="search-q"]') as HTMLInputElement;
+  input.value = value;
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+}
 
 function samplePerson(): GetSearchPeople200DataItem {
   return {

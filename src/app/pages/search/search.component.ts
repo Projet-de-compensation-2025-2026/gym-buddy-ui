@@ -73,8 +73,14 @@ export class SearchPage {
   }
 
   onQuery(event: Event): void {
-    const target = event.target;
-    this.q.set(target instanceof HTMLInputElement ? target.value : '');
+    this.q.set(inputValue(event));
+    this.reload();
+  }
+
+  onQueryEnter(event: Event): void {
+    event.preventDefault();
+    this.q.set(inputValue(event));
+    this.reload();
   }
 
   onCity(event: Event): void {
@@ -223,4 +229,9 @@ export class SearchPage {
       });
     }
   }
+}
+
+function inputValue(event: Event): string {
+  const target = event.target;
+  return target instanceof HTMLInputElement ? target.value : '';
 }
