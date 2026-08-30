@@ -119,6 +119,92 @@
           }
         }
       }
+    },
+    "gym-buddy-admin": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "type": "component",
+          "addTypeToClassName": false
+        }
+      },
+      "root": "admin",
+      "sourceRoot": "admin",
+      "prefix": "admin",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "admin/main.ts",
+            "index": "admin/index.html",
+            "tsConfig": "admin/tsconfig.app.json",
+            "outputPath": {
+              "base": "dist-admin",
+              "browser": "."
+            },
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ],
+            "styles": ["admin/styles.css"]
+          },
+          "configurations": {
+            "production": {
+              "baseHref": "/gym-buddy-ui/admin/",
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "8kB",
+                  "maximumError": "16kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.development.ts"
+                }
+              ]
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json",
+            "port": 4201
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "gym-buddy-admin:build:production"
+            },
+            "development": {
+              "buildTarget": "gym-buddy-admin:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "runner": "karma",
+            "tsConfig": "admin/tsconfig.spec.json"
+          }
+        }
+      }
     }
   }
 }

@@ -2,8 +2,8 @@
 /**
  * Generate the Angular HttpClient from the versioned gym-buddy-openapi package.
  *
- * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#2550b32f95dcb881b0bfaa37e30f130595dbe9d3
- * (develop SHA after ticket #66 suggestions and #65 search). Same pin as gym-buddy-service until the next 0.1.x tag.
+ * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#8f89f1a72b1ddb6996d9598e6cedbac4d4788ace
+ * (develop SHA after ticket #69). Same pin as gym-buddy-service until the next 0.1.x tag.
  *
  * Orval reads the $ref tree at
  * node_modules/gym-buddy-openapi/openapi/openapi.yaml so relative $refs
@@ -19,7 +19,7 @@ import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const OPENAPI_PACKAGE = 'gym-buddy-openapi';
-export const OPENAPI_TAG = '2550b32f95dcb881b0bfaa37e30f130595dbe9d3';
+export const OPENAPI_TAG = '8f89f1a72b1ddb6996d9598e6cedbac4d4788ace';
 export const OPENAPI_VERSION = '0.1.0';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -72,7 +72,12 @@ export function resolveOpenApiSpec() {
   }
 
   const yaml = readFileSync(specPath, 'utf8');
-  if (!yaml.includes('openapi:') || !yaml.includes('$ref:') || !yaml.includes('/auth/login')) {
+  if (
+    !yaml.includes('openapi:') ||
+    !yaml.includes('$ref:') ||
+    !yaml.includes('/auth/login') ||
+    !yaml.includes('/admin/users')
+  ) {
     throw new Error(`${specPath} is not the Gym Buddy $ref tree`);
   }
   return specPath;

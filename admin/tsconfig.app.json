@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": [
+    "./**/*.ts",
+    "../src/app/api/generated/**/*.ts",
+    "../src/app/api/auth-api.service.ts",
+    "../src/app/api/models.ts",
+    "../src/app/auth/**/*.ts",
+    "../src/environments/**/*.ts"
+  ],
+  "exclude": ["**/*.spec.ts", "../src/app/auth/**/*.spec.ts"]
+}

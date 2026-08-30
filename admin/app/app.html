@@ -1,0 +1,27 @@
+<div class="shell">
+  @if (session.signedIn() && session.isStaff()) {
+    <aside class="nav">
+      <p class="brand">Admin Portal</p>
+      <p class="eyebrow">Back office</p>
+      <nav>
+        <a routerLink="/users" routerLinkActive="active">Users</a>
+        <a routerLink="/content" routerLinkActive="active">Content</a>
+        <a routerLink="/reports" routerLinkActive="active">Reports</a>
+        <a routerLink="/media" routerLinkActive="active">Media</a>
+        <a routerLink="/fixtures" routerLinkActive="active">Fixtures</a>
+        <a routerLink="/audit" routerLinkActive="active">Audit</a>
+      </nav>
+      <div class="staff">
+        <span>{{ session.handle() }}</span>
+        <span class="muted">{{ session.role() }}</span>
+        <button type="button" (click)="logout()" [disabled]="session.busy()">Log out</button>
+      </div>
+    </aside>
+  }
+  <main>
+    @if (session.error()) {
+      <p class="error" role="alert">{{ session.error() }}</p>
+    }
+    <router-outlet />
+  </main>
+</div>
