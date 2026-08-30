@@ -68,6 +68,7 @@ import type {
   PatchProfilesMeBody,
   PostAdminContentTypeIdHideBody,
   PostAdminContentTypeIdUnhideBody,
+  PostAdminFixturesBody,
   PostAdminReportsIdResolve200,
   PostAdminReportsIdResolveBody,
   PostAdminUsersIdLock200,
@@ -3387,46 +3388,71 @@ export class GymBuddyAPIService {
 
   /**
    * FS-ADM-05. Admin only. Disabled on the `prod` Spring profile
-   * (FORBIDDEN). Moderators get FORBIDDEN. Members get NOT_FOUND. Generating
-   * thousands of rows is ticket #70; this operation records the trigger
-   * (audit row) and may no-op until that ticket. Writes `audit_events`.
-   * @summary Trigger fixture generation
+   * (FORBIDDEN). Moderators get FORBIDDEN. Members get NOT_FOUND.
+   * Datafaker factories use seed `FIXTURE_SEED=20260813`. Omitted body
+   * fields use the Approved defaults (3 000 users, 12 000 accepted
+   * friendships, 15 000 posts, 20 000 comments, 800 events, 4 000
+   * applications, 10 000 messages, 5 000 media metadata rows). Media
+   * metadata reuses about 10 stock MinIO objects. Does not truncate;
+   * call `POST /admin/fixtures/reset` first (`--reset`). Writes
+   * `audit_events`.
+   * @summary Generate deterministic test fixtures
    */
-  postAdminFixtures<TData = void>(options?: HttpClientBodyOptions): Observable<TData>;
-  postAdminFixtures<TData = void>(options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
   postAdminFixtures<TData = void>(
+    postAdminFixturesBody?: PostAdminFixturesBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postAdminFixtures<TData = void>(
+    postAdminFixturesBody?: PostAdminFixturesBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postAdminFixtures<TData = void>(
+    postAdminFixturesBody?: PostAdminFixturesBody,
     options?: HttpClientResponseOptions,
   ): Observable<AngularHttpResponse<TData>>;
   postAdminFixtures<TData = void>(
+    postAdminFixturesBody?: PostAdminFixturesBody,
     options?: HttpClientObserveOptions,
   ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
     if (options?.observe === 'events') {
-      return this.http.post<TData>(`${environment.apiBaseUrl}/admin/fixtures`, undefined, {
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'events',
-      });
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/fixtures`,
+        postAdminFixturesBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
     }
 
     if (options?.observe === 'response') {
-      return this.http.post<TData>(`${environment.apiBaseUrl}/admin/fixtures`, undefined, {
-        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-        observe: 'response',
-      });
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/admin/fixtures`,
+        postAdminFixturesBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
     }
 
-    return this.http.post<TData>(`${environment.apiBaseUrl}/admin/fixtures`, undefined, {
-      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
-      observe: 'body',
-    });
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/admin/fixtures`,
+      postAdminFixturesBody,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
   }
 
   /**
    * FS-ADM-05. Admin only, non-`prod`, `--reset` equivalent. Disabled on
    * the `prod` Spring profile (FORBIDDEN). Moderators get FORBIDDEN.
-   * Members get NOT_FOUND. Truncating thousands of rows is ticket #70;
-   * this operation records the trigger (audit row) and may no-op until
-   * that ticket. Writes `audit_events`.
-   * @summary Trigger fixture reset
+   * Members get NOT_FOUND. Truncates domain rows. The calling admin row
+   * is preserved so the session stays valid. Named demo accounts are
+   * recreated by a later generate. Writes `audit_events`.
+   * @summary Truncate fixture data
    */
   postAdminFixturesReset<TData = void>(options?: HttpClientBodyOptions): Observable<TData>;
   postAdminFixturesReset<TData = void>(
