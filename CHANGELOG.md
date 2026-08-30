@@ -7,13 +7,13 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Friends news feed on `/` (FS-FEED-01..07). Ticket #63. Composer plus reverse-chrono posts and reposts from the viewer and accepted friends. Empty feed links to `/suggestions`. Public non-friend posts stay off this feed.
 - Nested comments on `/posts/:id` (FS-CMT-01..07). Ticket #62. Nested indent,
   like/reply, author tombstone, load-more replies. Max depth 4. No media in
   comments.
 - Posts composer on `/` and post chrome on `/posts/:id`: create, like, and
   repost (FS-POST-01..08). Ticket #61. Max 4 images via media `kind=post`.
-  Visibility Friends (default) or Public. No video posts. The friends news
-  feed stays a later slice.
+  Visibility Friends (default) or Public. No video posts.
 - Avatar upload on `/settings/profile` via `POST /media` + signed PUT (FS-MED-01..09).
   Ticket #68. Max **8 MiB** (mockup “Max 2MB” is leftover). No local `/uploads`.
 - Friends management (`/friends`): inbound accept/decline, outbound cancel,
@@ -37,6 +37,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
   tag. Not a `bundled.yaml` GET.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
   `edca075cdf1e1eb6caf6f094e02cadaba7c480b5` (ticket #68) until the next 0.1.x
+  tag. Not a `bundled.yaml` GET.
+- OpenAPI consumer pin is gym-buddy-openapi develop SHA
+  `82d0eadb592c023fe3934836c7ce0ca15ca56abd` (ticket #63) until the next 0.1.x
   tag. Not a `bundled.yaml` GET.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
   `01ab3d50195833296b10e8ca44aa89d1e046683a` (ticket #62) until the next 0.1.x

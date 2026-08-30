@@ -2,8 +2,8 @@
 /**
  * Generate the Angular HttpClient from the versioned gym-buddy-openapi package.
  *
- * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#01ab3d50195833296b10e8ca44aa89d1e046683a
- * (develop SHA after ticket #62). Same pin as gym-buddy-service until the next 0.1.x tag.
+ * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#82d0eadb592c023fe3934836c7ce0ca15ca56abd
+ * (develop SHA after ticket #63). Same pin as gym-buddy-service until the next 0.1.x tag.
  *
  * Orval reads the $ref tree at
  * node_modules/gym-buddy-openapi/openapi/openapi.yaml so relative $refs
@@ -19,7 +19,7 @@ import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const OPENAPI_PACKAGE = 'gym-buddy-openapi';
-export const OPENAPI_TAG = '01ab3d50195833296b10e8ca44aa89d1e046683a';
+export const OPENAPI_TAG = '82d0eadb592c023fe3934836c7ce0ca15ca56abd';
 export const OPENAPI_VERSION = '0.1.0';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -35,7 +35,7 @@ function assertNoVendoredSpec() {
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean)
-    .filter((file) => !file.split(sep).includes('node_modules'));
+    .filter((file) => !file.split(/[\\/]/).includes('node_modules'));
   if (hits.length > 0) {
     throw new Error(
       `Do not vendor the OpenAPI document in gym-buddy-ui:\n${hits.map((f) => `  ${relative(root, f)}`).join('\n')}`,

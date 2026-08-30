@@ -13,6 +13,7 @@ export class PostCard {
   private readonly media = inject(MediaApi);
 
   readonly post = input.required<GetPostsId200>();
+  readonly activityAt = input<string | null>(null);
   readonly imageUrls = input<Record<string, string>>({});
   readonly like = output<GetPostsId200>();
   readonly repost = output<GetPostsId200>();
@@ -44,7 +45,7 @@ export class PostCard {
   }
 
   when(): string {
-    const created = Date.parse(this.post().createdAt);
+    const created = Date.parse(this.activityAt() ?? this.post().createdAt);
     if (Number.isNaN(created)) {
       return '';
     }

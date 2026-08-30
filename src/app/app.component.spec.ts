@@ -49,6 +49,13 @@ describe('App', () => {
       .replace(/=+$/, '');
     session.setAccessToken(`hdr.${payload}.sig`);
     detect();
+    const feed = http.match(
+      (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/feed`),
+    );
+    for (const req of feed) {
+      req.flush({ data: [], page: { next: null, size: 20 } });
+    }
+    detect();
     const link = Array.from(root.querySelectorAll('a')).find(
       (el) => el.textContent?.trim() === 'Friends',
     );

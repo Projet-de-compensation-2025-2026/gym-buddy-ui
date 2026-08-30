@@ -69,24 +69,48 @@
       </div>
     </article>
 
-    @if (posts().length === 0) {
-      <p class="muted" data-testid="home-signed-in">
-        Posts you publish stay on this page. The friends news feed lands in a later slice.
-      </p>
+    @if (loading()) {
+      <p class="muted" data-testid="feed-loading">Loading your feed…</p>
+    } @else if (items().length === 0) {
+      <article class="card empty" data-testid="empty-feed">
+        <p>Your feed is quiet. Find gym buddies to see their posts here.</p>
+        <a class="btn-primary" routerLink="/suggestions" data-testid="empty-feed-cta"
+          >Find suggestions</a
+        >
+      </article>
     }
     <div class="stack" data-testid="feed-list">
-      @for (post of posts(); track post.id) {
-        <app-post-card
-          [post]="post"
-          [imageUrls]="imageUrls()"
-          (like)="toggleLike($event)"
-          (repost)="toggleRepost($event)"
-        />
+      @for (item of items(); track item.id) {
+        <div class="feed-item">
+          @if (item.kind === 'repost') {
+            <p class="repost-by" data-testid="repost-actor">
+              {{ item.actor.displayName || item.actor.handle }} reposted
+            </p>
+          }
+          <app-post-card
+            [post]="item.post"
+            [activityAt]="item.activityAt"
+            [imageUrls]="imageUrls()"
+            (like)="toggleLike($event)"
+            (repost)="toggleRepost($event)"
+          />
+        </div>
       }
     </div>
+    @if (next()) {
+      <button
+        type="button"
+        class="btn-secondary"
+        data-testid="feed-load-more"
+        [disabled]="loadingMore()"
+        (click)="loadMore()"
+      >
+        {{ loadingMore() ? 'Loading…' : 'Load more' }}
+      </button>
+    }
   } @else {
     <h1>Gym Buddy</h1>
-    <p>Sign-up, sign-in, profiles, friends, and posts. Events and messaging are later slices.</p>
+    <p>Sign-up, sign-in, profiles, friends, and your friends news feed.</p>
     <p>
       <a routerLink="/register">Sign up</a>
       ·

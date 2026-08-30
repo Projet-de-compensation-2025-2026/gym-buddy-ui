@@ -21,6 +21,8 @@ import { environment } from '../../../environments/environment';
 import type {
   GetCommentsIdReplies200,
   GetCommentsIdRepliesParams,
+  GetFeed200,
+  GetFeedParams,
   GetFriendships200,
   GetFriendshipsParams,
   GetHealthz200,
@@ -1693,6 +1695,56 @@ export class GymBuddyAPIService {
     return this.http.delete<TData>(`${environment.apiBaseUrl}/comments/${id}/like`, {
       ...(options as Omit<NonNullable<typeof options>, 'observe'>),
       observe: 'body',
+    });
+  }
+
+  /**
+   * FS-FEED-01..06. Posts authored by the viewer and by accepted friends,
+   * plus reposts they made of posts the viewer may see. Reverse chronological
+   * on activity time (post `createdAt` or repost `createdAt`). Cursor `before`
+   * is opaque (`page.next`). Default size 20, max 50. Hidden and deleted
+   * posts (and reposts of those) are omitted with no placeholder. Public
+   * posts from non-friends do not enter this feed.
+   * @summary Friends news feed
+   */
+  getFeed<TData = GetFeed200>(
+    params?: GetFeedParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getFeed<TData = GetFeed200>(
+    params?: GetFeedParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getFeed<TData = GetFeed200>(
+    params?: GetFeedParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getFeed<TData = GetFeed200>(
+    params?: GetFeedParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/feed`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/feed`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/feed`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
     });
   }
 }
