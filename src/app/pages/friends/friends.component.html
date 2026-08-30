@@ -1,7 +1,10 @@
 <section class="friends-page" data-testid="friends-page">
   <header class="page-head">
     <h1>Friends Management</h1>
-    <p class="muted">Manage your gym connections and requests.</p>
+    <p class="muted">
+      Manage your gym connections and requests.
+      <a routerLink="/suggestions" data-testid="friends-suggestions">Find suggestions</a>
+    </p>
   </header>
 
   @if (error()) {
