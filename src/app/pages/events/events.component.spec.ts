@@ -27,9 +27,7 @@ describe('EventsPage', () => {
   it('FS-EVT lists upcoming sessions with Instant and Recurring filters', async () => {
     const { root, http, detect } = await setup();
     expect(root.querySelector('[data-testid="events-loading"]')?.textContent).toContain('Loading');
-    const req = http.expectOne(
-      (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/events`),
-    );
+    const req = http.expectOne(`${environment.apiBaseUrl}/events?size=50`);
     req.flush({
       data: [
         sample('instant', 'Morning Sprint Intervals'),
@@ -44,12 +42,7 @@ describe('EventsPage', () => {
     expect(root.textContent).toContain('Heavy Lifts Crew');
 
     (root.querySelector('[data-testid="tab-instant"]') as HTMLButtonElement).click();
-    const instant = http.expectOne(
-      (r) =>
-        r.method === 'GET' &&
-        r.url.startsWith(`${environment.apiBaseUrl}/events`) &&
-        r.url.includes('kind=instant'),
-    );
+    const instant = http.expectOne(`${environment.apiBaseUrl}/events?kind=instant&size=50`);
     instant.flush({
       data: [sample('instant', 'Morning Sprint Intervals')],
       page: { next: null, size: 20 },
