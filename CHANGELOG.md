@@ -7,6 +7,10 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Admin login password visibility toggle (ticket #77) and sign-in by fixture handle or email (ticket #87).
+- Content Moderation lists hideable posts, comments, events, and media with hide/unhide (tickets #80, #81).
+- Media Management inspects product ACL and revokes signed GET with a staff-entered reason (tickets #82, #84).
+
 ### Changed
 
 - GitHub Pages Deploy copies the member `index.html` into known client-route
@@ -26,6 +30,12 @@ Versioning: [Semantic Versioning](https://semver.org/).
   #102, FS-SRCH-01). It does not navigate to `/events`.
 - Search radius control is hidden and `radiusKm` is omitted until the viewer has
   coordinates (ticket #109, FS-SRCH-03).
+- Signed-out admin login is a single column; the 14rem nav track is only applied when the aside is rendered (ticket #76).
+- Member orval client excludes Admin-tagged operations so `getAdminUsers` / `postAdminFixtures` stay out of the member bundle (ticket #79, FS-ADM-09). Staff client is generated into `gym-buddy-admin`.
+- Fixtures surface shows Approved spec target counts and drops leftover ticket #70 copy (ticket #83).
+- Lock/hide reasons are collected in the UI instead of hardcoded strings (ticket #84).
+- Fixtures and Audit nav (and routes) are admin-only; moderators keep Users, Content, Reports, Media (ticket #86).
+- OpenAPI consumer pin is gym-buddy-openapi SHA `f92465f0361fadb152018b31b3bf7f9426ba9867` (ticket #80).
 
 ## [1.0.0] — 2026-08-30
 

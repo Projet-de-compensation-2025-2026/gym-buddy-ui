@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 1.0.0
  */
 import type { PostFriendships201Direction } from './postFriendships201Direction';
 import type { PostFriendships201Peer } from './postFriendships201Peer';

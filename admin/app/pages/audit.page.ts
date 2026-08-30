@@ -1,7 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { AdminApi } from '../api/admin-api.service';
 import { readApiError } from '../../../src/app/api/models';
-import type { GetAdminAudit200 } from '../../../src/app/api/generated/model';
+import { AuthSession } from '../../../src/app/auth/auth-session.service';
+import type { GetAdminAudit200 } from '../api/generated/model';
 
 type AuditRow = GetAdminAudit200['data'][number];
 
@@ -9,8 +10,10 @@ type AuditRow = GetAdminAudit200['data'][number];
   selector: 'admin-audit',
   template: `
     <h1>Audit Log</h1>
-    <p class="muted">Append-only record of staff actions.</p>
-    @if (loading()) {
+    <p class="muted">Append-only record of staff actions. Admin only.</p>
+    @if (!session.isAdmin()) {
+      <p class="muted">Only admins can view the audit log.</p>
+    } @else if (loading()) {
       <p class="muted">Loading audit events…</p>
     } @else if (error()) {
       <p class="error" role="alert">{{ error() }}</p>
@@ -59,11 +62,16 @@ type AuditRow = GetAdminAudit200['data'][number];
 })
 export class AuditPage {
   private readonly api = inject(AdminApi);
+  readonly session = inject(AuthSession);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly rows = signal<AuditRow[]>([]);
 
   constructor() {
+    if (!this.session.isAdmin()) {
+      this.loading.set(false);
+      return;
+    }
     this.api.listAudit({ size: 50 }).subscribe({
       next: (page) => {
         this.rows.set(page.data);

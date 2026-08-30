@@ -9,6 +9,10 @@ if [[ -f angular.json ]]; then
   fi
   pnpm generate:api
   pnpm exec ng build gym-buddy-ui
+  if grep -E 'getAdminUsers|postAdminFixtures|/admin/users' dist/main-*.js >/dev/null; then
+    echo "SMOKE FAIL: member bundle contains staff HTTP client" >&2
+    exit 1
+  fi
   pnpm exec ng build gym-buddy-admin
   python3 .github/scripts/ci/stage_pages.py _site
   dir=_site

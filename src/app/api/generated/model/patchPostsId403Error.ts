@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 1.0.0
  */
 import type { PatchPostsId403ErrorCode } from './patchPostsId403ErrorCode';
 import type { PatchPostsId403ErrorDetailsItem } from './patchPostsId403ErrorDetailsItem';

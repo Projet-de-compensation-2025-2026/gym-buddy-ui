@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { AdminApi } from '../api/admin-api.service';
 import { readApiError } from '../../../src/app/api/models';
-import type { GetAdminReports200 } from '../../../src/app/api/generated/model';
+import type { GetAdminReports200 } from '../api/generated/model';
 
 type ReportRow = GetAdminReports200['data'][number];
 
