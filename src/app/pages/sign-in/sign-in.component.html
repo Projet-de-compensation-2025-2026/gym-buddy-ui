@@ -1,36 +1,55 @@
-<section>
-  <h1>Sign in</h1>
-  <p>Use the email and password from registration.</p>
+<section class="auth-page">
+  <article class="auth-card card">
+    <p class="auth-brand">Gym Buddy</p>
+    <p class="lede">Welcome back. Let's get to work.</p>
 
-  @if (registered()) {
-    <p class="notice" data-testid="sign-in-registered">Account created. Sign in to continue.</p>
-  }
-  @if (error()) {
-    <p class="error" role="alert" data-testid="sign-in-error">{{ error() }}</p>
-  }
+    @if (registered()) {
+      <p class="notice" data-testid="sign-in-registered">Account created. Sign in to continue.</p>
+    }
+    @if (error()) {
+      <p class="error" role="alert" data-testid="sign-in-error">{{ error() }}</p>
+    }
 
-  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <label>
-      Email
-      <input
-        type="email"
-        formControlName="email"
-        autocomplete="email"
-        data-testid="sign-in-email"
-      />
-    </label>
-    <label>
-      Password
-      <app-password-field
-        [control]="form.controls.password"
-        autocomplete="current-password"
-        testId="sign-in-password"
-      />
-    </label>
-    <button type="submit" data-testid="sign-in-submit" [disabled]="submitting()">
-      {{ submitting() ? 'Signing in…' : 'Sign in' }}
-    </button>
-  </form>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label>
+        Email
+        <input
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          data-testid="sign-in-email"
+          [class.invalid]="fieldError('email')"
+          [attr.aria-invalid]="fieldError('email') ? true : null"
+        />
+        @if (fieldError('email'); as message) {
+          <span class="field-error" role="alert" data-testid="sign-in-email-error">{{
+            message
+          }}</span>
+        }
+      </label>
+      <label>
+        Password
+        <app-password-field
+          [control]="form.controls.password"
+          autocomplete="current-password"
+          testId="sign-in-password"
+        />
+        @if (fieldError('password'); as message) {
+          <span class="field-error" role="alert" data-testid="sign-in-password-error">{{
+            message
+          }}</span>
+        }
+      </label>
+      <button
+        type="submit"
+        class="btn-primary"
+        data-testid="sign-in-submit"
+        [disabled]="submitting()"
+      >
+        {{ submitting() ? 'Signing in…' : 'Log In' }}
+      </button>
+    </form>
 
-  <p>New here? <a routerLink="/register">Sign up</a></p>
+    <p class="auth-switch">Don't have an account? <a routerLink="/register">Sign up</a></p>
+  </article>
 </section>

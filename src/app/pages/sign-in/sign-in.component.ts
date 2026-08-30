@@ -1,8 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthApi } from '../../api/auth-api.service';
-import { readApiError } from '../../api/models';
+import { clientLoginErrors, mapAuthApiError, type AuthField } from '../../auth/auth-errors';
 import { AuthSession } from '../../auth/auth-session.service';
 import { PasswordField } from '../../auth/password-field';
 
@@ -17,23 +17,39 @@ export class SignInPage {
   private readonly api = inject(AuthApi);
   private readonly session = inject(AuthSession);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
-  readonly registered = signal(
-    Boolean(this.router.lastSuccessfulNavigation()?.extras.state?.['registered']),
-  );
+  readonly fieldErrors = signal<Partial<Record<AuthField, string>>>({});
+  readonly registered = signal(false);
 
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
 
+  constructor() {
+    const navState = this.router.getCurrentNavigation()?.extras.state ?? {};
+    const query = this.route.snapshot.queryParamMap;
+    const email =
+      (typeof navState['email'] === 'string' ? navState['email'] : '') || query.get('email') || '';
+    this.registered.set(navState['registered'] === true || query.get('registered') === '1');
+    if (email) {
+      this.form.controls.email.setValue(email);
+    }
+  }
+
+  fieldError(name: AuthField): string | null {
+    return this.fieldErrors()[name] ?? null;
+  }
+
   submit(): void {
     this.error.set(null);
+    this.fieldErrors.set({});
+    this.form.markAllAsTouched();
     if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      this.error.set('Enter a valid email and password.');
+      this.fieldErrors.set(clientLoginErrors(this.form));
       return;
     }
     this.submitting.set(true);
@@ -45,7 +61,9 @@ export class SignInPage {
       },
       error: (err: unknown) => {
         this.submitting.set(false);
-        this.error.set(readApiError(err));
+        const mapped = mapAuthApiError(err);
+        this.error.set(mapped.formError);
+        this.fieldErrors.set(mapped.fieldErrors);
       },
     });
   }

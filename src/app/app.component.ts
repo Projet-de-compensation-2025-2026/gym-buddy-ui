@@ -15,9 +15,22 @@ export class App {
   private readonly api = inject(AuthApi);
   private readonly router = inject(Router);
 
+  protected path(): string {
+    return this.router.url.split('?')[0]?.split('#')[0] ?? '';
+  }
+
+  protected authScreen(): boolean {
+    const url = this.path();
+    return url === '/login' || url === '/register';
+  }
+
   protected friendsNavActive(): boolean {
-    const url = this.router.url.split('?')[0] ?? '';
-    return url === '/friends' || url.startsWith('/friends/') || url.startsWith('/suggestions');
+    return this.path() === '/friends';
+  }
+
+  protected suggestionsNavActive(): boolean {
+    const url = this.path();
+    return url === '/suggestions' || url === '/friends/suggestions';
   }
 
   logout(): void {

@@ -1,51 +1,85 @@
-<section>
-  <h1>Sign up</h1>
-  <p>Create a Gym Buddy account. You will sign in on the next page.</p>
+<section class="auth-page">
+  <p class="auth-brand auth-brand-page">Gym Buddy</p>
+  <article class="auth-card card">
+    <h1>Create Account</h1>
+    <p class="lede">Join Gym Buddy to find training partners.</p>
 
-  @if (error()) {
-    <p class="error" role="alert" data-testid="sign-up-error">{{ error() }}</p>
-  }
+    @if (error()) {
+      <p class="error" role="alert" data-testid="sign-up-error">{{ error() }}</p>
+    }
 
-  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <label>
-      Email
-      <input
-        type="email"
-        formControlName="email"
-        autocomplete="email"
-        data-testid="sign-up-email"
-      />
-    </label>
-    <label>
-      Handle
-      <input
-        type="text"
-        formControlName="handle"
-        autocomplete="username"
-        data-testid="sign-up-handle"
-      />
-    </label>
-    <label>
-      Password
-      <app-password-field
-        [control]="form.controls.password"
-        autocomplete="new-password"
-        testId="sign-up-password"
-      />
-    </label>
-    <label>
-      Display name
-      <input
-        type="text"
-        formControlName="displayName"
-        autocomplete="nickname"
-        data-testid="sign-up-display-name"
-      />
-    </label>
-    <button type="submit" data-testid="sign-up-submit" [disabled]="submitting()">
-      {{ submitting() ? 'Creating account…' : 'Create account' }}
-    </button>
-  </form>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label>
+        Display name
+        <input
+          type="text"
+          formControlName="displayName"
+          autocomplete="nickname"
+          data-testid="sign-up-display-name"
+          [class.invalid]="fieldError('displayName')"
+          [attr.aria-invalid]="fieldError('displayName') ? true : null"
+        />
+        @if (fieldError('displayName'); as message) {
+          <span class="field-error" role="alert" data-testid="sign-up-display-name-error">{{
+            message
+          }}</span>
+        }
+      </label>
+      <label>
+        Handle
+        <input
+          type="text"
+          formControlName="handle"
+          autocomplete="username"
+          data-testid="sign-up-handle"
+          [class.invalid]="fieldError('handle')"
+          [attr.aria-invalid]="fieldError('handle') ? true : null"
+        />
+        @if (fieldError('handle'); as message) {
+          <span class="field-error" role="alert" data-testid="sign-up-handle-error">{{
+            message
+          }}</span>
+        }
+      </label>
+      <label>
+        Email
+        <input
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          data-testid="sign-up-email"
+          [class.invalid]="fieldError('email')"
+          [attr.aria-invalid]="fieldError('email') ? true : null"
+        />
+        @if (fieldError('email'); as message) {
+          <span class="field-error" role="alert" data-testid="sign-up-email-error">{{
+            message
+          }}</span>
+        }
+      </label>
+      <label>
+        Password (min 10 characters)
+        <app-password-field
+          [control]="form.controls.password"
+          autocomplete="new-password"
+          testId="sign-up-password"
+        />
+        @if (fieldError('password'); as message) {
+          <span class="field-error" role="alert" data-testid="sign-up-password-error">{{
+            message
+          }}</span>
+        }
+      </label>
+      <button
+        type="submit"
+        class="btn-primary"
+        data-testid="sign-up-submit"
+        [disabled]="submitting()"
+      >
+        {{ submitting() ? 'Creating account…' : 'Register' }}
+      </button>
+    </form>
 
-  <p>Already registered? <a routerLink="/login">Sign in</a></p>
+    <p class="auth-switch">Already have an account? <a routerLink="/login">Log in</a></p>
+  </article>
 </section>

@@ -27,6 +27,35 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - Search radius control is hidden and `radiusKm` is omitted until the viewer has
   coordinates (ticket #109, FS-SRCH-03).
 
+### Fixed
+
+- Auth screens map VALIDATION / CONFLICT / FORBIDDEN to field-level visitor copy
+  (`details[].path`) instead of a shared banner or raw API `error.message`
+  (ticket #90).
+- Login and register match mockups 01–02: centered card, Display name → Handle →
+  Email → Password (min 10 + eye), teal `btn-primary` **Log In** / **Register**.
+  Remember me / Forgot password are not implemented (ticket #91).
+- Successful register confirms the account and prefills email on `/login`
+  (ticket #92).
+- Empty-feed (and friends) suggestions CTA uses `/friends/suggestions`;
+  `/suggestions` remains an alias (ticket #93).
+- Feed composer is images only (max 4); the Video control is removed (ticket #94).
+- Unknown client routes render a not-found page instead of rewriting to `/`
+  (ticket #95).
+- Events shows either an error + retry or the empty state, not both (ticket #97).
+- Like and comment counts pluralize (`1 Like` / `1 Comment`; 0 and many stay
+  plural) (ticket #104).
+- Profile omits preferred-window copy when `preferredWindows` is empty
+  (ticket #105).
+- Member chrome and composer stay usable at 390×844 without a broken wrap
+  (ticket #106).
+- Suggestions is the active nav item on `/suggestions` and `/friends/suggestions`
+  (ticket #107).
+- Unauthenticated `/friends/suggestions` and `/settings` go to `/login`
+  (ticket #108).
+- App boot calls `POST /auth/refresh` with credentials so a refresh cookie can
+  restore the session; 401 stays logged out with no banner.
+
 ## [1.0.0] — 2026-08-30
 
 ### Added

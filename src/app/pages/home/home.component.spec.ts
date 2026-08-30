@@ -70,8 +70,17 @@ describe('HomePage', () => {
     const cta = root.querySelector('[data-testid="empty-feed-cta"]') as HTMLAnchorElement;
     expect(cta).toBeTruthy();
     expect(cta.getAttribute('href') ?? cta.getAttribute('ng-reflect-router-link') ?? '').toContain(
-      'suggestions',
+      'friends/suggestions',
     );
+    http.verify();
+  });
+
+  it('does not ship a Video control in the composer', async () => {
+    const { root, http, detect } = await setup();
+    flushFeed(http);
+    detect();
+    expect(root.querySelector('[data-testid="attach-image"]')).toBeTruthy();
+    expect(root.textContent).not.toContain('Video');
     http.verify();
   });
 
@@ -144,7 +153,7 @@ describe('HomePage', () => {
     expect(like.request.method).toBe('PUT');
     like.flush(null, { status: 204, statusText: 'No Content' });
     detect();
-    expect(root.querySelector('[data-testid="like-count"]')?.textContent).toContain('1');
+    expect(root.querySelector('[data-testid="like-count"]')?.textContent?.trim()).toBe('1 Like');
     http.verify();
   });
 });
