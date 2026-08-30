@@ -22,6 +22,7 @@ import type {
   GetFriendships200,
   GetFriendshipsParams,
   GetHealthz200,
+  GetMediaIdUrl200,
   GetProfilesHandle200,
   GetProfilesMe200,
   GetReadyz200,
@@ -38,6 +39,8 @@ import type {
   PostFriendshipsBody,
   PostFriendshipsIdAccept200,
   PostMeCloseBody,
+  PostMedia201,
+  PostMediaBody,
 } from './model';
 
 interface HttpClientOptions {
@@ -894,6 +897,132 @@ export class GymBuddyAPIService {
     }
 
     return this.http.delete<TData>(`${environment.apiBaseUrl}/blocks/${userId}`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-MED-02, FS-MED-03, FS-MED-04, FS-MED-05. Creates a `pending` media
+   * row and a short-lived signed PUT URL. Bytes go to object storage, never
+   * a public `/uploads` directory on the API (FS-MED-01). Per-user quota is
+   * 1 GiB (`QUOTA_EXCEEDED`). Over 8 MiB is `PAYLOAD_TOO_LARGE`. Audio is
+   * message-only. Orphan pending rows older than 1 h are deleted.
+   * @summary Start a media upload
+   */
+  postMedia<TData = PostMedia201>(
+    postMediaBody: PostMediaBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postMedia<TData = PostMedia201>(
+    postMediaBody: PostMediaBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postMedia<TData = PostMedia201>(
+    postMediaBody: PostMediaBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postMedia<TData = PostMedia201>(
+    postMediaBody: PostMediaBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/media`, postMediaBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/media`, postMediaBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/media`, postMediaBody, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-MED-06, FS-MED-07. Runs canRead then returns a 60 s signed GET.
+   * Status must be `ready`. Deny and missing both NOT_FOUND. Staff may
+   * inspect in back-office; members need parent visibility (avatar if
+   * profile visible, post if post visible, message if conversation member).
+   * @summary Mint a short-lived download URL
+   */
+  getMediaIdUrl<TData = GetMediaIdUrl200>(
+    id: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getMediaIdUrl<TData = GetMediaIdUrl200>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getMediaIdUrl<TData = GetMediaIdUrl200>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getMediaIdUrl<TData = GetMediaIdUrl200>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/media/${id}/url`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/media/${id}/url`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/media/${id}/url`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-MED-08. Owner only. Other callers get NOT_FOUND. Existing signed
+   * URLs fail after expiry. The object is scheduled for deletion (grace
+   * 7 days).
+   * @summary Soft-delete media
+   */
+  deleteMediaId<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+  deleteMediaId<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  deleteMediaId<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  deleteMediaId<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/media/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/media/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.delete<TData>(`${environment.apiBaseUrl}/media/${id}`, {
       ...(options as Omit<NonNullable<typeof options>, 'observe'>),
       observe: 'body',
     });
