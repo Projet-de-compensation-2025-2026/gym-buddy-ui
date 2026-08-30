@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 1.0.0
  */
 import type { PutCommentsIdLike401ErrorCode } from './putCommentsIdLike401ErrorCode';
 import type { PutCommentsIdLike401ErrorDetailsItem } from './putCommentsIdLike401ErrorDetailsItem';

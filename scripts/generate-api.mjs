@@ -2,8 +2,8 @@
 /**
  * Generate the Angular HttpClient from the versioned gym-buddy-openapi package.
  *
- * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#f849a1dcd498c12fd9507b83f9d50d375d651347
- * (develop SHA after ticket #70). Same pin as gym-buddy-service until the next 0.1.x tag.
+ * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#f92465f0361fadb152018b31b3bf7f9426ba9867
+ * (ticket #80 GET /admin/content). Same pin as gym-buddy-service until the next tag.
  *
  * Orval reads the $ref tree at
  * node_modules/gym-buddy-openapi/openapi/openapi.yaml so relative $refs
@@ -19,8 +19,8 @@ import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const OPENAPI_PACKAGE = 'gym-buddy-openapi';
-export const OPENAPI_TAG = 'f849a1dcd498c12fd9507b83f9d50d375d651347';
-export const OPENAPI_VERSION = '0.1.0';
+export const OPENAPI_TAG = 'f92465f0361fadb152018b31b3bf7f9426ba9867';
+export const OPENAPI_VERSION = '1.0.0';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const require = createRequire(join(root, 'package.json'));
@@ -95,10 +95,14 @@ function main() {
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
-  const format = spawnSync('pnpm', ['exec', 'prettier', '--write', 'src/app/api/generated'], {
-    cwd: root,
-    stdio: 'inherit',
-  });
+  const format = spawnSync(
+    'pnpm',
+    ['exec', 'prettier', '--write', 'src/app/api/generated', 'admin/app/api/generated'],
+    {
+      cwd: root,
+      stdio: 'inherit',
+    },
+  );
   if (format.status !== 0) {
     process.exit(format.status ?? 1);
   }

@@ -1,13 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { AdminApi } from '../api/admin-api.service';
 import { readApiError } from '../../../src/app/api/models';
 import { AuthSession } from '../../../src/app/auth/auth-session.service';
-import type { GetAdminUsers200 } from '../../../src/app/api/generated/model';
+import type { GetAdminUsers200 } from '../api/generated/model';
 
 type AdminUserRow = GetAdminUsers200['data'][number];
 
 @Component({
   selector: 'admin-users',
+  imports: [FormsModule],
   template: `
     <header class="head">
       <div>
@@ -22,6 +24,10 @@ type AdminUserRow = GetAdminUsers200['data'][number];
         [value]="query()"
         (input)="onQuery($event)"
         placeholder="Search users by name, email, or handle"
+    /></label>
+    <label class="search"
+      >Lock reason
+      <input [(ngModel)]="lockReason" name="lockReason" placeholder="Required to lock an account"
     /></label>
     @if (loading()) {
       <p class="muted">Loading users…</p>
@@ -125,6 +131,7 @@ export class UsersPage {
   readonly error = signal<string | null>(null);
   readonly rows = signal<AdminUserRow[]>([]);
   readonly busyId = signal<string | null>(null);
+  lockReason = '';
 
   constructor() {
     this.reload();
@@ -177,8 +184,13 @@ export class UsersPage {
   }
 
   lock(row: AdminUserRow): void {
+    this.error.set(null);
+    if (!this.lockReason.trim()) {
+      this.error.set('A lock reason is required.');
+      return;
+    }
     this.busyId.set(row.id);
-    this.api.lock(row.id, { reason: 'policy abuse' }).subscribe({
+    this.api.lock(row.id, { reason: this.lockReason.trim() }).subscribe({
       next: () => {
         this.busyId.set(null);
         this.reload();

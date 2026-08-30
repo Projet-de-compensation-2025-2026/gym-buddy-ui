@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 1.0.0
  */
 import type { PostApplicationsIdAccept200Applicant } from './postApplicationsIdAccept200Applicant';
 import type { PostApplicationsIdAccept200Status } from './postApplicationsIdAccept200Status';

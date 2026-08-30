@@ -1,9 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { GymBuddyAPIService } from '../../../src/app/api/generated/client';
+import { GymBuddyAdminAPIService } from './generated/client';
 import type {
   GetAdminAudit200,
   GetAdminAuditParams,
+  GetAdminContent200,
+  GetAdminContentParams,
   GetAdminMedia200,
   GetAdminMediaParams,
   GetAdminReports200,
@@ -19,13 +21,13 @@ import type {
   PostAdminUsersIdUnlock200,
   PostAdminUsersIdUnlockBody,
   PostAdminContentTypeIdHideBody,
-} from '../../../src/app/api/generated/model';
+} from './generated/model';
 
 export type FixtureCounts = PostAdminFixturesBody;
 
 @Injectable({ providedIn: 'root' })
 export class AdminApi {
-  private readonly client = inject(GymBuddyAPIService);
+  private readonly client = inject(GymBuddyAdminAPIService);
 
   listUsers(params?: GetAdminUsersParams): Observable<GetAdminUsers200> {
     return this.client.getAdminUsers(params);
@@ -41,6 +43,10 @@ export class AdminApi {
 
   changeRole(id: string, body: PatchAdminUsersIdRoleBody): Observable<PatchAdminUsersIdRole200> {
     return this.client.patchAdminUsersIdRole(id, body);
+  }
+
+  listContent(params: GetAdminContentParams): Observable<GetAdminContent200> {
+    return this.client.getAdminContent(params);
   }
 
   hide(type: string, id: string, body: PostAdminContentTypeIdHideBody): Observable<void> {

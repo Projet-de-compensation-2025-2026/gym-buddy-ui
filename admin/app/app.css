@@ -1,7 +1,11 @@
 .shell {
   display: grid;
-  grid-template-columns: 14rem 1fr;
+  grid-template-columns: minmax(0, 1fr);
   min-height: 100vh;
+}
+
+.shell-nav {
+  grid-template-columns: 14rem minmax(0, 1fr);
 }
 
 .nav {
@@ -51,7 +55,8 @@ main {
 }
 
 @media (max-width: 48rem) {
-  .shell {
-    grid-template-columns: 1fr;
+  .shell,
+  .shell-nav {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

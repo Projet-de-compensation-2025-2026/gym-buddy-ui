@@ -5,6 +5,7 @@
   },
   "include": [
     "./**/*.ts",
+    "./app/api/generated/**/*.ts",
     "../src/app/api/generated/**/*.ts",
     "../src/app/api/auth-api.service.ts",
     "../src/app/api/models.ts",

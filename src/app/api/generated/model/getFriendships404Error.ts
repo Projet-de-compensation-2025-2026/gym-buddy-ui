@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 1.0.0
  */
 import type { GetFriendships404ErrorCode } from './getFriendships404ErrorCode';
 import type { GetFriendships404ErrorDetailsItem } from './getFriendships404ErrorDetailsItem';
