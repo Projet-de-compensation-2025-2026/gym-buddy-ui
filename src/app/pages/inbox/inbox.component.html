@@ -1,0 +1,66 @@
+<section class="inbox-page" data-testid="inbox-page">
+  <header class="page-head">
+    <div>
+      <h1>Inbox</h1>
+      <p class="muted">Messages with accepted friends.</p>
+    </div>
+    <button
+      type="button"
+      class="compose"
+      data-testid="inbox-compose"
+      (click)="openComposer()"
+      aria-label="New message"
+    >
+      ✎
+    </button>
+  </header>
+
+  @if (error()) {
+    <p class="error" role="alert" data-testid="inbox-error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="state" data-testid="inbox-loading">Loading inbox…</p>
+  } @else if (threads().length === 0 && !composing()) {
+    <p class="muted empty" data-testid="inbox-empty">
+      No conversations yet. Message a friend to start.
+    </p>
+  } @else {
+    <ul class="thread-list card" data-testid="inbox-list">
+      @for (row of threads(); track row.id) {
+        <li>
+          <a class="thread" [routerLink]="['/messages', row.id]">
+            <span class="avatar">{{ initials(row.peer.displayName || row.peer.handle) }}</span>
+            <span class="meta">
+              <strong>{{ row.peer.displayName || row.peer.handle }}</strong>
+              <span class="preview">{{ preview(row) }}</span>
+            </span>
+            <span class="when">
+              {{ when(row.updatedAt) }}
+              @if (row.unreadCount > 0) {
+                <span class="badge" data-testid="inbox-unread">{{ row.unreadCount }}</span>
+              }
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (composing()) {
+    <aside class="card compose-panel" data-testid="inbox-friends">
+      <h2>New message</h2>
+      <ul class="stack-list">
+        @for (row of friendsList(); track row.id) {
+          <li>
+            <button type="button" class="friend" [disabled]="busy()" (click)="startChat(row)">
+              {{ row.peer.displayName || row.peer.handle }}
+            </button>
+          </li>
+        } @empty {
+          <li class="muted">Add friends first.</li>
+        }
+      </ul>
+    </aside>
+  }
+</section>

@@ -3,7 +3,7 @@
  * Generate the Angular HttpClient from the versioned gym-buddy-openapi package.
  *
  * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#8f89f1a72b1ddb6996d9598e6cedbac4d4788ace
- * (develop SHA after ticket #69). Same pin as gym-buddy-service until the next 0.1.x tag.
+ * (develop SHA after ticket #67). Same pin as gym-buddy-service until the next 0.1.x tag.
  *
  * Orval reads the $ref tree at
  * node_modules/gym-buddy-openapi/openapi/openapi.yaml so relative $refs

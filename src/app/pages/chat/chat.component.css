@@ -1,0 +1,117 @@
+.chat-page {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 70vh;
+  gap: 0.75rem;
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chat-head h1 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.bubbles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+  align-content: start;
+}
+
+.bubble {
+  max-width: 70%;
+  border-radius: 1rem;
+  padding: 0.65rem 0.85rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.bubble.theirs {
+  background: #fff;
+  border: 1px solid #e5e7e9;
+  justify-self: start;
+}
+
+.bubble.mine {
+  background: #006d77;
+  color: #fff;
+  justify-self: end;
+}
+
+.bubble img {
+  max-width: 16rem;
+  border-radius: 0.5rem;
+}
+
+.stamp {
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+
+.tombstone {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  text-decoration: underline;
+  padding: 0;
+  justify-self: end;
+}
+
+.composer {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5e7e9;
+  border-radius: 999px;
+  padding: 0.35rem 0.5rem 0.35rem 0.75rem;
+}
+
+.composer input[type='text'] {
+  flex: 1;
+  border: 0;
+  outline: none;
+}
+
+.composer input[type='file'] {
+  width: 1.5rem;
+  opacity: 0.01;
+  position: absolute;
+}
+
+.icon {
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #f4f6f8;
+}
+
+.icon::after {
+  content: '📎';
+}
+
+.send {
+  background: #006d77;
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

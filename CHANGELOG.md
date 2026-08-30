@@ -7,6 +7,7 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Inbox and chat at `/messages` and `/messages/:id` (aliases `/inbox`, `/inbox/:id`) (FS-MSG-01..10). Ticket #67. Text, image, and audio composer. Friends-only Message on `/u/:handle`. WebSocket live updates with HTTP poll every 10 s if the socket is down. Mockups 13–14.
 - Isolated Angular back-office (`gym-buddy-admin` bundle under `/admin`) for Users, Content, Reports, Media, Fixtures, and Audit (FS-ADM-01..09, FS-ACCT-08/09). Ticket #69. Members do not receive staff JS. Leftover chrome (Dashboard, Bookings, Analytics, Invite User, Export CSV, Billing, + New Session) is not implemented. Fixture buttons are triggers only.
 - Friend suggestions on `/suggestions` (FS-SUGG-01..07, FS-MATCH-01..03). Ticket #66. Cards with reason line, sports chips, Add Friend / Dismiss, and a weekly “Match me this week” toggle. Empty feed still links here.
 - Search page `/search` (FS-SRCH-01..08). Ticket #65. Filters (q, city, radius km, sports, experience), People / Events tabs, CONNECT and JOIN EVENT. Empty, loading, and error states. Mockup 12. API radius is kilometres.
@@ -34,6 +35,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- OpenAPI consumer pin is gym-buddy-openapi develop SHA
+  `8f89f1a72b1ddb6996d9598e6cedbac4d4788ace` (ticket #67) until the next 0.1.x
+  tag. Not a `bundled.yaml` GET.
 - Release writes the computed SemVer into `package.json` before the tag
   (humans do not hand-edit that number). Auto bump still refuses `1.0.0`.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA

@@ -6,6 +6,7 @@ import { readAccessPayload } from './jwt';
 export class AuthSession {
   readonly accessToken = signal<string | null>(null);
   readonly handle = signal<string | null>(null);
+  readonly userId = signal<string | null>(null);
   readonly role = signal<string | null>(null);
   readonly busy = signal(false);
   readonly error = signal<string | null>(null);
@@ -20,6 +21,7 @@ export class AuthSession {
     const payload = readAccessPayload(token);
     this.accessToken.set(token);
     this.handle.set(payload?.handle ?? null);
+    this.userId.set(payload?.sub ?? null);
     this.role.set(payload?.role ?? 'member');
     this.error.set(null);
   }
@@ -27,6 +29,7 @@ export class AuthSession {
   clear(): void {
     this.accessToken.set(null);
     this.handle.set(null);
+    this.userId.set(null);
     this.role.set(null);
   }
 }
