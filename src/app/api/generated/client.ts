@@ -29,6 +29,10 @@ import type {
   GetAdminUsersParams,
   GetCommentsIdReplies200,
   GetCommentsIdRepliesParams,
+  GetConversations200,
+  GetConversationsIdMessages200,
+  GetConversationsIdMessagesParams,
+  GetConversationsParams,
   GetEvents200,
   GetEventsId200,
   GetEventsParams,
@@ -47,8 +51,13 @@ import type {
   GetProfilesHandle200,
   GetProfilesMe200,
   GetReadyz200,
+  GetSearchEvents200,
+  GetSearchEventsParams,
+  GetSearchPeople200,
+  GetSearchPeopleParams,
   GetSuggestions200,
   GetSuggestionsParams,
+  GetWsParams,
   PatchAdminUsersIdRole200,
   PatchAdminUsersIdRoleBody,
   PatchEventsId200,
@@ -73,6 +82,10 @@ import type {
   PostAuthRegister201,
   PostAuthRegisterBody,
   PostBlocksBody,
+  PostConversations201,
+  PostConversationsBody,
+  PostConversationsIdMessages201,
+  PostConversationsIdMessagesBody,
   PostEvents201,
   PostEventsBody,
   PostEventsIdApplications201,
@@ -2226,6 +2239,105 @@ export class GymBuddyAPIService {
   }
 
   /**
+   * FS-SRCH-01..08. Authenticated members only. Filters AND across fields;
+   * `sports` is ANY inside the field. Private strangers, blocked users, closed
+   * accounts, and the caller never appear. Rank is α ts_rank + β recency +
+   * γ geo + δ social unless `sort` replaces it. Cursor `before` is opaque
+   * (`page.next`). Default size 20, max 50. API radius is kilometres.
+   * @summary Search people
+   */
+  getSearchPeople<TData = GetSearchPeople200>(
+    params?: GetSearchPeopleParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getSearchPeople<TData = GetSearchPeople200>(
+    params?: GetSearchPeopleParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getSearchPeople<TData = GetSearchPeople200>(
+    params?: GetSearchPeopleParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getSearchPeople<TData = GetSearchPeople200>(
+    params?: GetSearchPeopleParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/search/people`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/search/people`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/search/people`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-SRCH-01..08. Authenticated members only. Filters AND across fields.
+   * Events the caller may not see, hidden content, cancelled series, blocked
+   * organizers, and (when `remaining=true`) full events never appear. Rank is
+   * α ts_rank + β recency + γ geo + δ social unless `sort` replaces it.
+   * Cursor `before` is opaque (`page.next`). Default size 20, max 50. API
+   * radius is kilometres.
+   * @summary Search events
+   */
+  getSearchEvents<TData = GetSearchEvents200>(
+    params?: GetSearchEventsParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getSearchEvents<TData = GetSearchEvents200>(
+    params?: GetSearchEventsParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getSearchEvents<TData = GetSearchEvents200>(
+    params?: GetSearchEventsParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getSearchEvents<TData = GetSearchEvents200>(
+    params?: GetSearchEventsParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/search/events`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/search/events`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/search/events`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
    * FS-SUGG-01..03, FS-SUGG-06, FS-SUGG-07. Two-stage generate-and-score
    * (friends-of-friends ∪ same city∩sport ∪ co-participants last 90 days).
    * Forbidden set: self, friends, pending, blocked, dismissed-30d,
@@ -2431,6 +2543,307 @@ export class GymBuddyAPIService {
     return this.http.get<TData>(`${environment.apiBaseUrl}/matching/me`, {
       ...(options as Omit<NonNullable<typeof options>, 'observe'>),
       observe: 'body',
+    });
+  }
+
+  /**
+   * FS-MSG-09. Direct conversations the caller belongs to, ordered by last
+   * message time (newest first). Each row includes the peer, last message
+   * preview, and unread count. Cursor `before` is opaque (`page.next`).
+   * Default size 20, max 50. Empty inbox is an empty page.
+   * @summary List the caller's inbox
+   */
+  getConversations<TData = GetConversations200>(
+    params?: GetConversationsParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getConversations<TData = GetConversations200>(
+    params?: GetConversationsParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getConversations<TData = GetConversations200>(
+    params?: GetConversationsParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getConversations<TData = GetConversations200>(
+    params?: GetConversationsParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/conversations`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/conversations`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/conversations`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-MSG-01, FS-MSG-02. Body `{ userId }`. Accepted friends only. One
+   * conversation per unordered pair (idempotent: returns the existing row).
+   * Non-friends and blocked peers are FORBIDDEN. Self is VALIDATION.
+   * @summary Open a direct conversation
+   */
+  postConversations<TData = PostConversations201>(
+    postConversationsBody: PostConversationsBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postConversations<TData = PostConversations201>(
+    postConversationsBody: PostConversationsBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postConversations<TData = PostConversations201>(
+    postConversationsBody: PostConversationsBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postConversations<TData = PostConversations201>(
+    postConversationsBody: PostConversationsBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/conversations`,
+        postConversationsBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/conversations`,
+        postConversationsBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/conversations`, postConversationsBody, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-MSG-06. Cursor `before` is opaque (`page.next`). Newest first.
+   * Default size 20, max 50. Marks the thread read for the caller (unread
+   * count resets). Only participants. Strangers get NOT_FOUND. Tombstoned
+   * messages stay as placeholders. History remains after a block.
+   * @summary List messages in a conversation
+   */
+  getConversationsIdMessages<TData = GetConversationsIdMessages200>(
+    id: string,
+    params?: GetConversationsIdMessagesParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getConversationsIdMessages<TData = GetConversationsIdMessages200>(
+    id: string,
+    params?: GetConversationsIdMessagesParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getConversationsIdMessages<TData = GetConversationsIdMessages200>(
+    id: string,
+    params?: GetConversationsIdMessagesParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getConversationsIdMessages<TData = GetConversationsIdMessages200>(
+    id: string,
+    params?: GetConversationsIdMessagesParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/conversations/${id}/messages`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/conversations/${id}/messages`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/conversations/${id}/messages`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
+    });
+  }
+
+  /**
+   * FS-MSG-03, FS-MSG-04, FS-MSG-05, FS-MSG-07, FS-MSG-10. Persistence
+   * first: write the row, then fan-out `message.created` on `/ws`. A dropped
+   * socket never loses the message. `type=text` body 1–4000 characters.
+   * `type=image` or `type=audio` attaches one ready `mediaId` (`kind=message`,
+   * types/size FS-MED). Friends only; a block stops send (FORBIDDEN) while
+   * history GET still works. Strangers get NOT_FOUND.
+   * @summary Send a message
+   */
+  postConversationsIdMessages<TData = PostConversationsIdMessages201>(
+    id: string,
+    postConversationsIdMessagesBody: PostConversationsIdMessagesBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postConversationsIdMessages<TData = PostConversationsIdMessages201>(
+    id: string,
+    postConversationsIdMessagesBody: PostConversationsIdMessagesBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postConversationsIdMessages<TData = PostConversationsIdMessages201>(
+    id: string,
+    postConversationsIdMessagesBody: PostConversationsIdMessagesBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postConversationsIdMessages<TData = PostConversationsIdMessages201>(
+    id: string,
+    postConversationsIdMessagesBody: PostConversationsIdMessagesBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/conversations/${id}/messages`,
+        postConversationsIdMessagesBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'events',
+        },
+      );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+        `${environment.apiBaseUrl}/conversations/${id}/messages`,
+        postConversationsIdMessagesBody,
+        {
+          ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+          observe: 'response',
+        },
+      );
+    }
+
+    return this.http.post<TData>(
+      `${environment.apiBaseUrl}/conversations/${id}/messages`,
+      postConversationsIdMessagesBody,
+      {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      },
+    );
+  }
+
+  /**
+   * FS-MSG-08. Sender only, within 10 minutes of `createdAt`. Replaces the
+   * body with `message deleted`, clears `mediaId` on the wire, and sets
+   * `deleted`. Fans out `message.deleted`. After 10 minutes, or not the
+   * sender, is FORBIDDEN. Unknown id or not a participant is NOT_FOUND.
+   * @summary Tombstone a message
+   */
+  deleteMessagesId<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+  deleteMessagesId<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  deleteMessagesId<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  deleteMessagesId<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/messages/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/messages/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.delete<TData>(`${environment.apiBaseUrl}/messages/${id}`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-MSG-07. HTTP GET upgrades to WebSocket at `/api/v1/ws`. Authenticate
+   * with `Authorization: Bearer` (same access JWT as REST) or
+   * `access_token` query for browsers that cannot set the handshake header.
+   * After auth the server joins `user:{id}`. Do not trust client-sent room
+   * names. Events (JSON text frames): `message.created`, `message.deleted`,
+   * `conversation.updated`. Persistence is HTTP-first: a dropped socket
+   * never loses a row; the client polls
+   * `GET /conversations/{id}/messages?before=` every 10 s while the socket
+   * is closed. Optional Redis presence is out of scope. No group chat.
+   * @summary WebSocket upgrade for live messages
+   */
+  getWs<TData = unknown>(params?: GetWsParams, options?: HttpClientBodyOptions): Observable<TData>;
+  getWs<TData = unknown>(
+    params?: GetWsParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getWs<TData = unknown>(
+    params?: GetWsParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getWs<TData = unknown>(
+    params?: GetWsParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/ws`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/ws`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/ws`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
     });
   }
 
