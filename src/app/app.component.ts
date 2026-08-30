@@ -15,6 +15,11 @@ export class App {
   private readonly api = inject(AuthApi);
   private readonly router = inject(Router);
 
+  protected friendsNavActive(): boolean {
+    const url = this.router.url.split('?')[0] ?? '';
+    return url === '/friends' || url.startsWith('/friends/') || url.startsWith('/suggestions');
+  }
+
   logout(): void {
     this.session.busy.set(true);
     this.session.error.set(null);
