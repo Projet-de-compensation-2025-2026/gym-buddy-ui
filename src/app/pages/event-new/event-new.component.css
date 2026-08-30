@@ -1,0 +1,56 @@
+.create-page {
+  max-width: 40rem;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.stack {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.two {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.recurrence {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  background: #f1f7f7;
+  border-radius: 0.5rem;
+  padding: 0.85rem 1rem;
+}
+
+.toggle {
+  border: 0;
+  border-radius: 999px;
+  min-width: 3.5rem;
+  background: #d1d5db;
+  color: #111827;
+}
+
+.toggle.on {
+  background: #006d77;
+  color: #fff;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e5e7e9;
+}
+
+@media (max-width: 40rem) {
+  .two,
+  .actions {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+}

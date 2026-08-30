@@ -1,6 +1,6 @@
 /**
  * Contract types come from the orval client generated in `./generated`.
- * Source: gym-buddy-openapi develop SHA 82d0eadb592c023fe3934836c7ce0ca15ca56abd
+ * Source: gym-buddy-openapi develop SHA 2ebc892909eed2a79841a4aea572aef1968747b4
  * (`openapi/openapi.yaml` $ref tree).
  */
 export type {

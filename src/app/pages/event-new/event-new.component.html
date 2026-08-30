@@ -1,0 +1,109 @@
+<section class="create-page" data-testid="event-new-page">
+  <header>
+    <h1>Create Event</h1>
+    <p class="muted">Organize your next workout session and invite others to join.</p>
+  </header>
+
+  <form class="card stack" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (error()) {
+      <p class="error" role="alert" data-testid="event-new-error">{{ error() }}</p>
+    }
+
+    <h2>Basic Info</h2>
+    <label>
+      Event Title
+      <input
+        formControlName="title"
+        placeholder="e.g. Morning HIIT Squad"
+        data-testid="event-title"
+      />
+    </label>
+    <div class="two">
+      <label>
+        Activity Type
+        <select formControlName="activity" data-testid="event-activity">
+          <option value="" disabled>Select activity...</option>
+          @for (activity of activities; track activity) {
+            <option [value]="activity">{{ activity }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Place
+        <input
+          formControlName="place"
+          placeholder="e.g. Iron Gym Center"
+          data-testid="event-place"
+        />
+      </label>
+    </div>
+
+    <h2>Schedule</h2>
+    <div class="two">
+      <label>
+        Start Time
+        <input type="datetime-local" formControlName="startsAt" data-testid="event-start" />
+      </label>
+      <label>
+        Duration (minutes)
+        <input
+          type="number"
+          min="1"
+          max="1440"
+          formControlName="durationMin"
+          data-testid="event-duration"
+        />
+      </label>
+    </div>
+    <div class="recurrence">
+      <div>
+        <strong>Recurrence</strong>
+        <p class="muted">Make this a weekly recurring event</p>
+      </div>
+      <button
+        type="button"
+        class="toggle"
+        [class.on]="recurring()"
+        data-testid="event-recurrence"
+        (click)="toggleRecurring()"
+        [attr.aria-pressed]="recurring()"
+      >
+        {{ recurring() ? 'On' : 'Off' }}
+      </button>
+    </div>
+
+    <h2>Settings</h2>
+    <div class="two">
+      <label>
+        Visibility
+        <select formControlName="visibility" data-testid="event-visibility">
+          <option value="public">Public</option>
+          <option value="friends">Friends</option>
+          <option value="private">Private</option>
+        </select>
+      </label>
+      <label>
+        Capacity (1-100)
+        <input
+          type="number"
+          min="1"
+          max="100"
+          formControlName="capacity"
+          data-testid="event-capacity"
+        />
+      </label>
+    </div>
+
+    <div class="actions">
+      <a class="btn-secondary" routerLink="/events">Cancel</a>
+      <button
+        type="submit"
+        class="btn-primary"
+        data-testid="submit-event"
+        [disabled]="submitting()"
+      >
+        {{ submitting() ? 'Creating…' : '+ Create Event' }}
+      </button>
+    </div>
+  </form>
+</section>

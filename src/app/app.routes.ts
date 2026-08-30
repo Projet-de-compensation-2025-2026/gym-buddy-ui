@@ -1,5 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
+import { EventDetailPage } from './pages/event-detail/event-detail.component';
+import { EventNewPage } from './pages/event-new/event-new.component';
+import { EventsPage } from './pages/events/events.component';
 import { FriendsPage } from './pages/friends/friends.component';
 import { HomePage } from './pages/home/home.component';
 import { PostDetailPage } from './pages/post-detail/post-detail.component';
@@ -14,6 +17,9 @@ export const routes: Routes = [
   { path: '', component: HomePage },
   { path: 'register', component: SignUpPage },
   { path: 'login', component: SignInPage },
+  { path: 'events', component: EventsPage, canActivate: [authGuard] },
+  { path: 'events/new', component: EventNewPage, canActivate: [authGuard] },
+  { path: 'events/:id', component: EventDetailPage, canActivate: [authGuard] },
   { path: 'friends', component: FriendsPage, canActivate: [authGuard] },
   { path: 'suggestions', component: SuggestionsPage, canActivate: [authGuard] },
   { path: 'posts/:id', component: PostDetailPage, canActivate: [authGuard] },
