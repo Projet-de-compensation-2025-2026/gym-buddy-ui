@@ -23,9 +23,14 @@ import type {
   GetFriendshipsParams,
   GetHealthz200,
   GetMediaIdUrl200,
+  GetPostsId200,
+  GetPostsIdLikes200,
+  GetPostsIdLikesParams,
   GetProfilesHandle200,
   GetProfilesMe200,
   GetReadyz200,
+  PatchPostsId200,
+  PatchPostsIdBody,
   PatchProfilesMe200,
   PatchProfilesMeBody,
   PostAuthLogin200,
@@ -41,6 +46,9 @@ import type {
   PostMeCloseBody,
   PostMedia201,
   PostMediaBody,
+  PostPosts201,
+  PostPostsBody,
+  PostPostsIdReposts201,
 } from './model';
 
 interface HttpClientOptions {
@@ -1025,6 +1033,377 @@ export class GymBuddyAPIService {
     return this.http.delete<TData>(`${environment.apiBaseUrl}/media/${id}`, {
       ...(options as Omit<NonNullable<typeof options>, 'observe'>),
       observe: 'body',
+    });
+  }
+
+  /**
+   * FS-POST-01, FS-POST-02. Authenticated member. Text 1–2000 characters
+   * and/or 1–4 ready image `mediaIds` (`kind=post`, owned by the caller).
+   * Empty body and no media is VALIDATION. Default visibility is `friends`.
+   * Video is out of scope.
+   * @summary Create a post
+   */
+  postPosts<TData = PostPosts201>(
+    postPostsBody: PostPostsBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postPosts<TData = PostPosts201>(
+    postPostsBody: PostPostsBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postPosts<TData = PostPosts201>(
+    postPostsBody: PostPostsBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postPosts<TData = PostPosts201>(
+    postPostsBody: PostPostsBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/posts`, postPostsBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/posts`, postPostsBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/posts`, postPostsBody, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-POST-02. `canView`: author; if `public` any member; if `friends`
+   * accepted friends. Hidden, deleted, unknown, or not visible is NOT_FOUND.
+   * Blocked callers get NOT_FOUND.
+   * @summary Read a post
+   */
+  getPostsId<TData = GetPostsId200>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+  getPostsId<TData = GetPostsId200>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getPostsId<TData = GetPostsId200>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getPostsId<TData = GetPostsId200>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/posts/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/posts/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/posts/${id}`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-POST-03. Author only, within 15 minutes of create. Sets `editedAt`.
+   * After the window FORBIDDEN. Other callers get NOT_FOUND.
+   * @summary Edit a post body
+   */
+  patchPostsId<TData = PatchPostsId200>(
+    id: string,
+    patchPostsIdBody: PatchPostsIdBody,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  patchPostsId<TData = PatchPostsId200>(
+    id: string,
+    patchPostsIdBody: PatchPostsIdBody,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  patchPostsId<TData = PatchPostsId200>(
+    id: string,
+    patchPostsIdBody: PatchPostsIdBody,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  patchPostsId<TData = PatchPostsId200>(
+    id: string,
+    patchPostsIdBody: PatchPostsIdBody,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.patch<TData>(`${environment.apiBaseUrl}/posts/${id}`, patchPostsIdBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.patch<TData>(`${environment.apiBaseUrl}/posts/${id}`, patchPostsIdBody, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.patch<TData>(`${environment.apiBaseUrl}/posts/${id}`, patchPostsIdBody, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-POST-04. Author only. Sets `deleted_at`. Comments become inaccessible.
+   * Other callers get NOT_FOUND.
+   * @summary Soft-delete a post
+   */
+  deletePostsId<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+  deletePostsId<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  deletePostsId<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  deletePostsId<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/posts/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/posts/${id}`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.delete<TData>(`${environment.apiBaseUrl}/posts/${id}`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-POST-05, FS-POST-06. Caller must `canView` the original. No extra body
+   * at MVP. Duplicate `(user_id, post_id)` is CONFLICT. One undo via DELETE.
+   * @summary Repost a visible post
+   */
+  postPostsIdReposts<TData = PostPostsIdReposts201>(
+    id: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  postPostsIdReposts<TData = PostPostsIdReposts201>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  postPostsIdReposts<TData = PostPostsIdReposts201>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  postPostsIdReposts<TData = PostPostsIdReposts201>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/posts/${id}/reposts`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(`${environment.apiBaseUrl}/posts/${id}/reposts`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.post<TData>(`${environment.apiBaseUrl}/posts/${id}/reposts`, undefined, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-POST-06. Removes the caller's unique repost row. Missing row is NOT_FOUND.
+   * @summary Undo a repost
+   */
+  deletePostsIdReposts<TData = void>(
+    id: string,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  deletePostsIdReposts<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  deletePostsIdReposts<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  deletePostsIdReposts<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/posts/${id}/reposts`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/posts/${id}/reposts`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.delete<TData>(`${environment.apiBaseUrl}/posts/${id}/reposts`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-POST-07. Unique `(user_id, target_type=post, target_id)`. A second PUT
+   * does not double-count. Stranger on a friends-only post is NOT_FOUND.
+   * @summary Like a visible post
+   */
+  putPostsIdLike<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+  putPostsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  putPostsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  putPostsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.put<TData>(`${environment.apiBaseUrl}/posts/${id}/like`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.put<TData>(`${environment.apiBaseUrl}/posts/${id}/like`, undefined, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.put<TData>(`${environment.apiBaseUrl}/posts/${id}/like`, undefined, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-POST-07. Removes the like row if present. Not visible is NOT_FOUND.
+   * @summary Unlike a post
+   */
+  deletePostsIdLike<TData = void>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+  deletePostsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  deletePostsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  deletePostsIdLike<TData = void>(
+    id: string,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/posts/${id}/like`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.delete<TData>(`${environment.apiBaseUrl}/posts/${id}/like`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      });
+    }
+
+    return this.http.delete<TData>(`${environment.apiBaseUrl}/posts/${id}/like`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+    });
+  }
+
+  /**
+   * FS-POST-08. Like counts are on the post. The nominative list is author-only
+   * at MVP. Other callers get NOT_FOUND (no existence leak).
+   * @summary List nominative likers
+   */
+  getPostsIdLikes<TData = GetPostsIdLikes200>(
+    id: string,
+    params?: GetPostsIdLikesParams,
+    options?: HttpClientBodyOptions,
+  ): Observable<TData>;
+  getPostsIdLikes<TData = GetPostsIdLikes200>(
+    id: string,
+    params?: GetPostsIdLikesParams,
+    options?: HttpClientEventOptions,
+  ): Observable<HttpEvent<TData>>;
+  getPostsIdLikes<TData = GetPostsIdLikes200>(
+    id: string,
+    params?: GetPostsIdLikesParams,
+    options?: HttpClientResponseOptions,
+  ): Observable<AngularHttpResponse<TData>>;
+  getPostsIdLikes<TData = GetPostsIdLikes200>(
+    id: string,
+    params?: GetPostsIdLikesParams,
+    options?: HttpClientObserveOptions,
+  ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/posts/${id}/likes`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,
+      });
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(`${environment.apiBaseUrl}/posts/${id}/likes`, {
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,
+      });
+    }
+
+    return this.http.get<TData>(`${environment.apiBaseUrl}/posts/${id}/likes`, {
+      ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+      observe: 'body',
+      params: filteredParams,
     });
   }
 }

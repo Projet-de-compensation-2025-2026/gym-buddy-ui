@@ -1,23 +1,92 @@
-<section>
+<section class="feed" data-testid="feed-page">
   @if (session.signedIn()) {
-    <h1>Feed</h1>
-    <p data-testid="home-signed-in">Your friends feed lands in a later slice.</p>
-    @if (session.handle(); as handle) {
-      <p>
-        <a [routerLink]="['/u', handle]">Your profile</a>
-        ·
-        <a routerLink="/friends">Friends</a>
-        ·
-        <a routerLink="/settings/profile">Edit profile</a>
-        ·
-        <a routerLink="/settings/privacy">Privacy</a>
+    <article class="card composer" data-testid="post-composer">
+      <label class="sr-only" for="composer-body">What's on your mind, athlete?</label>
+      <textarea
+        id="composer-body"
+        data-testid="composer-body"
+        rows="3"
+        maxlength="2000"
+        placeholder="What's on your mind, athlete?"
+        [ngModel]="body()"
+        (ngModelChange)="body.set($event)"
+      ></textarea>
+      @if (pendingFiles().length) {
+        <ul class="pending" data-testid="composer-previews">
+          @for (file of pendingFiles(); track $index) {
+            <li>
+              {{ file.name }}
+              <button type="button" (click)="removePending($index)" aria-label="Remove image">
+                ×
+              </button>
+            </li>
+          }
+        </ul>
+      }
+      @if (error()) {
+        <p class="error" role="alert" data-testid="composer-error">{{ error() }}</p>
+      }
+      <div class="composer-bar">
+        <div class="composer-tools">
+          <button
+            type="button"
+            class="icon-btn"
+            data-testid="attach-image"
+            (click)="openFilePicker()"
+          >
+            Image
+          </button>
+          <span class="nav-disabled" title="Video posts are out of scope">Video</span>
+          <input
+            #fileInput
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            hidden
+            data-testid="composer-file"
+            (change)="onFileInput($event)"
+          />
+        </div>
+        <div class="composer-submit">
+          <select
+            data-testid="composer-visibility"
+            [ngModel]="visibility()"
+            (ngModelChange)="visibility.set($event)"
+          >
+            <option value="friends">Friends</option>
+            <option value="public">Public</option>
+          </select>
+          <button
+            type="button"
+            class="btn-primary"
+            data-testid="publish-post"
+            [disabled]="posting()"
+            (click)="publish()"
+          >
+            {{ posting() ? 'Posting…' : 'Post' }}
+          </button>
+        </div>
+      </div>
+    </article>
+
+    @if (posts().length === 0) {
+      <p class="muted" data-testid="home-signed-in">
+        Posts you publish stay on this page. The friends news feed lands in a later slice.
       </p>
     }
+    <div class="stack" data-testid="feed-list">
+      @for (post of posts(); track post.id) {
+        <app-post-card
+          [post]="post"
+          [imageUrls]="imageUrls()"
+          (like)="toggleLike($event)"
+          (repost)="toggleRepost($event)"
+        />
+      }
+    </div>
   } @else {
     <h1>Gym Buddy</h1>
-    <p>
-      Sign-up, sign-in, profiles, and friend requests. Feed, events, and messaging are later slices.
-    </p>
+    <p>Sign-up, sign-in, profiles, friends, and posts. Events and messaging are later slices.</p>
     <p>
       <a routerLink="/register">Sign up</a>
       ·

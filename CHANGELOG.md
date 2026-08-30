@@ -7,6 +7,10 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Posts composer on `/` and post chrome on `/posts/:id`: create, like, and
+  repost (FS-POST-01..08). Ticket #61. Max 4 images via media `kind=post`.
+  Visibility Friends (default) or Public. No video posts. Nested comments
+  and the friends news feed stay later slices.
 - Avatar upload on `/settings/profile` via `POST /media` + signed PUT (FS-MED-01..09).
   Ticket #68. Max **8 MiB** (mockup “Max 2MB” is leftover). No local `/uploads`.
 - Friends management (`/friends`): inbound accept/decline, outbound cancel,
@@ -30,6 +34,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
   tag. Not a `bundled.yaml` GET.
 - OpenAPI consumer pin is gym-buddy-openapi develop SHA
   `edca075cdf1e1eb6caf6f094e02cadaba7c480b5` (ticket #68) until the next 0.1.x
+  tag. Not a `bundled.yaml` GET.
+- OpenAPI consumer pin is gym-buddy-openapi develop SHA
+  `d58a824e0720c2f50c56632e3664d3632484e281` (ticket #61) until the next 0.1.x
   tag. Not a `bundled.yaml` GET.
 - Handwritten auth models / HTTP service are a thin wrapper over the generated
   `GymBuddyAPIService`. Register, login, refresh, logout, and healthz keep the
