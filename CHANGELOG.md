@@ -9,6 +9,23 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+## [1.1.1] — 2026-08-31
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Event detail shows Cancelled (not Full / spots left) after series or
+  occurrence cancel. Organizers get Cancel event/series and per-occurrence
+  Cancel that call `POST /events/{id}/cancel` (ticket **#124**, FS-EVT-08).
+- Instant / Recurring kind chips sit on the cover (or a placeholder band) and no
+  longer overlap event titles on `/events` (ticket #117, FS-EVT-02/03, mockup 09).
+- Member primary nav labels (Feed, Events, Friends, Suggestions, Search,
+  Messages) stay fully visible at 390×844 without clipping or horizontal page
+  scroll (ticket #118, follow-up to #106).
+
 ## [1.1.0] — 2026-08-30
 
 ### Added
@@ -167,6 +184,7 @@ Versioning: [Semantic Versioning](https://semver.org/).
 - Auth TypeScript types follow [gym-buddy-openapi](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi) 0.1.0 (`RegisteredUser.role`, login `403` FORBIDDEN, no `expiresIn`)
 
 [Unreleased]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui
+[1.1.1]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v1.1.1
 [1.1.0]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v1.0.0
 [0.1.1]: https://github.com/Projet-de-compensation-2025-2026/gym-buddy-ui/releases/tag/v0.1.1

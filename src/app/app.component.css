@@ -63,6 +63,7 @@
 .primary-nav a,
 .header-actions a,
 .header-actions button {
+  flex-shrink: 0;
   white-space: nowrap;
 }
 
@@ -80,6 +81,10 @@
 
   .primary-nav {
     grid-area: nav;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    column-gap: 0.75rem;
+    row-gap: 0.25rem;
   }
 
   .header-actions {

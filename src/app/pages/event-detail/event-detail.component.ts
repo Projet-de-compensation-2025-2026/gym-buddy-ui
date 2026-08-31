@@ -43,11 +43,30 @@ export class EventDetailPage {
     return !!event && !!handle && event.organizer.handle === handle;
   }
 
-  spotsLabel(remaining: number): string {
+  spotsLabel(remaining: number, cancelled = false): string {
+    if (cancelled) {
+      return 'Cancelled';
+    }
     if (remaining <= 0) {
       return 'Full';
     }
     return `${remaining} spot${remaining === 1 ? '' : 's'} left`;
+  }
+
+  seriesCancelled(event: GetEventsId200): boolean {
+    if (event.cancelledAt) {
+      return true;
+    }
+    return event.occurrences.length > 0 && event.occurrences.every((row) => row.cancelled);
+  }
+
+  canCancelOccurrence(event: GetEventsId200, row: GetEventsId200['occurrences'][number]): boolean {
+    return (
+      this.organizerView &&
+      !event.cancelledAt &&
+      !row.cancelled &&
+      new Date(row.startsAt).getTime() > Date.now()
+    );
   }
 
   apply(): void {
@@ -72,6 +91,14 @@ export class EventDetailPage {
 
   decline(row: GetEventsId200PendingApplicantsItem): void {
     this.run(() => this.api.decline(row.application.id));
+  }
+
+  cancelSeries(): void {
+    const event = this.event();
+    if (!event) {
+      return;
+    }
+    this.run(() => this.api.cancel(event.id));
   }
 
   cancelOccurrence(occurrenceId: string): void {

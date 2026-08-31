@@ -58,48 +58,64 @@
       <aside class="side">
         <article class="card">
           <p class="muted">Availability</p>
-          <p class="spots" data-testid="spots-left">
-            {{ spotsLabel(event.remainingSeats) }}
-            <span class="muted"> / {{ event.capacity }} total</span>
-          </p>
-          @if (event.visibility === 'friends') {
-            <p class="muted">Friends-only event. Organizer must approve.</p>
-          }
-          @if (organizerView) {
-            <p class="muted">You are the organizer.</p>
-          } @else if (event.viewerApplication?.status === 'pending') {
-            <button
-              type="button"
-              class="btn-secondary"
-              data-testid="withdraw"
-              [disabled]="busy()"
-              (click)="withdraw()"
-            >
-              Withdraw
-            </button>
-          } @else if (event.viewerApplication?.status === 'accepted') {
-            <p class="notice">You’re in. See you there.</p>
-            <button
-              type="button"
-              class="btn-secondary"
-              data-testid="withdraw"
-              [disabled]="busy()"
-              (click)="withdraw()"
-            >
-              Withdraw
-            </button>
-          } @else if (event.remainingSeats <= 0) {
-            <p class="muted">This session is full.</p>
+          @if (seriesCancelled(event)) {
+            <p class="spots cancelled" data-testid="spots-left">Cancelled</p>
+            <p class="muted" data-testid="cancelled-notice">This session was cancelled.</p>
           } @else {
-            <button
-              type="button"
-              class="btn-primary"
-              data-testid="apply"
-              [disabled]="busy()"
-              (click)="apply()"
-            >
-              Apply to Join
-            </button>
+            <p class="spots" data-testid="spots-left">
+              {{ spotsLabel(event.remainingSeats) }}
+              <span class="muted"> / {{ event.capacity }} total</span>
+            </p>
+            @if (event.visibility === 'friends') {
+              <p class="muted">Friends-only event. Organizer must approve.</p>
+            }
+            @if (organizerView) {
+              <p class="muted">You are the organizer.</p>
+              <button
+                type="button"
+                class="btn-danger"
+                data-testid="cancel-event"
+                [disabled]="busy()"
+                (click)="cancelSeries()"
+              >
+                {{ event.kind === 'recurring' ? 'Cancel series' : 'Cancel event' }}
+              </button>
+            } @else if (event.viewerApplication?.status === 'cancelled') {
+              <p class="muted" data-testid="cancelled-notice">This session was cancelled.</p>
+            } @else if (event.viewerApplication?.status === 'pending') {
+              <button
+                type="button"
+                class="btn-secondary"
+                data-testid="withdraw"
+                [disabled]="busy()"
+                (click)="withdraw()"
+              >
+                Withdraw
+              </button>
+            } @else if (event.viewerApplication?.status === 'accepted') {
+              <p class="notice">You’re in. See you there.</p>
+              <button
+                type="button"
+                class="btn-secondary"
+                data-testid="withdraw"
+                [disabled]="busy()"
+                (click)="withdraw()"
+              >
+                Withdraw
+              </button>
+            } @else if (event.remainingSeats <= 0) {
+              <p class="muted">This session is full.</p>
+            } @else {
+              <button
+                type="button"
+                class="btn-primary"
+                data-testid="apply"
+                [disabled]="busy()"
+                (click)="apply()"
+              >
+                Apply to Join
+              </button>
+            }
           }
         </article>
 
@@ -152,9 +168,24 @@
             @for (row of event.occurrences; track row.id) {
               <li>
                 <span>{{ when(row.startsAt) }}</span>
-                <span [class.full]="row.remainingSeats === 0">{{
-                  spotsLabel(row.remainingSeats)
-                }}</span>
+                <span class="occurrence-meta">
+                  <span
+                    [class.full]="row.cancelled || row.remainingSeats === 0"
+                    [class.cancelled]="row.cancelled"
+                    >{{ spotsLabel(row.remainingSeats, row.cancelled) }}</span
+                  >
+                  @if (canCancelOccurrence(event, row)) {
+                    <button
+                      type="button"
+                      class="btn-secondary"
+                      data-testid="cancel-occurrence"
+                      [disabled]="busy()"
+                      (click)="cancelOccurrence(row.id)"
+                    >
+                      Cancel
+                    </button>
+                  }
+                </span>
               </li>
             } @empty {
               <li class="muted">No upcoming occurrences.</li>
