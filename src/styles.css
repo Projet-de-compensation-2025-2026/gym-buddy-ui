@@ -45,6 +45,20 @@ button {
   cursor: pointer;
 }
 
+/* Signed-in header Log out: reset UA button chrome (Windows/Chrome gray). */
+button[data-testid='log-out'] {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: inherit;
+  padding: 0;
+  margin: 0;
+}
+
 button:disabled,
 a[aria-disabled='true'] {
   cursor: wait;

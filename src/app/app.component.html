@@ -32,7 +32,13 @@
           >
         }
         <a routerLink="/settings/profile">Settings</a>
-        <button type="button" data-testid="log-out" (click)="logout()" [disabled]="session.busy()">
+        <button
+          type="button"
+          class="text-btn"
+          data-testid="log-out"
+          (click)="logout()"
+          [disabled]="session.busy()"
+        >
           {{ session.busy() ? 'Signing out…' : 'Log out' }}
         </button>
       }
