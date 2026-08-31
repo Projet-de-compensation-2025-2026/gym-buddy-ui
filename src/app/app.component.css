@@ -37,9 +37,12 @@
 }
 
 .primary-nav a,
-.header-actions a {
+.header-actions a,
+.header-actions button {
   text-decoration: none;
   color: #212325;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .primary-nav a.active {
@@ -60,11 +63,25 @@
   white-space: nowrap;
 }
 
-.primary-nav a,
-.header-actions a,
-.header-actions button {
-  flex-shrink: 0;
-  white-space: nowrap;
+/* Kill native UA chrome so Log out matches Settings (a text link). */
+.header-actions button,
+.header-actions .text-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+  color: #212325;
+}
+
+.header-actions button:disabled {
+  opacity: 0.6;
 }
 
 @media (max-width: 48rem) {

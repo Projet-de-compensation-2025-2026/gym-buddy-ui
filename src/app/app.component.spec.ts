@@ -103,6 +103,36 @@ describe('App', () => {
     http.verify();
   });
 
+  it('renders a text-styled Log out control next to Settings when signed in', async () => {
+    const { root, session, detect, http } = await setup();
+    const payload = btoa(
+      JSON.stringify({ sub: '11111111-1111-1111-1111-111111111111', handle: 'alex' }),
+    )
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    session.setAccessToken(`hdr.${payload}.sig`);
+    detect();
+    for (const req of http.match(
+      (r) => r.method === 'GET' && r.url.startsWith(`${environment.apiBaseUrl}/feed`),
+    )) {
+      req.flush({ data: [], page: { next: null, size: 20 } });
+    }
+    detect();
+    const btn = root.querySelector('[data-testid="log-out"]') as HTMLButtonElement | null;
+    const settings = Array.from(root.querySelectorAll('.header-actions a')).find(
+      (el) => el.textContent?.trim() === 'Settings',
+    );
+    expect(settings).toBeTruthy();
+    expect(btn).toBeTruthy();
+    expect(btn?.classList.contains('text-btn')).toBeTrue();
+    expect(btn?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Log out');
+    const style = getComputedStyle(btn!);
+    expect(['transparent', 'rgba(0, 0, 0, 0)']).toContain(style.backgroundColor);
+    expect(style.borderStyle === 'none' || style.borderWidth === '0px').toBeTrue();
+    http.verify();
+  });
+
   it('FS-ACCT-06 posts logout with credentials and clears the in-memory access token', async () => {
     const { app, http, router, session } = await setup();
     const navigate = spyOn(router, 'navigateByUrl').and.resolveTo(true);

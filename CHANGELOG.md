@@ -9,6 +9,11 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+### Fixed
+
+- Signed-in header **Log out** is a text control matching Settings (no native
+  browser button chrome).
+
 ## [1.1.1] — 2026-08-31
 
 ### Added
