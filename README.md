@@ -43,7 +43,12 @@ has no SPA rewrite.
 
 ## Run locally
 
-Requires Node.js `^22.22.3` (see `.nvmrc`) and the pinned pnpm from
+**Docker (API + Postgres + UI):** from a sibling `gym-buddy-service` checkout
+(`cp .env.example .env` there, then `docker compose up -d --build`). Member app
+http://127.0.0.1:4200 , admin http://127.0.0.1:4200/admin/ . The image is this
+repo’s `Dockerfile`; Compose lives in `gym-buddy-service`.
+
+**Host `ng serve`:** requires Node.js `^22.22.3` (see `.nvmrc`) and the pinned pnpm from
 `packageManager` (enable it with Corepack: `corepack enable`).
 
 ```bash

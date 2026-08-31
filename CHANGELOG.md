@@ -7,6 +7,10 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Local Docker image (`Dockerfile` + `docker/nginx.conf`): development member
+  and admin bundles, `/api` reverse-proxy to the Compose API. Started from
+  `gym-buddy-service` `compose.yaml` as `127.0.0.1:4200`.
+
 ### Changed
 
 ## [1.1.2] — 2026-08-31
