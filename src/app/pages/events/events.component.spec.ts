@@ -54,6 +54,45 @@ describe('EventsPage', () => {
     http.verify();
   });
 
+  it('FS-EVT-02 FS-EVT-03 keeps Instant and Recurring chips off event titles', async () => {
+    const { root, http, detect } = await setup();
+    http.expectOne(`${environment.apiBaseUrl}/events?size=50`).flush({
+      data: [
+        sample('instant', 'Morning Sprint Intervals', 'public'),
+        sample('recurring', 'Heavy Lifts Crew', 'friends'),
+        sample('instant', 'Covered Track Night', 'private', true),
+      ],
+      page: { next: null, size: 20 },
+    });
+    detect();
+    const coverId = '44444444-4444-4444-8444-444444444444';
+    http.expectOne(`${environment.apiBaseUrl}/media/${coverId}/url`).flush({
+      url: 'https://cdn.example/cover.jpg',
+    });
+    detect();
+    const cards = Array.from(root.querySelectorAll('.event-card'));
+    expect(cards.length).toBe(3);
+    const visibilities = cards.map((card) =>
+      card.querySelector('.visibility')?.textContent?.trim(),
+    );
+    expect(visibilities).toEqual(['public', 'friends', 'private']);
+    for (const card of cards) {
+      const chip = card.querySelector('[data-testid="event-kind"]') as HTMLElement | null;
+      const title = card.querySelector('h2') as HTMLElement | null;
+      const wrap = card.querySelector('.cover-wrap');
+      expect(chip).toBeTruthy();
+      expect(title).toBeTruthy();
+      expect(wrap?.contains(chip)).toBeTrue();
+      expect(card.querySelector('.event-body')?.contains(chip)).toBeFalse();
+      expect(overlaps(chip!, title!)).toBeFalse();
+    }
+    const kinds = cards.map((card) =>
+      card.querySelector('[data-testid="event-kind"]')?.textContent?.trim(),
+    );
+    expect(kinds).toEqual(['Instant', 'Recurring', 'Instant']);
+    http.verify();
+  });
+
   it('shows an error and retry without the empty state when the list fails', async () => {
     const { root, http, detect } = await setup();
     http
@@ -84,11 +123,24 @@ describe('EventsPage', () => {
   });
 });
 
-function sample(kind: 'instant' | 'recurring', title: string) {
+function overlaps(a: HTMLElement, b: HTMLElement): boolean {
+  const ar = a.getBoundingClientRect();
+  const br = b.getBoundingClientRect();
+  return ar.left < br.right && ar.right > br.left && ar.top < br.bottom && ar.bottom > br.top;
+}
+
+function sample(
+  kind: 'instant' | 'recurring',
+  title: string,
+  visibility: 'public' | 'friends' | 'private' = 'public',
+  withCover = false,
+) {
   return {
     id:
       kind === 'instant'
-        ? '11111111-1111-4111-8111-111111111111'
+        ? withCover
+          ? '33333333-3333-4333-8333-333333333333'
+          : '11111111-1111-4111-8111-111111111111'
         : '22222222-2222-4222-8222-222222222222',
     organizer: {
       userId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
@@ -100,7 +152,7 @@ function sample(kind: 'instant' | 'recurring', title: string) {
     place: 'Downtown Stadium',
     startsAt: '2026-09-01T06:30:00Z',
     durationMin: 45,
-    visibility: 'public',
+    visibility,
     capacity: 3,
     remainingSeats: 3,
     kind,
@@ -108,5 +160,6 @@ function sample(kind: 'instant' | 'recurring', title: string) {
     createdAt: '2026-08-30T12:00:00Z',
     occurrences: [],
     pendingApplicants: [],
+    ...(withCover ? { coverMediaId: '44444444-4444-4444-8444-444444444444' } : {}),
   };
 }

@@ -46,16 +46,20 @@
       @for (event of events(); track event.id) {
         <article class="card event-card" [class.featured]="event.coverMediaId">
           <a [routerLink]="['/events', event.id]" class="event-link">
-            @if (event.coverMediaId; as mediaId) {
-              @if (coverUrls()[mediaId]; as src) {
-                <img class="cover" [src]="src" alt="" />
+            <div class="cover-wrap">
+              @if (event.coverMediaId; as mediaId) {
+                @if (coverUrls()[mediaId]; as src) {
+                  <img class="cover" [src]="src" alt="" />
+                } @else {
+                  <div class="cover placeholder" aria-hidden="true"></div>
+                }
               } @else {
-                <div class="cover placeholder"></div>
+                <div class="cover placeholder" aria-hidden="true"></div>
               }
-            }
-            <span class="kind-chip">{{
-              event.kind === 'recurring' ? 'Recurring' : 'Instant'
-            }}</span>
+              <span class="kind-chip" data-testid="event-kind">{{
+                event.kind === 'recurring' ? 'Recurring' : 'Instant'
+              }}</span>
+            </div>
             <div class="event-body">
               <div class="title-row">
                 <h2>{{ event.title }}</h2>
