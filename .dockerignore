@@ -1,0 +1,13 @@
+.git
+.github
+.angular
+.vscode
+node_modules
+dist
+dist-admin
+coverage
+__screenshots__
+*.md
+.env
+.DS_Store
+Thumbs.db
