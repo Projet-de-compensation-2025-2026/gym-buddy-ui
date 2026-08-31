@@ -11,6 +11,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Event detail shows Cancelled (not Full / spots left) after series or
+  occurrence cancel. Organizers get Cancel event/series and per-occurrence
+  Cancel that call `POST /events/{id}/cancel` (ticket **#124**, FS-EVT-08).
 - Instant / Recurring kind chips sit on the cover (or a placeholder band) and no
   longer overlap event titles on `/events` (ticket #117, FS-EVT-02/03, mockup 09).
 

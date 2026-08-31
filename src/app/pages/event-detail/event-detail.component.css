@@ -113,6 +113,21 @@
   color: #6e7174;
 }
 
+.cancelled {
+  color: #8d302f;
+}
+
+.occurrence-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.occurrence-meta .btn-secondary {
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8rem;
+}
+
 @media (max-width: 50rem) {
   .layout,
   .facts {
