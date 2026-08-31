@@ -71,8 +71,8 @@ def test_release_yml_wires_sync() -> None:
 def test_package_json_matches_shipped_tag() -> None:
     pkg = json.loads(PACKAGE.read_text(encoding="utf-8"))
     ver = str(pkg.get("version", ""))
-    if ver != "1.1.0":
-        fail(f"package.json version {ver!r} must match shipped v1.1.0")
+    if ver != "1.1.1":
+        fail(f"package.json version {ver!r} must match shipped v1.1.1")
 
 
 def test_sync_writes_package_json() -> None:
