@@ -13,6 +13,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 - Instant / Recurring kind chips sit on the cover (or a placeholder band) and no
   longer overlap event titles on `/events` (ticket #117, FS-EVT-02/03, mockup 09).
+- Member primary nav labels (Feed, Events, Friends, Suggestions, Search,
+  Messages) stay fully visible at 390×844 without clipping or horizontal page
+  scroll (ticket #118, follow-up to #106).
 
 ## [1.1.0] — 2026-08-30
 
