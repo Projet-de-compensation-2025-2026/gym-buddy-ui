@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { AuthSession } from './auth-session.service';
 import { authInterceptor } from './auth.interceptor';
+import { routes } from '../app.routes';
 
 describe('authenticated API refresh', () => {
   const api = environment.apiBaseUrl;
@@ -91,7 +92,10 @@ describe('authenticated API refresh', () => {
     http.expectOne(`${api}/me`).flush({}, { status: 401, statusText: 'Unauthorized' });
     http.expectOne(`${api}/auth/refresh`).flush({}, { status: 401, statusText: 'Unauthorized' });
     expect(session.signedIn()).toBeFalse();
-    expect(router.navigateByUrl).toHaveBeenCalledOnceWith('/sign-in');
+    expect(router.navigateByUrl).toHaveBeenCalledOnceWith('/login');
+    expect(
+      routes.some((route) => `/${route.path}` === router.navigateByUrl.calls.mostRecent().args[0]),
+    ).toBeTrue();
     http.expectNone(`${api}/me`);
   });
 

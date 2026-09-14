@@ -6,7 +6,7 @@ import { AuthSession } from './auth-session.service';
 import { readAccessPayload } from './jwt';
 
 export const SIGN_IN_ROUTE = new InjectionToken<string>('sign-in route', {
-  factory: () => '/sign-in',
+  factory: () => '/login',
 });
 
 @Injectable({ providedIn: 'root' })
