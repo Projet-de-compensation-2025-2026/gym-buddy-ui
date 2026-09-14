@@ -161,6 +161,9 @@ type AdminUserRow = GetAdminUsers200['data'][number];
       color: #8d302f;
       font-size: 0.75rem;
     }
+    td:not(:first-child) {
+      white-space: nowrap;
+    }
   `,
 })
 export class UsersPage {
