@@ -15,6 +15,7 @@ describe('EventDetailPage', () => {
     root: HTMLElement;
     http: HttpTestingController;
     detect: () => void;
+    component: EventDetailPage;
   }> {
     await TestBed.configureTestingModule({
       imports: [EventDetailPage],
@@ -34,6 +35,7 @@ describe('EventDetailPage', () => {
       root: fixture.nativeElement as HTMLElement,
       http: TestBed.inject(HttpTestingController),
       detect: () => fixture.detectChanges(),
+      component: fixture.componentInstance,
     };
   }
 
@@ -67,6 +69,29 @@ describe('EventDetailPage', () => {
     http.expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}`).flush(detail());
     detect();
     expect(root.querySelector('[data-testid="applicant-queue"]')?.textContent).toContain('Blake');
+    http.verify();
+  });
+
+  it('keeps the editor mounted during cover upload and allows cancel/reopen after completion', async () => {
+    const { root, http, detect, component } = await setup();
+    signInOrganizer();
+    http.expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}`).flush(detail());
+    component.beginEdit();
+    component.coverUploading.set(true);
+    detect();
+    const cancel = Array.from(root.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Cancel editing',
+    )!;
+    expect(cancel.disabled).toBeTrue();
+    cancel.click();
+    expect(component.editing()).toBeTrue();
+    component.coverUploading.set(false);
+    detect();
+    cancel.click();
+    expect(component.editing()).toBeFalse();
+    component.beginEdit();
+    detect();
+    expect((root.querySelector('app-event-cover input') as HTMLInputElement).disabled).toBeFalse();
     http.verify();
   });
 

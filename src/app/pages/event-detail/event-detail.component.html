@@ -45,7 +45,12 @@
         <div class="edit-actions">
           <button class="btn-primary" type="submit" [disabled]="busy() || coverUploading()">
             Save event</button
-          ><button class="btn-secondary" type="button" (click)="editing.set(false)">
+          ><button
+            class="btn-secondary"
+            type="button"
+            [disabled]="coverUploading()"
+            (click)="editing.set(false)"
+          >
             Cancel editing
           </button>
         </div>
