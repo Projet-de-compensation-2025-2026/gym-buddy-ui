@@ -2,6 +2,8 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { EventsApi } from '../../api/events-api.service';
+import { EventInvitees } from '../../events/event-invitees.component';
+import { EventCover } from '../../events/event-cover.component';
 import { readApiError } from '../../api/models';
 import type { PostEventsBodyVisibility } from '../../api/generated/model';
 
@@ -21,7 +23,7 @@ const BYDAY = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const;
 
 @Component({
   selector: 'app-event-new',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, EventInvitees, EventCover],
   templateUrl: './event-new.component.html',
   styleUrl: './event-new.component.css',
 })
@@ -34,9 +36,13 @@ export class EventNewPage {
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
   readonly recurring = signal(false);
+  readonly inviteeIds = signal<string[]>([]);
+  readonly coverMediaId = signal<string | null>(null);
+  readonly coverUploading = signal(false);
 
   readonly form = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(120)]],
+    description: ['', Validators.maxLength(2000)],
     activity: ['', Validators.required],
     place: ['', [Validators.required, Validators.maxLength(200)]],
     startsAt: ['', Validators.required],
@@ -50,17 +56,29 @@ export class EventNewPage {
   }
 
   submit(): void {
+    if (this.coverUploading() || this.submitting()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.error.set(
+        'Complete the title, activity, place and start time. Check duration and capacity.',
+      );
       return;
     }
     const value = this.form.getRawValue();
-    const startsAt = new Date(value.startsAt).toISOString();
+    const start = new Date(value.startsAt);
+    if (!Number.isFinite(start.getTime()) || start.getTime() <= Date.now()) {
+      this.error.set('Choose a start time in the future.');
+      return;
+    }
+    const startsAt = start.toISOString();
     this.submitting.set(true);
     this.error.set(null);
     this.api
       .create({
         title: value.title.trim(),
+        description: value.description.trim() || null,
+        coverMediaId: this.coverMediaId(),
+        inviteeIds: value.visibility === 'private' ? this.inviteeIds() : undefined,
         activity: value.activity,
         place: value.place.trim(),
         startsAt,

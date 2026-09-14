@@ -6,6 +6,8 @@ import { environment } from '../../../environments/environment';
 import { EventNewPage } from './event-new.component';
 
 describe('EventNewPage', () => {
+  beforeEach(() => jasmine.clock().install().mockDate(new Date('2026-08-30T12:00:00Z')));
+  afterEach(() => jasmine.clock().uninstall());
   it('FS-EVT-01 posts an instant event', async () => {
     await TestBed.configureTestingModule({
       imports: [EventNewPage],
@@ -17,6 +19,7 @@ describe('EventNewPage', () => {
     const http = TestBed.inject(HttpTestingController);
     fixture.componentInstance.form.setValue({
       title: 'Morning HIIT Squad',
+      description: '',
       activity: 'HIIT',
       place: 'Iron Gym Center',
       startsAt: '2026-09-01T18:00',

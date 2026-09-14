@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.2.0
  */
 import type { GetMatchingMe200Event } from './getMatchingMe200Event';
 import type { GetMatchingMe200Pair } from './getMatchingMe200Pair';
@@ -25,9 +25,9 @@ export type GetMatchingMe200 = {
   pair?: GetMatchingMe200Pair;
   /**
    * Proposed instant session for a weekly match (FS-MATCH-03). Draft,
-   * `visibility=friends`, capacity 1. `id` is set when an events row exists;
-   * otherwise the pair is still returned and the caller still accepts in the
-   * events UI once that surface lands.
+   * private invitation for the matched peer, capacity 1. `id` is set when an
+   * events row exists; the matched peer applies and the organizer accepts
+   * through the events UI.
    */
   event?: GetMatchingMe200Event;
 };

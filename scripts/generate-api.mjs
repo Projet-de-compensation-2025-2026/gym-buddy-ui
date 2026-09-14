@@ -2,8 +2,8 @@
 /**
  * Generate the Angular HttpClient from the versioned gym-buddy-openapi package.
  *
- * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#f92465f0361fadb152018b31b3bf7f9426ba9867
- * (ticket #80 GET /admin/content). Same pin as gym-buddy-service until the next tag.
+ * Pin: github:Projet-de-compensation-2025-2026/gym-buddy-openapi#9e9b3d12f88fe19565b2716677a42db711bca358
+ * Includes occurrence-specific event details. Same contract as gym-buddy-service.
  *
  * Orval reads the $ref tree at
  * node_modules/gym-buddy-openapi/openapi/openapi.yaml so relative $refs
@@ -13,29 +13,33 @@
  * Refs https://github.com/Projet-de-compensation-2025-2026/gym-buddy-documentation/issues/48
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const OPENAPI_PACKAGE = 'gym-buddy-openapi';
-export const OPENAPI_TAG = 'f92465f0361fadb152018b31b3bf7f9426ba9867';
-export const OPENAPI_VERSION = '1.0.0';
+export const OPENAPI_TAG = '9e9b3d12f88fe19565b2716677a42db711bca358';
+export const OPENAPI_VERSION = '1.2.0';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const require = createRequire(join(root, 'package.json'));
 
 function assertNoVendoredSpec() {
-  const banned = spawnSync(
-    'find',
-    [root, '-type', 'f', '(', '-name', 'openapi.yaml', '-o', '-name', 'bundled.yaml', ')'],
-    { encoding: 'utf8' },
-  );
-  const hits = (banned.stdout || '')
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .filter((file) => !file.split(/[\\/]/).includes('node_modules'));
+  const hits = [];
+  function walk(directory) {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      if (
+        entry.isSymbolicLink() ||
+        ['node_modules', '.git', '.angular', 'dist'].includes(entry.name)
+      )
+        continue;
+      const path = join(directory, entry.name);
+      if (entry.isDirectory()) walk(path);
+      else if (['openapi.yaml', 'bundled.yaml'].includes(entry.name)) hits.push(path);
+    }
+  }
+  walk(root);
   if (hits.length > 0) {
     throw new Error(
       `Do not vendor the OpenAPI document in gym-buddy-ui:\n${hits.map((f) => `  ${relative(root, f)}`).join('\n')}`,
@@ -87,17 +91,30 @@ function main() {
   assertNoVendoredSpec();
   const specPath = resolveOpenApiSpec();
 
-  const result = spawnSync('pnpm', ['exec', 'orval', '--config', 'orval.config.ts'], {
-    cwd: root,
-    stdio: 'inherit',
-    env: { ...process.env, GYM_BUDDY_OPENAPI_SPEC: specPath },
-  });
+  const result = spawnSync(
+    process.execPath,
+    [
+      join(dirname(require.resolve('orval/package.json')), 'dist/bin/orval.mjs'),
+      '--config',
+      'orval.config.ts',
+    ],
+    {
+      cwd: root,
+      stdio: 'inherit',
+      env: { ...process.env, GYM_BUDDY_OPENAPI_SPEC: specPath },
+    },
+  );
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
   const format = spawnSync(
-    'pnpm',
-    ['exec', 'prettier', '--write', 'src/app/api/generated', 'admin/app/api/generated'],
+    process.execPath,
+    [
+      join(dirname(require.resolve('prettier/package.json')), 'bin/prettier.cjs'),
+      '--write',
+      'src/app/api/generated',
+      'admin/app/api/generated',
+    ],
     {
       cwd: root,
       stdio: 'inherit',

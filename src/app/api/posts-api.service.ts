@@ -15,6 +15,14 @@ export class PostsApi {
     return this.client.getPostsId(id);
   }
 
+  edit(id: string, body: string): Observable<GetPostsId200> {
+    return this.client.patchPostsId(id, { body });
+  }
+
+  remove(id: string): Observable<void> {
+    return this.client.deletePostsId(id);
+  }
+
   like(id: string): Observable<void> {
     return this.client.putPostsIdLike(id);
   }

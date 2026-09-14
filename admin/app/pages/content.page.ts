@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { PagedList } from '../api/paged-list';
 import { AdminApi } from '../api/admin-api.service';
 import { readApiError } from '../../../src/app/api/models';
 import type { GetAdminContent200 } from '../api/generated/model';
@@ -13,11 +14,11 @@ type ContentRow = GetAdminContent200['data'][number];
   template: `
     <h1>Content Moderation</h1>
     <p class="muted">
-      Review posts, comments, events, and media. Hide requires a reason; members then see NOT_FOUND.
-      Staff still see the row and can unhide it.
+      Review member content. Hidden items are unavailable to members and can be restored by staff.
     </p>
     @if (error()) {
       <p class="error" role="alert">{{ error() }}</p>
+      <button type="button" (click)="reload()" [disabled]="loading()">Retry</button>
     }
     @if (notice()) {
       <p class="notice">{{ notice() }}</p>
@@ -28,6 +29,7 @@ type ContentRow = GetAdminContent200['data'][number];
           type="button"
           role="tab"
           [class.active]="type() === tab.type"
+          [attr.aria-selected]="type() === tab.type"
           (click)="selectType(tab.type)"
         >
           {{ tab.label }}
@@ -46,7 +48,15 @@ type ContentRow = GetAdminContent200['data'][number];
       >Hide reason
       <input [(ngModel)]="reason" name="reason" placeholder="Required to hide" />
     </label>
-    @if (loading()) {
+    <label class="search"
+      >Visibility
+      <select [(ngModel)]="visibility" (ngModelChange)="reload()">
+        <option value="">All content</option>
+        <option value="visible">Visible</option>
+        <option value="hidden">Hidden</option>
+      </select></label
+    >
+    @if (loading() && rows().length === 0) {
       <p class="muted">Loading {{ type() }}s…</p>
     } @else if (rows().length === 0) {
       <p class="muted">No {{ type() }}s match this search.</p>
@@ -76,6 +86,16 @@ type ContentRow = GetAdminContent200['data'][number];
         }
       </div>
     }
+    @if (rows().length > 0) {
+      <footer class="list-footer">
+        <span class="muted">Entries: {{ rows().length }}</span>
+        @if (nextCursor()) {
+          <button type="button" (click)="reload(true)" [disabled]="loading()">
+            {{ loading() ? 'Loading…' : 'Load more' }}
+          </button>
+        }
+      </footer>
+    }
   `,
   styles: `
     .card {
@@ -91,7 +111,7 @@ type ContentRow = GetAdminContent200['data'][number];
     .grid {
       display: grid;
       gap: 1rem;
-      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
     }
     .tabs {
       display: flex;
@@ -138,12 +158,23 @@ export class ContentPage {
   ];
   readonly type = signal<ContentType>('post');
   readonly query = signal('');
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
+  private readonly list = new PagedList<ContentRow>((after) =>
+    this.api.listContent({
+      type: this.type(),
+      q: this.query().trim() || undefined,
+      hidden: this.visibility === '' ? undefined : this.visibility === 'hidden',
+      after,
+      size: 50,
+    }),
+  );
+  readonly loading = this.list.loading;
+  readonly nextCursor = this.list.next;
+  readonly error = this.list.error;
   readonly notice = signal<string | null>(null);
   readonly busy = signal(false);
-  readonly rows = signal<ContentRow[]>([]);
+  readonly rows = this.list.rows;
   reason = '';
+  visibility = '';
 
   constructor() {
     this.reload();
@@ -159,20 +190,8 @@ export class ContentPage {
     this.reload();
   }
 
-  reload(): void {
-    this.loading.set(true);
-    this.error.set(null);
-    const q = this.query().trim();
-    this.api.listContent({ type: this.type(), q: q || undefined, size: 50 }).subscribe({
-      next: (page) => {
-        this.rows.set(page.data);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        this.error.set(readApiError(err));
-        this.loading.set(false);
-      },
-    });
+  reload(append = false): void {
+    this.list.load(append);
   }
 
   hide(row: ContentRow): void {

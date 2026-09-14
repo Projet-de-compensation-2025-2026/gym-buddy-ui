@@ -14,8 +14,51 @@
       </span>
     </a>
   </header>
+  @if (ownPost()) {
+    <div class="author-actions">
+      @if (canEdit()) {
+        <button type="button" class="action" (click)="beginEdit()">Edit post</button>
+      }
+      <button type="button" class="action" (click)="confirmingDelete.set(true)">Delete post</button>
+    </div>
+  }
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  @if (editing()) {
+    <form (submit)="$event.preventDefault(); saveEdit()">
+      <label
+        >Edit post
+        <textarea
+          #postDraft
+          rows="3"
+          maxlength="2000"
+          [value]="draft()"
+          (input)="draft.set(postDraft.value)"
+        ></textarea>
+      </label>
+      <div class="author-actions">
+        <button class="btn-primary" [disabled]="busy()">Save post</button
+        ><button class="btn-secondary" type="button" (click)="editing.set(false)">Cancel</button>
+      </div>
+    </form>
+  }
+  @if (confirmingDelete()) {
+    <div role="alert">
+      <p>Delete this post? It will disappear from feeds and shared reposts.</p>
+      <button class="btn-danger" type="button" [disabled]="busy()" (click)="deletePost()">
+        Confirm delete
+      </button>
+      <button class="btn-secondary" type="button" (click)="confirmingDelete.set(false)">
+        Keep post
+      </button>
+    </div>
+  }
   @if (post().body) {
     <p class="body" data-testid="post-body">{{ post().body }}</p>
+    @if (post().editedAt) {
+      <small class="meta">Edited</small>
+    }
   }
   @if (post().mediaIds.length) {
     <div class="media" data-testid="post-media">
@@ -51,4 +94,8 @@
     </button>
     <a class="action" [routerLink]="['/posts', post().id]" data-testid="comment-post">Comment</a>
   </div>
+  @if (!ownPost()) {
+    <app-report-button targetType="post" [targetId]="post().id" />
+    <app-report-button targetType="user" [targetId]="post().author.userId" />
+  }
 </article>

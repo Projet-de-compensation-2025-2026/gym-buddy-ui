@@ -8,12 +8,13 @@ import { ProfilesApi } from '../../api/profiles-api.service';
 import { readApiError } from '../../api/models';
 import type { GetFriendships200DataItem, GetProfilesHandle200 } from '../../api/generated/model';
 import { AuthSession } from '../../auth/auth-session.service';
+import { ReportButton } from '../../reports/report-button.component';
 
 type ProfileRelation = 'none' | 'outgoing' | 'incoming' | 'accepted' | 'blocked';
 
 @Component({
   selector: 'app-profile',
-  imports: [RouterLink],
+  imports: [RouterLink, ReportButton],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
@@ -161,9 +162,9 @@ export class ProfilePage {
 
   private loadRelation(handle: string): void {
     forkJoin({
-      incoming: this.friends.list({ filter: 'incoming', size: 50 }),
-      outgoing: this.friends.list({ filter: 'outgoing', size: 50 }),
-      accepted: this.friends.list({ filter: 'accepted', size: 50 }),
+      incoming: this.friends.listAll({ filter: 'incoming' }),
+      outgoing: this.friends.listAll({ filter: 'outgoing' }),
+      accepted: this.friends.listAll({ filter: 'accepted' }),
     }).subscribe({
       next: (pages) => {
         const match = (rows: GetFriendships200DataItem[]) =>

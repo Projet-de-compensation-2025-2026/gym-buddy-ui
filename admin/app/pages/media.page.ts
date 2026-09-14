@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { PagedList } from '../api/paged-list';
 import { AdminApi } from '../api/admin-api.service';
 import { readApiError } from '../../../src/app/api/models';
 import type { GetAdminMedia200 } from '../api/generated/model';
@@ -27,8 +28,8 @@ function memberReadRule(kind: MediaRow['kind']): string {
   template: `
     <h1>Media Management</h1>
     <p class="muted">
-      Inspect product ACL (canRead) and revoke signed GET for members. Hide is not a delete; staff
-      still see the row.
+      Review uploaded files and who can access them. Hide files to stop new member access, or
+      restore them after review.
     </p>
     <label class="search"
       >Search
@@ -44,8 +45,9 @@ function memberReadRule(kind: MediaRow['kind']): string {
     </label>
     @if (error()) {
       <p class="error" role="alert">{{ error() }}</p>
+      <button type="button" (click)="reload()" [disabled]="loading()">Retry</button>
     }
-    @if (loading()) {
+    @if (loading() && rows().length === 0) {
       <p class="muted">Loading media…</p>
     } @else if (rows().length === 0) {
       <p class="muted">No media rows.</p>
@@ -86,13 +88,13 @@ function memberReadRule(kind: MediaRow['kind']): string {
               </tbody>
             </table>
             <p>
-              Signed GET for members:
+              Member access:
               {{
                 row.hidden
-                  ? 'revoked (hide). Existing URLs fail after expiry.'
+                  ? 'hidden. Previously opened links expire shortly.'
                   : row.status === 'ready'
-                    ? 'issued after canRead (60 s TTL).'
-                    : 'not issued until status is ready.'
+                    ? 'available to authorized viewers through temporary links.'
+                    : 'unavailable until processing finishes.'
               }}
             </p>
             @if (row.hidden && row.hiddenReason) {
@@ -110,6 +112,16 @@ function memberReadRule(kind: MediaRow['kind']): string {
           }
         </article>
       }
+    }
+    @if (rows().length > 0) {
+      <footer class="list-footer">
+        <span class="muted">Entries: {{ rows().length }}</span>
+        @if (nextCursor()) {
+          <button type="button" (click)="reload(true)" [disabled]="loading()">
+            {{ loading() ? 'Loading…' : 'Load more' }}
+          </button>
+        }
+      </footer>
     }
   `,
   styles: `
@@ -148,9 +160,13 @@ function memberReadRule(kind: MediaRow['kind']): string {
 })
 export class MediaPage {
   private readonly api = inject(AdminApi);
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly rows = signal<MediaRow[]>([]);
+  private readonly list = new PagedList<MediaRow>((after) =>
+    this.api.listMedia({ q: this.query().trim() || undefined, after, size: 50 }),
+  );
+  readonly loading = this.list.loading;
+  readonly nextCursor = this.list.next;
+  readonly error = this.list.error;
+  readonly rows = this.list.rows;
   readonly busyId = signal<string | null>(null);
   readonly query = signal('');
   reason = '';
@@ -165,19 +181,8 @@ export class MediaPage {
     this.reload();
   }
 
-  reload(): void {
-    this.loading.set(true);
-    const q = this.query().trim();
-    this.api.listMedia({ q: q || undefined, size: 50 }).subscribe({
-      next: (page) => {
-        this.rows.set(page.data);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        this.error.set(readApiError(err));
-        this.loading.set(false);
-      },
-    });
+  reload(append = false): void {
+    this.list.load(append);
   }
 
   revoke(row: MediaRow): void {

@@ -10,6 +10,8 @@
     }
     <app-post-card
       [post]="row"
+      (changed)="post.set($event)"
+      (removed)="removePost()"
       [imageUrls]="imageUrls()"
       (like)="toggleLike($event)"
       (repost)="toggleRepost($event)"

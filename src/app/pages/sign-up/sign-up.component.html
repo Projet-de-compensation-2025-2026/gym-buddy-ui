@@ -14,6 +14,7 @@
         <input
           type="text"
           formControlName="displayName"
+          placeholder="e.g. Alex Martin"
           autocomplete="nickname"
           data-testid="sign-up-display-name"
           [class.invalid]="fieldError('displayName')"
@@ -30,6 +31,7 @@
         <input
           type="text"
           formControlName="handle"
+          placeholder="username"
           autocomplete="username"
           data-testid="sign-up-handle"
           [class.invalid]="fieldError('handle')"
@@ -46,6 +48,7 @@
         <input
           type="email"
           formControlName="email"
+          placeholder="you@example.com"
           autocomplete="email"
           data-testid="sign-up-email"
           [class.invalid]="fieldError('email')"

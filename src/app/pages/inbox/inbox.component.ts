@@ -25,24 +25,28 @@ export class InboxPage {
   readonly composing = signal(false);
   readonly friendsList = signal<GetFriendships200DataItem[]>([]);
   readonly busy = signal(false);
+  readonly next = signal<string | null>(null);
 
   constructor() {
     this.reload();
   }
 
-  reload(): void {
+  reload(append = false): void {
     this.loading.set(true);
     this.error.set(null);
-    this.api.inbox({ size: 50 }).subscribe({
-      next: (page) => {
-        this.threads.set(page.data);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        this.error.set(readApiError(err));
-        this.loading.set(false);
-      },
-    });
+    this.api
+      .inbox({ size: 50, before: append ? (this.next() ?? undefined) : undefined })
+      .subscribe({
+        next: (page) => {
+          this.threads.set(append ? [...this.threads(), ...page.data] : page.data);
+          this.next.set(page.page.next ?? null);
+          this.loading.set(false);
+        },
+        error: (err: unknown) => {
+          this.error.set(readApiError(err));
+          this.loading.set(false);
+        },
+      });
   }
 
   preview(row: GetConversations200DataItem): string {
@@ -82,7 +86,7 @@ export class InboxPage {
 
   openComposer(): void {
     this.composing.set(true);
-    this.friends.list({ filter: 'accepted', size: 50 }).subscribe({
+    this.friends.listAll({ filter: 'accepted' }).subscribe({
       next: (page) => this.friendsList.set(page.data),
       error: (err: unknown) => this.error.set(readApiError(err)),
     });

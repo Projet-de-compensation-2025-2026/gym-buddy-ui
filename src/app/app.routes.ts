@@ -1,45 +1,99 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
-import { EventDetailPage } from './pages/event-detail/event-detail.component';
-import { EventNewPage } from './pages/event-new/event-new.component';
-import { EventsPage } from './pages/events/events.component';
-import { ChatPage } from './pages/chat/chat.component';
-import { FriendsPage } from './pages/friends/friends.component';
-import { InboxPage } from './pages/inbox/inbox.component';
 import { HomePage } from './pages/home/home.component';
-import { PostDetailPage } from './pages/post-detail/post-detail.component';
-import { SuggestionsPage } from './pages/suggestions/suggestions.component';
-import { ProfilePage } from './pages/profile/profile.component';
-import { SearchPage } from './pages/search/search.component';
-import { SettingsPrivacyPage } from './pages/settings-privacy/settings-privacy.component';
-import { SettingsProfilePage } from './pages/settings-profile/settings-profile.component';
-import { NotFoundPage } from './pages/not-found/not-found.component';
-import { SignInPage } from './pages/sign-in/sign-in.component';
-import { SignUpPage } from './pages/sign-up/sign-up.component';
 
 export const routes: Routes = [
   { path: '', component: HomePage },
-  { path: 'register', component: SignUpPage },
-  { path: 'login', component: SignInPage },
-  { path: 'events', component: EventsPage, canActivate: [authGuard] },
-  { path: 'events/new', component: EventNewPage, canActivate: [authGuard] },
-  { path: 'events/:id', component: EventDetailPage, canActivate: [authGuard] },
-  { path: 'friends', component: FriendsPage, canActivate: [authGuard] },
   {
-    path: 'friends/suggestions',
-    component: SuggestionsPage,
+    path: 'register',
+    loadComponent: () => import('./pages/sign-up/sign-up.component').then((m) => m.SignUpPage),
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./pages/sign-in/sign-in.component').then((m) => m.SignInPage),
+  },
+  {
+    path: 'events',
+    loadComponent: () => import('./pages/events/events.component').then((m) => m.EventsPage),
     canActivate: [authGuard],
   },
-  { path: 'search', component: SearchPage, canActivate: [authGuard] },
-  { path: 'messages', component: InboxPage, canActivate: [authGuard] },
-  { path: 'messages/:id', component: ChatPage, canActivate: [authGuard] },
+  {
+    path: 'events/new',
+    loadComponent: () =>
+      import('./pages/event-new/event-new.component').then((m) => m.EventNewPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'events/:id',
+    loadComponent: () =>
+      import('./pages/event-detail/event-detail.component').then((m) => m.EventDetailPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'friends',
+    loadComponent: () => import('./pages/friends/friends.component').then((m) => m.FriendsPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'friends/suggestions',
+    loadComponent: () =>
+      import('./pages/suggestions/suggestions.component').then((m) => m.SuggestionsPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'search',
+    loadComponent: () => import('./pages/search/search.component').then((m) => m.SearchPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'messages',
+    loadComponent: () => import('./pages/inbox/inbox.component').then((m) => m.InboxPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'messages/:id',
+    loadComponent: () => import('./pages/chat/chat.component').then((m) => m.ChatPage),
+    canActivate: [authGuard],
+  },
   { path: 'inbox', redirectTo: 'messages', pathMatch: 'full' },
   { path: 'inbox/:id', redirectTo: 'messages/:id' },
-  { path: 'suggestions', component: SuggestionsPage, canActivate: [authGuard] },
-  { path: 'posts/:id', component: PostDetailPage, canActivate: [authGuard] },
-  { path: 'u/:handle', component: ProfilePage, canActivate: [authGuard] },
+  {
+    path: 'suggestions',
+    loadComponent: () =>
+      import('./pages/suggestions/suggestions.component').then((m) => m.SuggestionsPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'posts/:id',
+    loadComponent: () =>
+      import('./pages/post-detail/post-detail.component').then((m) => m.PostDetailPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'u/:handle',
+    loadComponent: () => import('./pages/profile/profile.component').then((m) => m.ProfilePage),
+    canActivate: [authGuard],
+  },
   { path: 'settings', redirectTo: 'settings/profile', pathMatch: 'full' },
-  { path: 'settings/profile', component: SettingsProfilePage, canActivate: [authGuard] },
-  { path: 'settings/privacy', component: SettingsPrivacyPage, canActivate: [authGuard] },
-  { path: '**', component: NotFoundPage },
+  {
+    path: 'settings/profile',
+    loadComponent: () =>
+      import('./pages/settings-profile/settings-profile.component').then(
+        (m) => m.SettingsProfilePage,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'settings/privacy',
+    loadComponent: () =>
+      import('./pages/settings-privacy/settings-privacy.component').then(
+        (m) => m.SettingsPrivacyPage,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./pages/not-found/not-found.component').then((m) => m.NotFoundPage),
+  },
 ];

@@ -20,6 +20,21 @@ describe('FriendsApi', () => {
     http.verify();
   });
 
+  it('follows friendship cursors so relationships beyond the first 50 remain available', () => {
+    let count = 0;
+    api.listAll({ filter: 'accepted' }).subscribe((page) => (count = page.data.length));
+    http
+      .expectOne((r) => r.url === `${environment.apiBaseUrl}/friendships` && !r.params.has('after'))
+      .flush({ data: [sampleFriendship()], page: { next: 'next-page', size: 50 } });
+    const next = http.expectOne(
+      (r) =>
+        r.url === `${environment.apiBaseUrl}/friendships` && r.params.get('after') === 'next-page',
+    );
+    expect(next.request.params.get('filter')).toBe('accepted');
+    next.flush({ data: [sampleFriendship()], page: { next: null, size: 50 } });
+    expect(count).toBe(2);
+  });
+
   it('lists friendships through the generated client', () => {
     let size = 0;
     api.list({ filter: 'incoming', size: 20 }).subscribe((page) => {

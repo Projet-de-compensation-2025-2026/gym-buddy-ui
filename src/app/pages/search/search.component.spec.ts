@@ -1,4 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
+import { ApplicationRef } from '@angular/core';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -22,6 +23,7 @@ describe('SearchPage', () => {
 
     const fixture = TestBed.createComponent(SearchPage);
     fixture.detectChanges();
+    await fixture.whenStable();
     return {
       root: fixture.nativeElement as HTMLElement,
       http: TestBed.inject(HttpTestingController),
@@ -185,16 +187,81 @@ describe('SearchPage', () => {
     http.verify();
   });
 
-  it('FS-SRCH-03 sends radiusKm when the viewer has coordinates', async () => {
+  it('FS-SRCH-03 applies distance only when explicitly enabled and can disable it', async () => {
     const { root, http, detect } = await setup();
     flushMe(http, { lat: 45.75, lng: 4.85 });
     detect();
-    expect(root.querySelector('[data-testid="search-radius"]')).toBeTruthy();
+    expect(root.querySelector('[data-testid="search-radius"]')).toBeNull();
     expect(root.querySelector('[data-testid="search-radius-unavailable"]')).toBeNull();
     const req = expectPeople(http);
-    expect(req.request.params.get('radiusKm')).toBe('10');
+    expect(req.request.params.get('radiusKm')).toBeNull();
     req.flush({ data: [samplePerson()], page: { next: null, size: 20 } });
     detect();
+    await TestBed.inject(ApplicationRef).whenStable();
+    (root.querySelector('[data-testid="distance-enabled"]') as HTMLInputElement).click();
+    detect();
+    (root.querySelector('[data-testid="apply-filters"]') as HTMLButtonElement).click();
+    const filtered = expectPeople(http);
+    expect(filtered.request.params.get('radiusKm')).toBe('10');
+    filtered.flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+    (root.querySelector('[data-testid="distance-enabled"]') as HTMLInputElement).click();
+    (root.querySelector('[data-testid="apply-filters"]') as HTMLButtonElement).click();
+    const unfiltered = expectPeople(http);
+    expect(unfiltered.request.params.get('radiusKm')).toBeNull();
+    unfiltered.flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+    http.verify();
+  });
+
+  it('FS-SRCH-05 appends the next cursor page without losing existing results', async () => {
+    const { root, http, detect } = await setup();
+    flushMe(http);
+    expectPeople(http).flush({ data: [samplePerson()], page: { next: 'page-two', size: 20 } });
+    detect();
+    (root.querySelector('[data-testid="search-more"]') as HTMLButtonElement).click();
+    const req = expectPeople(http);
+    expect(req.request.params.get('before')).toBe('page-two');
+    req.flush({
+      data: [{ ...samplePerson(), handle: 'alex', displayName: 'Alex' }],
+      page: { next: null, size: 20 },
+    });
+    detect();
+    expect(root.querySelector('[data-testid="people-results"]')?.textContent).toContain('Sarah J.');
+    expect(root.querySelector('[data-testid="people-results"]')?.textContent).toContain('Alex');
+    expect(root.querySelector('[data-testid="search-more"]')).toBeNull();
+    http.verify();
+  });
+
+  it('sends each visible event filter and hides people-only controls', async () => {
+    const { root, http, detect } = await setup();
+    flushMe(http);
+    expectPeople(http).flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+    (root.querySelector('[data-testid="tab-events"]') as HTMLButtonElement).click();
+    expectEvents(http).flush({ data: [], page: { next: null, size: 20 } });
+    detect();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(root.querySelector('[data-testid="search-city"]')).toBeNull();
+    for (const [name, value] of [
+      ['activity', 'running'],
+      ['from', '2026-09-16'],
+      ['to', '2026-09-18'],
+    ]) {
+      const input = root.querySelector(`[name="${name}"]`) as HTMLInputElement;
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    (root.querySelector('[name="availableOnly"]') as HTMLInputElement).click();
+    (root.querySelector('[name="organizerIsFriend"]') as HTMLInputElement).click();
+    (root.querySelector('[data-testid="apply-filters"]') as HTMLButtonElement).click();
+    const req = expectEvents(http);
+    expect(req.request.params.get('activity')).toBe('running');
+    expect(req.request.params.get('remaining')).toBe('true');
+    expect(req.request.params.get('organizerIsFriend')).toBe('true');
+    expect(req.request.params.get('from')).toBe(new Date('2026-09-16T00:00:00').toISOString());
+    expect(req.request.params.get('to')).toBe(new Date('2026-09-18T23:59:59.999').toISOString());
+    req.flush({ data: [], page: { next: null, size: 20 } });
     http.verify();
   });
 

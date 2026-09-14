@@ -17,6 +17,22 @@
   display: flex;
   gap: 1.25rem;
   align-items: flex-start;
+  border-top: 3px solid #006d77;
+}
+.hero-card > div:last-child {
+  min-width: 0;
+}
+.hero-card h1 {
+  margin: 0 0 0.25rem;
+}
+.hero-card .handle {
+  margin: 0;
+}
+.stub-card .avatar {
+  margin: 0 auto;
+}
+.avatar-lg {
+  flex-shrink: 0;
 }
 
 .stub-card {
@@ -28,7 +44,32 @@
 .grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  grid-template-columns: minmax(12rem, 1fr) minmax(0, 2fr);
+  align-items: start;
+}
+.grid .stats {
+  grid-column: 1;
+  grid-row: 1;
+}
+.grid > article:nth-child(2) {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+.grid > article:nth-child(3) {
+  grid-column: 1;
+  grid-row: 2;
+}
+@media (max-width: 40rem) {
+  .hero-card {
+    flex-direction: column;
+  }
+  .grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .grid > article {
+    width: 100%;
+  }
 }
 
 .avatar {

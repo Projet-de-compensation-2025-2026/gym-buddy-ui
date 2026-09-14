@@ -22,11 +22,7 @@ export function staffLoginEmail(identifier: string): string {
   template: `
     <section class="card">
       <h1>Admin Portal</h1>
-      <p class="muted">
-        Staff sign-in with email or handle. Fixture accounts:
-        <code>demo.admin</code> / <code>demo.admin@fixtures.gym.test</code>. Members cannot use this
-        console.
-      </p>
+      <p class="muted">Sign in with your staff email or demo handle to manage Gym Buddy.</p>
       @if (error()) {
         <p class="error" role="alert" data-testid="admin-login-error">{{ error() }}</p>
       }

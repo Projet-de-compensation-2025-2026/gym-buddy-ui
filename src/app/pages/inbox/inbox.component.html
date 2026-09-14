@@ -63,4 +63,9 @@
       </ul>
     </aside>
   }
+  @if (next()) {
+    <button class="btn-secondary" type="button" [disabled]="loading()" (click)="reload(true)">
+      Load more conversations
+    </button>
+  }
 </section>

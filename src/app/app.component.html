@@ -53,3 +53,8 @@
 <main>
   <router-outlet />
 </main>
+@if (!authScreen()) {
+  <footer class="site-footer">
+    <a routerLink="/" class="brand">Gym Buddy</a><span>Train together. Stay motivated.</span>
+  </footer>
+}

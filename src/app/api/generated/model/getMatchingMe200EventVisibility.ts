@@ -7,12 +7,16 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.2.0
  */
 
+/**
+ * New matches create a private event inviting only the matched peer. Friends is retained for older matches.
+ */
 export type GetMatchingMe200EventVisibility =
   (typeof GetMatchingMe200EventVisibility)[keyof typeof GetMatchingMe200EventVisibility];
 
 export const GetMatchingMe200EventVisibility = {
   friends: 'friends',
+  private: 'private',
 } as const;

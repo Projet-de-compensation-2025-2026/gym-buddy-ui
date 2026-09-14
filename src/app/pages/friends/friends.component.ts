@@ -19,6 +19,10 @@ export class FriendsPage {
   readonly incoming = signal<GetFriendships200DataItem[]>([]);
   readonly outgoing = signal<GetFriendships200DataItem[]>([]);
   readonly accepted = signal<GetFriendships200DataItem[]>([]);
+  readonly blocked = signal<GetFriendships200DataItem[]>([]);
+  readonly blockedOpen = signal(false);
+  readonly blockedLoading = signal(false);
+  readonly blockedError = signal<string | null>(null);
   readonly query = signal('');
   readonly busyId = signal<string | null>(null);
 
@@ -43,9 +47,9 @@ export class FriendsPage {
     this.loading.set(true);
     this.error.set(null);
     forkJoin({
-      incoming: this.api.list({ filter: 'incoming', size: 50 }),
-      outgoing: this.api.list({ filter: 'outgoing', size: 50 }),
-      accepted: this.api.list({ filter: 'accepted', size: 50 }),
+      incoming: this.api.listAll({ filter: 'incoming' }),
+      outgoing: this.api.listAll({ filter: 'outgoing' }),
+      accepted: this.api.listAll({ filter: 'accepted' }),
     }).subscribe({
       next: (pages) => {
         this.incoming.set(pages.incoming.data);
@@ -78,6 +82,26 @@ export class FriendsPage {
 
   block(row: GetFriendships200DataItem): void {
     this.run(row.id, this.api.block({ userId: row.peer.userId }), () => this.reload());
+  }
+
+  loadBlocked(): void {
+    this.blockedOpen.set(true);
+    this.blockedLoading.set(true);
+    this.blockedError.set(null);
+    this.api.listAll({ filter: 'blocked' }).subscribe({
+      next: (page) => {
+        this.blocked.set(page.data);
+        this.blockedLoading.set(false);
+      },
+      error: (err: unknown) => {
+        this.blockedError.set(readApiError(err));
+        this.blockedLoading.set(false);
+      },
+    });
+  }
+
+  unblock(row: GetFriendships200DataItem): void {
+    this.run(row.id, this.api.unblock(row.peer.userId), () => this.loadBlocked());
   }
 
   onQuery(event: Event): void {

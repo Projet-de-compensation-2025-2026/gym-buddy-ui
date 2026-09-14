@@ -47,6 +47,39 @@ describe('FriendsPage', () => {
     http.verify();
   });
 
+  it('lists only the caller blocked members and unblocks the selected peer UUID', async () => {
+    const { root, http, detect } = await setup();
+    flushLists(http, { incoming: [], outgoing: [], accepted: [] });
+    detect();
+    const manage = Array.from(root.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Manage blocked'),
+    )!;
+    manage.click();
+    const row = sample('blocked', 'outgoing', 'blocked_demo', 'Blocked Demo');
+    http
+      .expectOne(
+        (r) =>
+          r.url === `${environment.apiBaseUrl}/friendships` && r.params.get('filter') === 'blocked',
+      )
+      .flush({ data: [row], page: { next: null, size: 50 } });
+    detect();
+    Array.from(root.querySelectorAll('button'))
+      .find((button) => button.textContent?.trim() === 'Unblock')!
+      .click();
+    const request = http.expectOne(`${environment.apiBaseUrl}/blocks/${row.peer.userId}`);
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null, { status: 204, statusText: 'No Content' });
+    http
+      .expectOne(
+        (r) =>
+          r.url === `${environment.apiBaseUrl}/friendships` && r.params.get('filter') === 'blocked',
+      )
+      .flush({ data: [], page: { next: null, size: 50 } });
+    detect();
+    expect(root.textContent).toContain('No blocked members.');
+    http.verify();
+  });
+
   it('FS-FRND-02 accepts an inbound request', async () => {
     const { root, http, detect } = await setup();
     const inbound = sample('pending', 'incoming', 'acarter_fit', 'Alex Carter');
@@ -155,7 +188,7 @@ function flushLists(
 }
 
 function sample(
-  status: 'pending' | 'accepted',
+  status: 'pending' | 'accepted' | 'blocked',
   direction: 'incoming' | 'outgoing',
   handle: string,
   displayName: string,

@@ -6,6 +6,7 @@ bundled.yaml
 
 # Compiled output
 /dist
+/dist-admin
 /_site
 /tmp
 /out-tsc

@@ -27,8 +27,8 @@ export class EventsApi {
     return this.client.postEvents(body);
   }
 
-  get(id: string): Observable<GetEventsId200> {
-    return this.client.getEventsId(id);
+  get(id: string, occurrenceId?: string): Observable<GetEventsId200> {
+    return this.client.getEventsId(id, occurrenceId ? { occurrenceId } : undefined);
   }
 
   patch(id: string, body: PatchEventsIdBody): Observable<GetEventsId200> {

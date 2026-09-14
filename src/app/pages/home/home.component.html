@@ -88,6 +88,8 @@
           }
           <app-post-card
             [post]="item.post"
+            (changed)="updatePost($event)"
+            (removed)="removePost($event)"
             [activityAt]="item.activityAt"
             [imageUrls]="imageUrls()"
             (like)="toggleLike($event)"
@@ -108,12 +110,14 @@
       </button>
     }
   } @else {
-    <h1>Gym Buddy</h1>
-    <p>Sign-up, sign-in, profiles, friends, and your friends news feed.</p>
-    <p>
-      <a routerLink="/register">Sign up</a>
-      ·
-      <a routerLink="/login">Sign in</a>
-    </p>
+    <article class="card welcome">
+      <p class="muted">BETTER TOGETHER</p>
+      <h1>Find your next training partner.</h1>
+      <p>Meet people who share your sports, plan a session, and keep each other motivated.</p>
+      <div class="welcome-actions">
+        <a class="btn-primary" routerLink="/register">Join Gym Buddy</a
+        ><a class="btn-secondary" routerLink="/login">Sign in</a>
+      </div>
+    </article>
   }
 </section>
