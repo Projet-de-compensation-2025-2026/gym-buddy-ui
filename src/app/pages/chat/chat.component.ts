@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, signal } from '@angular/core';
+import { Component, effect, inject, OnDestroy, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
@@ -38,6 +38,12 @@ export class ChatPage implements OnDestroy {
   private socket: WebSocket | null = null;
 
   constructor() {
+    effect(() => {
+      const id = this.conversationId();
+      const token = this.session.accessToken();
+      if (id && token) this.connect(id);
+      else this.disconnect();
+    });
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       this.conversationId.set(id);
@@ -46,7 +52,6 @@ export class ChatPage implements OnDestroy {
         this.loading.set(false);
         return;
       }
-      this.connect(id);
       this.reload(id, true);
       this.loadPeer(id);
     });

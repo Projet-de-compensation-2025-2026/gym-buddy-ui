@@ -10,9 +10,13 @@
  * OpenAPI spec version: 1.1.1
  */
 
+/**
+ * New matches create a private event inviting only the matched peer. Friends is retained for older matches.
+ */
 export type GetMatchingMe200EventVisibility =
   (typeof GetMatchingMe200EventVisibility)[keyof typeof GetMatchingMe200EventVisibility];
 
 export const GetMatchingMe200EventVisibility = {
   friends: 'friends',
+  private: 'private',
 } as const;

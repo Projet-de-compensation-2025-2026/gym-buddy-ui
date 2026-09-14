@@ -13,9 +13,9 @@ import type { MatchingMeEventVisibility } from './matchingMeEventVisibility';
 
 /**
  * Proposed instant session for a weekly match (FS-MATCH-03). Draft,
- * `visibility=friends`, capacity 1. `id` is set when an events row exists;
- * otherwise the pair is still returned and the caller still accepts in the
- * events UI once that surface lands.
+ * private invitation for the matched peer, capacity 1. `id` is set when an
+ * events row exists; the matched peer applies and the organizer accepts
+ * through the events UI.
  */
 export type MatchingMeEvent = {
   /** @nullable */
@@ -25,7 +25,7 @@ export type MatchingMeEvent = {
    * @maxLength 32
    */
   activity: string;
-  /** Midpoint of the overlapping preferred window this week (UTC). */
+  /** Start of the overlapping preferred window (UTC); the whole session fits within that window. */
   startsAt: string;
   /**
    * @minimum 1
@@ -38,5 +38,6 @@ export type MatchingMeEvent = {
    * @maximum 1
    */
   capacity: number;
+  /** New matches create a private event inviting only the matched peer. Friends is retained for older matches. */
   visibility: MatchingMeEventVisibility;
 };

@@ -1,9 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { PagedList } from '../api/paged-list';
 import { AdminApi } from '../api/admin-api.service';
 import { readApiError } from '../../../src/app/api/models';
 import { AuthSession } from '../../../src/app/auth/auth-session.service';
-import type { GetAdminUsers200 } from '../api/generated/model';
+import type { GetAdminUsers200, GetAdminUsersParams } from '../api/generated/model';
 
 type AdminUserRow = GetAdminUsers200['data'][number];
 
@@ -17,81 +18,120 @@ type AdminUserRow = GetAdminUsers200['data'][number];
         <p class="muted">Manage accounts, roles, and access across the platform.</p>
       </div>
     </header>
-    <label class="search"
-      >Search
-      <input
-        type="search"
-        [value]="query()"
-        (input)="onQuery($event)"
-        placeholder="Search users by name, email, or handle"
-    /></label>
+    <div class="filters">
+      <label class="search"
+        >Search
+        <input
+          type="search"
+          [value]="query()"
+          (input)="onQuery($event)"
+          placeholder="Search users by name, email, or handle"
+      /></label>
+      <label
+        >Role
+        <select [(ngModel)]="role" (ngModelChange)="reload()">
+          <option value="">All roles</option>
+          <option value="member">Member</option>
+          <option value="moderator">Moderator</option>
+          <option value="admin">Admin</option>
+        </select></label
+      >
+      <label
+        >Status
+        <select [(ngModel)]="status" (ngModelChange)="reload()">
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="locked">Locked</option>
+          <option value="closed">Closed</option>
+        </select></label
+      >
+    </div>
     <label class="search"
       >Lock reason
       <input [(ngModel)]="lockReason" name="lockReason" placeholder="Required to lock an account"
     /></label>
-    @if (loading()) {
+    @if (loading() && rows().length === 0) {
       <p class="muted">Loading users…</p>
-    } @else if (error()) {
+    } @else if (error() && rows().length === 0) {
       <p class="error" role="alert">{{ error() }}</p>
+      <button type="button" (click)="reload()" [disabled]="loading()">Retry</button>
     } @else if (rows().length === 0) {
       <p class="muted">No users match this search.</p>
     } @else {
-      <table>
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Status</th>
-            <th>Joined</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of rows(); track row.id) {
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Users table">
+        <table>
+          <thead>
             <tr>
-              <td>
-                <strong>{{ row.displayName }}</strong>
-                <div class="muted">{{ row.handle }} · {{ row.email }}</div>
-              </td>
-              <td>{{ row.status }}</td>
-              <td>{{ joined(row.createdAt) }}</td>
-              <td>
-                @if (session.isAdmin()) {
-                  <select
-                    [value]="row.role"
-                    [disabled]="busyId() === row.id || row.lastAdmin"
-                    (change)="onRole(row, $event)"
-                  >
-                    <option value="member">Member</option>
-                    <option value="moderator">Moderator</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                  @if (row.lastAdmin) {
-                    <div class="danger">Last admin</div>
-                  }
-                } @else {
-                  {{ row.role }}
-                }
-              </td>
-              <td>
-                @if (row.status === 'locked' || row.status === 'closed') {
-                  <button type="button" (click)="unlock(row)" [disabled]="busyId() === row.id">
-                    Unlock
-                  </button>
-                } @else {
-                  <button
-                    type="button"
-                    (click)="lock(row)"
-                    [disabled]="busyId() === row.id || row.lastAdmin"
-                  >
-                    Lock
-                  </button>
-                }
-              </td>
+              <th>User</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th>Role</th>
+              <th>Actions</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>
+                  <strong>{{ row.displayName }}</strong>
+                  <div class="muted">{{ row.handle }} · {{ row.email }}</div>
+                </td>
+                <td>{{ row.status }}</td>
+                <td>{{ joined(row.createdAt) }}</td>
+                <td>
+                  @if (session.isAdmin()) {
+                    <select
+                      [attr.aria-label]="'Role for ' + row.handle"
+                      [value]="row.role"
+                      [disabled]="busyId() === row.id || row.lastAdmin"
+                      (change)="onRole(row, $event)"
+                    >
+                      <option value="member">Member</option>
+                      <option value="moderator">Moderator</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                    @if (row.lastAdmin) {
+                      <div class="danger">Last admin</div>
+                    }
+                  } @else {
+                    {{ row.role }}
+                  }
+                </td>
+                <td>
+                  @if (!session.isAdmin() && row.role !== 'member') {
+                    <span class="muted">Admin only</span>
+                  } @else if (row.status === 'locked' || row.status === 'closed') {
+                    <button type="button" (click)="unlock(row)" [disabled]="busyId() === row.id">
+                      Unlock
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      (click)="lock(row)"
+                      [disabled]="busyId() === row.id || row.lastAdmin"
+                    >
+                      Lock
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    @if (rows().length > 0) {
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <footer class="list-footer">
+        <span class="muted">Entries: {{ rows().length }}</span>
+        @if (nextCursor()) {
+          <button type="button" (click)="reload(true)" [disabled]="loading()">
+            {{ loading() ? 'Loading…' : 'Load more' }}
+          </button>
+        }
+      </footer>
     }
   `,
   styles: `
@@ -127,11 +167,23 @@ export class UsersPage {
   private readonly api = inject(AdminApi);
   readonly session = inject(AuthSession);
   readonly query = signal('');
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly rows = signal<AdminUserRow[]>([]);
+  private readonly list = new PagedList<AdminUserRow>((after) =>
+    this.api.listUsers({
+      q: this.query().trim() || undefined,
+      role: this.role || undefined,
+      status: this.status || undefined,
+      after,
+      size: 50,
+    }),
+  );
+  readonly loading = this.list.loading;
+  readonly nextCursor = this.list.next;
+  readonly error = this.list.error;
+  readonly rows = this.list.rows;
   readonly busyId = signal<string | null>(null);
   lockReason = '';
+  role: GetAdminUsersParams['role'] | '' = '';
+  status: GetAdminUsersParams['status'] | '' = '';
 
   constructor() {
     this.reload();
@@ -150,20 +202,8 @@ export class UsersPage {
     return value.slice(0, 10);
   }
 
-  reload(): void {
-    this.loading.set(true);
-    this.error.set(null);
-    const q = this.query().trim();
-    this.api.listUsers({ q: q || undefined, size: 50 }).subscribe({
-      next: (page) => {
-        this.rows.set(page.data);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        this.error.set(readApiError(err));
-        this.loading.set(false);
-      },
-    });
+  reload(append = false): void {
+    this.list.load(append);
   }
 
   changeRole(row: AdminUserRow, role: string): void {
