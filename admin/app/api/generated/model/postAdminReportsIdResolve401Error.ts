@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 1.1.1
+ * OpenAPI spec version: 1.2.0
  */
 import type { PostAdminReportsIdResolve401ErrorCode } from './postAdminReportsIdResolve401ErrorCode';
 import type { PostAdminReportsIdResolve401ErrorDetailsItem } from './postAdminReportsIdResolve401ErrorDetailsItem';
