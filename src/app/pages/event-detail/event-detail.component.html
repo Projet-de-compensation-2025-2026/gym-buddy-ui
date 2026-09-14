@@ -23,12 +23,38 @@
       </div>
     </div>
 
+    @if (!organizerView) {
+      <app-report-button targetType="event" [targetId]="event.id" />
+    }
+    @if (editing()) {
+      <form class="card stack" [formGroup]="editForm" (ngSubmit)="saveEdit()">
+        <h2>Edit event</h2>
+        <label>Event title <input formControlName="title" maxlength="120" /></label>
+        <label
+          >Description <textarea formControlName="description" maxlength="2000" rows="3"></textarea>
+        </label>
+        <label>Place <input formControlName="place" maxlength="200" /></label>
+        <label>Start time <input type="datetime-local" formControlName="startsAt" /></label>
+        <label
+          >Duration (minutes) <input type="number" formControlName="durationMin" min="1" max="1440"
+        /></label>
+        @if (event.visibility === 'private') {
+          <app-event-invitees [(selected)]="inviteeIds" />
+        }
+        <div class="edit-actions">
+          <button class="btn-primary" type="submit" [disabled]="busy()">Save event</button
+          ><button class="btn-secondary" type="button" (click)="editing.set(false)">
+            Cancel editing
+          </button>
+        </div>
+      </form>
+    }
     <div class="layout">
       <div class="main">
         <div class="facts">
           <article class="card fact">
             <p class="muted">Date & Time</p>
-            <strong>{{ when(event.startsAt) }}</strong>
+            <strong>{{ when(currentOccurrence(event)?.startsAt || event.startsAt) }}</strong>
           </article>
           <article class="card fact">
             <p class="muted">Duration</p>
@@ -58,6 +84,23 @@
       <aside class="side">
         <article class="card">
           <p class="muted">Availability</p>
+          @if (event.kind === 'recurring') {
+            <label
+              >Session date
+              <select
+                #occurrenceSelect
+                [value]="currentOccurrence(event)?.id"
+                (change)="chooseOccurrence(occurrenceSelect.value)"
+                data-testid="occurrence-select"
+              >
+                @for (row of event.occurrences; track row.id) {
+                  <option [value]="row.id">
+                    {{ when(row.startsAt) }}{{ row.cancelled ? ' — Cancelled' : '' }}
+                  </option>
+                }
+              </select>
+            </label>
+          }
           @if (seriesCancelled(event)) {
             <p class="spots cancelled" data-testid="spots-left">Cancelled</p>
             <p class="muted" data-testid="cancelled-notice">This session was cancelled.</p>
@@ -71,6 +114,11 @@
             }
             @if (organizerView) {
               <p class="muted">You are the organizer.</p>
+              @if (canEdit(event)) {
+                <button class="btn-secondary" type="button" (click)="beginEdit()">
+                  Edit event{{ event.visibility === 'private' ? ' & invitations' : '' }}
+                </button>
+              }
               <button
                 type="button"
                 class="btn-danger"
@@ -80,6 +128,8 @@
               >
                 {{ event.kind === 'recurring' ? 'Cancel series' : 'Cancel event' }}
               </button>
+            } @else if (occurrenceUnavailable(event)) {
+              <p class="muted">This occurrence is cancelled or has already started.</p>
             } @else if (event.viewerApplication?.status === 'cancelled') {
               <p class="muted" data-testid="cancelled-notice">This session was cancelled.</p>
             } @else if (event.viewerApplication?.status === 'pending') {
@@ -139,6 +189,7 @@
                       type="button"
                       class="icon-btn"
                       data-testid="decline-applicant"
+                      [attr.aria-label]="'Decline ' + row.application.applicant.displayName"
                       [disabled]="busy()"
                       (click)="decline(row)"
                     >
@@ -148,6 +199,7 @@
                       type="button"
                       class="icon-btn accept"
                       data-testid="accept-applicant"
+                      [attr.aria-label]="'Accept ' + row.application.applicant.displayName"
                       [disabled]="busy()"
                       (click)="accept(row)"
                     >
@@ -169,6 +221,16 @@
               <li>
                 <span>{{ when(row.startsAt) }}</span>
                 <span class="occurrence-meta">
+                  @if (event.kind === 'recurring') {
+                    <button
+                      type="button"
+                      class="btn-secondary"
+                      (click)="chooseOccurrence(row.id)"
+                      [attr.aria-pressed]="currentOccurrence(event)?.id === row.id"
+                    >
+                      {{ currentOccurrence(event)?.id === row.id ? 'Selected' : 'View' }}
+                    </button>
+                  }
                   <span
                     [class.full]="row.cancelled || row.remainingSeats === 0"
                     [class.cancelled]="row.cancelled"

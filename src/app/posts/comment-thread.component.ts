@@ -1,6 +1,7 @@
 import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ReportButton } from '../reports/report-button.component';
 import { CommentsApi } from '../api/comments-api.service';
 import { MediaApi } from '../api/media-api.service';
 import { readApiError } from '../api/models';
@@ -11,7 +12,7 @@ export type ThreadComment = GetPostsIdComments200DataItem;
 
 @Component({
   selector: 'app-comment-thread',
-  imports: [FormsModule, RouterLink, CommentThread],
+  imports: [FormsModule, RouterLink, CommentThread, ReportButton],
   templateUrl: './comment-thread.component.html',
   styleUrl: './comment-thread.component.css',
 })

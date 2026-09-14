@@ -1,4 +1,5 @@
 import { Component, inject, OnDestroy, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { MediaApi, rejectIfTooLarge } from '../../api/media-api.service';
@@ -13,7 +14,7 @@ const DELETE_WINDOW_MS = 10 * 60 * 1000;
 
 @Component({
   selector: 'app-chat',
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
 })
@@ -24,6 +25,7 @@ export class ChatPage implements OnDestroy {
   readonly session = inject(AuthSession);
 
   readonly loading = signal(true);
+  readonly accessible = signal(false);
   readonly error = signal<string | null>(null);
   readonly conversationId = signal<string | null>(null);
   readonly peerName = signal('Chat');
@@ -46,6 +48,7 @@ export class ChatPage implements OnDestroy {
       }
       this.connect(id);
       this.reload(id, true);
+      this.loadPeer(id);
     });
   }
 
@@ -151,6 +154,7 @@ export class ChatPage implements OnDestroy {
       .pipe(
         switchMap((created) =>
           this.media.putBytes(created.uploadUrl, file).pipe(
+            switchMap(() => this.media.waitReady(created.mediaId)),
             switchMap(() =>
               this.api.send(id, {
                 type,
@@ -182,11 +186,13 @@ export class ChatPage implements OnDestroy {
       next: (page) => {
         const chronological = [...page.data].reverse();
         this.messages.set(chronological);
+        this.accessible.set(true);
         this.loading.set(false);
         this.prefetchMedia(chronological);
       },
       error: (err: unknown) => {
         this.error.set(readApiError(err));
+        this.accessible.set(false);
         this.loading.set(false);
       },
     });
@@ -204,6 +210,17 @@ export class ChatPage implements OnDestroy {
         error: () => undefined,
       });
     }
+  }
+
+  private loadPeer(id: string, before?: string): void {
+    this.api.inbox({ size: 50, before }).subscribe({
+      next: (page) => {
+        const thread = page.data.find((row) => row.id === id);
+        if (thread) this.peerName.set(thread.peer.displayName || thread.peer.handle);
+        else if (page.page.next) this.loadPeer(id, page.page.next);
+      },
+      error: () => undefined,
+    });
   }
 
   private connect(id: string): void {

@@ -53,4 +53,21 @@ describe('MediaApi', () => {
     ).not.toBeNull();
     expect(rejectIfTooLarge(new File([new Uint8Array(16)], 'ok.jpg'))).toBeNull();
   });
+
+  it('reports an error after processing retries so upload controls can recover', () => {
+    jasmine.clock().install();
+    try {
+      let failure: Error | undefined;
+      api.waitReady('processing').subscribe({ error: (err: Error) => (failure = err) });
+      for (let attempt = 0; attempt < 25; attempt++) {
+        jasmine.clock().tick(attempt === 0 ? 1 : 400);
+        http
+          .expectOne(`${environment.apiBaseUrl}/media/processing/url`)
+          .flush({}, { status: 404, statusText: 'Not ready' });
+      }
+      expect(failure?.message).toContain('still processing');
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
 });

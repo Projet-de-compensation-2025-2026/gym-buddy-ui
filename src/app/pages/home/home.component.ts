@@ -1,7 +1,7 @@
 import { Component, effect, ElementRef, inject, signal, untracked, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { catchError, filter, forkJoin, of, switchMap, take, throwError, timer } from 'rxjs';
+import { forkJoin, of, switchMap, throwError } from 'rxjs';
 import { FeedApi } from '../../api/feed-api.service';
 import {
   MAX_MEDIA_BYTES,
@@ -46,6 +46,15 @@ export class HomePage {
   readonly posting = signal(false);
   readonly error = signal<string | null>(null);
   readonly busyId = signal<string | null>(null);
+
+  updatePost(post: GetPostsId200): void {
+    this.items.update((items) =>
+      items.map((item) => (item.post.id === post.id ? { ...item, post } : item)),
+    );
+  }
+  removePost(id: string): void {
+    this.items.update((items) => items.filter((item) => item.post.id !== id));
+  }
 
   constructor() {
     effect(() => {
@@ -253,16 +262,7 @@ export class HomePage {
   }
 
   private waitReady(mediaId: string) {
-    return timer(0, 400).pipe(
-      take(25),
-      switchMap(() => this.media.url(mediaId).pipe(catchError(() => of(null)))),
-      filter((signed): signed is GetMediaIdUrl200 => signed !== null),
-      take(1),
-      switchMap(() => of(mediaId)),
-      catchError(() =>
-        throwError(() => new Error('Photo is still processing. Try again in a moment.')),
-      ),
-    );
+    return this.media.waitReady(mediaId).pipe(switchMap(() => of(mediaId)));
   }
 
   private loadImages(post: { mediaIds: string[] }): void {

@@ -9,6 +9,8 @@ import { EventDetailPage } from './event-detail.component';
 const EVENT_ID = '44444444-4444-4444-8444-444444444444';
 
 describe('EventDetailPage', () => {
+  beforeEach(() => jasmine.clock().install().mockDate(new Date('2026-08-30T12:00:00Z')));
+  afterEach(() => jasmine.clock().uninstall());
   async function setup(): Promise<{
     root: HTMLElement;
     http: HttpTestingController;
@@ -65,6 +67,61 @@ describe('EventDetailPage', () => {
     http.expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}`).flush(detail());
     detect();
     expect(root.querySelector('[data-testid="applicant-queue"]')?.textContent).toContain('Blake');
+    http.verify();
+  });
+
+  it('FS-EVT-05 selects a later occurrence before applying', async () => {
+    const { root, http, detect } = await setup();
+    const second = '88888888-8888-4888-8888-888888888888';
+    const event = detail();
+    event.occurrences.push({
+      ...event.occurrences[0],
+      id: second,
+      startsAt: '2026-09-08T18:00:00Z',
+    });
+    http.expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}`).flush(event);
+    detect();
+    const select = root.querySelector('[data-testid="occurrence-select"]') as HTMLSelectElement;
+    select.value = second;
+    select.dispatchEvent(new Event('change'));
+    http
+      .expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}?occurrenceId=${second}`)
+      .flush(event);
+    detect();
+    (root.querySelector('[data-testid="apply"]') as HTMLButtonElement).click();
+    const apply = http.expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}/applications`);
+    expect(apply.request.body).toEqual({ occurrenceId: second });
+    apply.flush({});
+    http
+      .expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}?occurrenceId=${second}`)
+      .flush(event);
+    http.verify();
+  });
+
+  it('FS-EVT-09 lets the organizer save a changed place', async () => {
+    const { root, http, detect } = await setup();
+    signInOrganizer();
+    http.expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}`).flush(detail());
+    detect();
+    Array.from(root.querySelectorAll('button'))
+      .find((button) => button.textContent?.trim() === 'Edit event')!
+      .click();
+    detect();
+    const input = root.querySelector('input[formControlName="place"]') as HTMLInputElement;
+    input.value = 'New training hall';
+    input.dispatchEvent(new Event('input'));
+    Array.from(root.querySelectorAll('button'))
+      .find((button) => button.textContent?.trim() === 'Save event')!
+      .click();
+    const patch = http.expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}`);
+    expect(patch.request.method).toBe('PATCH');
+    expect(patch.request.body.place).toBe('New training hall');
+    patch.flush({ ...detail(), place: 'New training hall' });
+    http
+      .expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}`)
+      .flush({ ...detail(), place: 'New training hall' });
+    detect();
+    expect(root.textContent).toContain('New training hall');
     http.verify();
   });
 

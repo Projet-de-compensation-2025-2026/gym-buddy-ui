@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.1.1
  */
 import type { GetAdminMedia200DataItemKind } from './getAdminMedia200DataItemKind';
 import type { GetAdminMedia200DataItemStatus } from './getAdminMedia200DataItemStatus';

@@ -205,6 +205,9 @@
         </article>
       </div>
     }
+    @if (relationRow(); as relation) {
+      <app-report-button targetType="user" [targetId]="relation.peer.userId" />
+    }
   } @else {
     <p class="state" data-testid="profile-empty">No profile to show.</p>
   }

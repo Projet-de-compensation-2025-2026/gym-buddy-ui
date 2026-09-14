@@ -29,6 +29,11 @@ export class PostDetailPage {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly busy = signal(false);
+  removePost(): void {
+    this.post.set(null);
+    this.comments.set([]);
+    this.error.set('This post was deleted.');
+  }
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');

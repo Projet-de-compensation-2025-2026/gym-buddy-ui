@@ -7,20 +7,26 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.1.1
  */
 import type { PatchProfileRequestExperienceLevel } from './patchProfileRequestExperienceLevel';
 import type { PatchProfileRequestPreferredWindowsItem } from './patchProfileRequestPreferredWindowsItem';
 import type { PatchProfileRequestVisibility } from './patchProfileRequestVisibility';
 
 /**
- * Owner-only partial update (FS-PROF-02, FS-PROF-06). Omitted fields stay unchanged.
+ * Owner-only partial update (FS-PROF-02, FS-PROF-06). JSON merge: omitted fields
+ * stay unchanged. JSON `null` on a nullable scalar (bio, city, lat, lng,
+ * experienceLevel, avatarMediaId) clears it. Send `sports: []` or
+ * `preferredWindows: []` to clear those lists; omit the key to keep them.
  * Handle change must remain unique (FS-ACCT-02). Avatar bytes are the media ticket.
+ * Unknown `experienceLevel` values are VALIDATION, not silently null.
  */
 export interface PatchProfileRequest {
   /**
-   * Unique public identifier, case-insensitive (FS-ACCT-02).
+   * Unique public identifier, case-insensitive (FS-ACCT-02). Must not contain
+   * `@` and must not equal the account email (VALIDATION).
    * @minLength 1
+   * @pattern ^[^@]+$
    */
   handle?: string;
   /** @minLength 1 */
@@ -29,12 +35,17 @@ export interface PatchProfileRequest {
   bio?: string | null;
   visibility?: PatchProfileRequestVisibility;
   /**
+   * Omitted keeps the current list. `[]` clears it.
    * @maxItems 12
    * @items.minLength 2
    * @items.maxLength 32
    */
   sports?: string[];
-  /** @nullable */
+  /**
+   * Omitted keeps the current value. JSON null clears it. Values other than
+   * beginner, intermediate, or advanced are VALIDATION.
+   * @nullable
+   */
   experienceLevel?: PatchProfileRequestExperienceLevel;
   /** @nullable */
   city?: string | null;
@@ -50,7 +61,10 @@ export interface PatchProfileRequest {
    * @nullable
    */
   lng?: number | null;
-  /** @maxItems 14 */
+  /**
+   * Omitted keeps the current list. `[]` clears it.
+   * @maxItems 14
+   */
   preferredWindows?: PatchProfileRequestPreferredWindowsItem[];
   /**
    * Placeholder until the media ticket. Do not invent a local upload path.

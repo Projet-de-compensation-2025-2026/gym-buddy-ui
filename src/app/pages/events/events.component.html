@@ -86,4 +86,9 @@
       }
     </div>
   }
+  @if (next()) {
+    <button class="btn-secondary" type="button" [disabled]="loading()" (click)="reload(true)">
+      Load more events
+    </button>
+  }
 </section>

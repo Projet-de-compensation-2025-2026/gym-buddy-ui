@@ -38,6 +38,15 @@
       </label>
     </div>
 
+    <label
+      >Description
+      <textarea
+        formControlName="description"
+        maxlength="2000"
+        rows="3"
+        placeholder="What should your training partners know?"
+      ></textarea>
+    </label>
     <h2>Schedule</h2>
     <div class="two">
       <label>
@@ -94,6 +103,9 @@
       </label>
     </div>
 
+    @if (form.controls.visibility.value === 'private') {
+      <app-event-invitees [(selected)]="inviteeIds" />
+    }
     <div class="actions">
       <a class="btn-secondary" routerLink="/events">Cancel</a>
       <button

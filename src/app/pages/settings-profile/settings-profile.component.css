@@ -7,6 +7,12 @@
   gap: 1rem;
   align-items: center;
 }
+.photo-row > div {
+  min-width: 0;
+}
+.photo-actions {
+  flex-wrap: wrap;
+}
 
 .avatar {
   display: grid;

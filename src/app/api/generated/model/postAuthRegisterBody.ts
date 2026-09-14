@@ -7,15 +7,17 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.1.1
  */
 
 export type PostAuthRegisterBody = {
   /** Unique case-insensitively (CITEXT). */
   email: string;
   /**
-   * Unique public identifier, case-insensitive.
+   * Unique public identifier, case-insensitive. Must not contain `@` and
+   * must not equal `email` (VALIDATION).
    * @minLength 1
+   * @pattern ^[^@]+$
    */
   handle: string;
   /**

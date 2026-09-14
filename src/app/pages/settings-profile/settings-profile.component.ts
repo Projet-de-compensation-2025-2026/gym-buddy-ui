@@ -1,7 +1,7 @@
 import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { catchError, filter, of, switchMap, take, throwError, timer } from 'rxjs';
+import { of, switchMap } from 'rxjs';
 import {
   MAX_MEDIA_BYTES,
   MediaApi,
@@ -10,7 +10,7 @@ import {
 } from '../../api/media-api.service';
 import { ProfilesApi } from '../../api/profiles-api.service';
 import { readApiError } from '../../api/models';
-import type { GetMediaIdUrl200, GetProfilesMe200 } from '../../api/generated/model';
+import type { GetProfilesMe200 } from '../../api/generated/model';
 
 const SPORTS = [
   'weightlifting',
@@ -44,6 +44,16 @@ export class SettingsProfilePage {
   readonly notice = signal<string | null>(null);
   readonly sportDraft = signal('');
   readonly sports = signal<string[]>([]);
+  readonly windows = signal<{ weekday: number; start: string; end: string }[]>([]);
+  readonly weekdays = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
   readonly catalog = SPORTS;
   readonly avatarUrl = signal<string | null>(null);
   readonly avatarMediaId = signal<string | null>(null);
@@ -55,6 +65,8 @@ export class SettingsProfilePage {
     handle: ['', Validators.required],
     bio: [''],
     city: [''],
+    lat: this.fb.control<number | null>(null, [Validators.min(-90), Validators.max(90)]),
+    lng: this.fb.control<number | null>(null, [Validators.min(-180), Validators.max(180)]),
     experienceLevel: [''],
   });
 
@@ -79,6 +91,24 @@ export class SettingsProfilePage {
     }
     this.sports.set([...next, tag]);
     this.sportDraft.set('');
+  }
+
+  addWindow(day: string, start: string, end: string): void {
+    if (!start || !end || start >= end || this.windows().length >= 14) {
+      this.error.set('Choose a start before the end time, with at most 14 training windows.');
+      return;
+    }
+    const row = { weekday: Number(day), start, end };
+    if (
+      !this.windows().some(
+        (item) => item.weekday === row.weekday && item.start === start && item.end === end,
+      )
+    )
+      this.windows.update((items) => [...items, row]);
+    this.error.set(null);
+  }
+  removeWindow(index: number): void {
+    this.windows.update((items) => items.filter((_, i) => i !== index));
   }
 
   removeSport(sport: string): void {
@@ -160,17 +190,31 @@ export class SettingsProfilePage {
     this.notice.set(null);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.error.set('Display name and username are required.');
+      this.error.set(
+        'Enter a display name and username, with latitude between -90 and 90 and longitude between -180 and 180.',
+      );
       return;
     }
     this.saving.set(true);
     const value = this.form.getRawValue();
+    if (
+      (value.lat == null) !== (value.lng == null) ||
+      (value.lat != null && !Number.isFinite(value.lat)) ||
+      (value.lng != null && !Number.isFinite(value.lng))
+    ) {
+      this.saving.set(false);
+      this.error.set('Enter both coordinates, or leave both blank.');
+      return;
+    }
     this.api
       .patchMe({
         displayName: value.displayName,
         handle: value.handle,
         bio: value.bio,
         city: value.city,
+        lat: value.lat,
+        lng: value.lng,
+        preferredWindows: this.windows(),
         experienceLevel: value.experienceLevel
           ? (value.experienceLevel as 'beginner' | 'intermediate' | 'advanced')
           : null,
@@ -201,19 +245,7 @@ export class SettingsProfilePage {
   }
 
   private waitReady(mediaId: string) {
-    return timer(0, 400).pipe(
-      take(25),
-      switchMap(() => this.media.url(mediaId).pipe(catchError(() => of(null)))),
-      filter((signed): signed is GetMediaIdUrl200 => signed !== null),
-      take(1),
-      switchMap((signed) => {
-        this.avatarUrl.set(signed.url);
-        return of(mediaId);
-      }),
-      catchError(() =>
-        throwError(() => new Error('Photo is still processing. Try again in a moment.')),
-      ),
-    );
+    return this.media.waitReady(mediaId).pipe(switchMap(() => of(mediaId)));
   }
 
   private hydrate(profile: GetProfilesMe200): void {
@@ -222,9 +254,12 @@ export class SettingsProfilePage {
       handle: profile.handle,
       bio: profile.bio ?? '',
       city: profile.city ?? '',
+      lat: profile.lat ?? null,
+      lng: profile.lng ?? null,
       experienceLevel: profile.experienceLevel ?? '',
     });
     this.sports.set([...(profile.sports ?? [])]);
+    this.windows.set([...(profile.preferredWindows ?? [])]);
     this.avatarMediaId.set(profile.avatarMediaId ?? null);
     this.loading.set(false);
     if (!profile.avatarMediaId) {

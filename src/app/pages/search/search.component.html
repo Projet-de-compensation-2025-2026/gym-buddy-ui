@@ -14,86 +14,118 @@
           (keydown.enter)="onQueryEnter($event)"
         />
       </label>
-      <label>
-        Location
-        <input
-          type="text"
-          name="city"
-          placeholder="City"
-          data-testid="search-city"
-          [value]="city()"
-          (input)="onCity($event)"
-        />
-      </label>
-      @if (hasCoordinates()) {
-        <label class="radius">
-          <span class="muted">{{ radiusKm() }} km</span>
+      @if (tab() === 'people') {
+        <label>
+          Location
           <input
-            type="range"
-            min="1"
-            max="50"
-            name="radiusKm"
-            data-testid="search-radius"
-            [value]="radiusKm()"
-            (input)="onRadius($event)"
+            type="text"
+            name="city"
+            placeholder="City"
+            data-testid="search-city"
+            [value]="city()"
+            (input)="onCity($event)"
           />
         </label>
+      }
+      @if (hasCoordinates()) {
+        <label class="check"
+          ><input
+            type="checkbox"
+            name="distanceEnabled"
+            data-testid="distance-enabled"
+            [(ngModel)]="distanceEnabled"
+          />
+          Filter by distance</label
+        >
+        @if (distanceEnabled()) {
+          <label class="radius">
+            <span class="muted">{{ radiusKm() }} km</span>
+            <input
+              type="range"
+              min="1"
+              max="50"
+              name="radiusKm"
+              data-testid="search-radius"
+              [value]="radiusKm()"
+              (input)="onRadius($event)"
+            />
+          </label>
+        }
       } @else {
         <p class="muted radius-unavailable" data-testid="search-radius-unavailable">
           Set coordinates on your profile to filter by distance.
         </p>
       }
-      <div>
-        <p class="section-label">Sports &amp; Activities</p>
-        <div class="chips">
-          @for (sport of sports(); track sport) {
-            <button type="button" class="chip" (click)="removeSport(sport)">{{ sport }}</button>
-          }
-          <div class="add-sport">
-            <input
-              type="text"
-              placeholder="+ Add"
-              data-testid="search-sport"
-              [value]="sportDraft()"
-              (input)="onSportDraft($event)"
-              (keydown.enter)="addSport(); $event.preventDefault()"
-            />
-            <button type="button" class="chip ghost" data-testid="add-sport" (click)="addSport()">
-              Add
-            </button>
+      @if (tab() === 'people') {
+        <div>
+          <p class="section-label">Sports &amp; Activities</p>
+          <div class="chips">
+            @for (sport of sports(); track sport) {
+              <button type="button" class="chip" (click)="removeSport(sport)">{{ sport }}</button>
+            }
+            <div class="add-sport">
+              <input
+                type="text"
+                placeholder="+ Add"
+                data-testid="search-sport"
+                [value]="sportDraft()"
+                (input)="onSportDraft($event)"
+                (keydown.enter)="addSport(); $event.preventDefault()"
+              />
+              <button type="button" class="chip ghost" data-testid="add-sport" (click)="addSport()">
+                Add
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      <fieldset>
-        <legend class="section-label">Experience Level</legend>
-        <label class="check">
-          <input
-            type="checkbox"
-            data-testid="exp-beginner"
-            [checked]="experience().includes('beginner')"
-            (change)="toggleExperience('beginner')"
-          />
-          Beginner
+        <label
+          >Experience Level
+          <select name="experience" [(ngModel)]="experience">
+            <option value="">Any level</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
         </label>
-        <label class="check">
-          <input
-            type="checkbox"
-            data-testid="exp-intermediate"
-            [checked]="experience().includes('intermediate')"
-            (change)="toggleExperience('intermediate')"
-          />
-          Intermediate
+        <label
+          >Connection
+          <select name="friendState" [(ngModel)]="friendState">
+            <option value="">Anyone</option>
+            <option value="not-friends">Not friends yet</option>
+          </select>
         </label>
-        <label class="check">
-          <input
-            type="checkbox"
-            data-testid="exp-advanced"
-            [checked]="experience().includes('advanced')"
-            (change)="toggleExperience('advanced')"
-          />
-          Advanced
-        </label>
-      </fieldset>
+      } @else {
+        <label
+          >Activity<input
+            name="activity"
+            placeholder="e.g. running"
+            minlength="2"
+            maxlength="32"
+            [(ngModel)]="activity"
+        /></label>
+        <label>From<input type="date" name="from" [(ngModel)]="from" /></label>
+        <label>To<input type="date" name="to" [(ngModel)]="to" /></label>
+        <label class="check"
+          ><input type="checkbox" name="availableOnly" [(ngModel)]="availableOnly" /> Available
+          spots only</label
+        >
+        <label class="check"
+          ><input type="checkbox" name="organizerIsFriend" [(ngModel)]="organizerIsFriend" />
+          Organized by friends</label
+        >
+      }
+      <label
+        >Sort by
+        <select name="sort" [(ngModel)]="sort">
+          <option value="relevance">Relevance</option>
+          @if (hasCoordinates()) {
+            <option value="distance">Distance</option>
+          }
+          @if (tab() === 'events') {
+            <option value="starts_at">Start date</option>
+          }
+        </select>
+      </label>
       <button type="submit" class="btn-primary" data-testid="apply-filters">Apply Filters</button>
     </form>
   </aside>
@@ -185,20 +217,29 @@
               <span class="muted">{{ hit.place }}</span>
             </a>
             <p class="spots">{{ spots(hit) }}</p>
-            <button
-              type="button"
+            <a
               class="btn-secondary btn-compact"
               data-testid="join-event"
-              [disabled]="hit.remainingSeats <= 0 || busyKey() === hit.id"
-              (click)="join(hit)"
+              [routerLink]="['/events', hit.id]"
             >
-              Join Event
-            </button>
+              View Event
+            </a>
           </article>
         } @empty {
           <p class="muted" data-testid="events-empty">No events match those filters.</p>
         }
       </div>
+    }
+    @if (next()) {
+      <button
+        type="button"
+        class="btn-secondary"
+        data-testid="search-more"
+        [disabled]="loading()"
+        (click)="loadMore()"
+      >
+        Load more
+      </button>
     }
   </div>
 </section>

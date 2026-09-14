@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.1.1
  */
 
 export * from './accessTokenResponse';
@@ -332,6 +332,7 @@ export * from './getEventsId404';
 export * from './getEventsId404Error';
 export * from './getEventsId404ErrorCode';
 export * from './getEventsId404ErrorDetailsItem';
+export * from './getEventsIdParams';
 export * from './getEventsKind';
 export * from './getEventsParams';
 export * from './getFeed200';

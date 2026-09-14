@@ -1,6 +1,21 @@
 :host {
   display: block;
 }
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid #e5e7e9;
+  color: #6e7174;
+  font-size: 0.8rem;
+}
+.site-footer .brand {
+  font-size: 1rem;
+}
 
 .site-header {
   display: grid;
