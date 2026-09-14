@@ -29,6 +29,7 @@
     @if (editing()) {
       <form class="card stack" [formGroup]="editForm" (ngSubmit)="saveEdit()">
         <h2>Edit event</h2>
+        <app-event-cover [(mediaId)]="editCoverMediaId" [(uploading)]="coverUploading" />
         <label>Event title <input formControlName="title" maxlength="120" /></label>
         <label
           >Description <textarea formControlName="description" maxlength="2000" rows="3"></textarea>
@@ -42,7 +43,8 @@
           <app-event-invitees [(selected)]="inviteeIds" />
         }
         <div class="edit-actions">
-          <button class="btn-primary" type="submit" [disabled]="busy()">Save event</button
+          <button class="btn-primary" type="submit" [disabled]="busy() || coverUploading()">
+            Save event</button
           ><button class="btn-secondary" type="button" (click)="editing.set(false)">
             Cancel editing
           </button>

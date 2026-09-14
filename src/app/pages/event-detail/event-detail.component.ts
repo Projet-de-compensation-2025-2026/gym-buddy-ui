@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EventInvitees } from '../../events/event-invitees.component';
+import { EventCover } from '../../events/event-cover.component';
 import { ReportButton } from '../../reports/report-button.component';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -15,7 +16,7 @@ import type {
 
 @Component({
   selector: 'app-event-detail',
-  imports: [ReactiveFormsModule, EventInvitees, ReportButton],
+  imports: [ReactiveFormsModule, EventInvitees, EventCover, ReportButton],
   templateUrl: './event-detail.component.html',
   styleUrl: './event-detail.component.css',
 })
@@ -27,6 +28,8 @@ export class EventDetailPage {
   private readonly fb = inject(FormBuilder);
   readonly editing = signal(false);
   readonly inviteeIds = signal<string[]>([]);
+  readonly editCoverMediaId = signal<string | null>(null);
+  readonly coverUploading = signal(false);
   readonly editForm = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(120)]],
     description: ['', Validators.maxLength(2000)],
@@ -108,10 +111,12 @@ export class EventDetailPage {
       durationMin: event.durationMin,
     });
     this.inviteeIds.set(event.inviteeIds ?? []);
+    this.editCoverMediaId.set(event.coverMediaId ?? null);
     this.editing.set(true);
   }
 
   saveEdit(): void {
+    if (this.coverUploading() || this.busy()) return;
     const event = this.event();
     if (!event || this.editForm.invalid) {
       this.error.set('Check the event title, place, time and duration.');
@@ -130,6 +135,10 @@ export class EventDetailPage {
           title: value.title.trim(),
           place: value.place.trim(),
           startsAt: start.toISOString(),
+          coverMediaId:
+            this.editCoverMediaId() !== event.coverMediaId
+              ? (this.editCoverMediaId() ?? undefined)
+              : undefined,
           inviteeIds: event.visibility === 'private' ? this.inviteeIds() : undefined,
         }),
       () => this.editing.set(false),

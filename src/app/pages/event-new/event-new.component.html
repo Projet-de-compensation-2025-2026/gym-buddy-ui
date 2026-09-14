@@ -47,6 +47,7 @@
         placeholder="What should your training partners know?"
       ></textarea>
     </label>
+    <app-event-cover [(mediaId)]="coverMediaId" [(uploading)]="coverUploading" />
     <h2>Schedule</h2>
     <div class="two">
       <label>
@@ -112,7 +113,7 @@
         type="submit"
         class="btn-primary"
         data-testid="submit-event"
-        [disabled]="submitting()"
+        [disabled]="submitting() || coverUploading()"
       >
         {{ submitting() ? 'Creating…' : '+ Create Event' }}
       </button>
