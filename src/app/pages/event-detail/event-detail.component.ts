@@ -1,4 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { EventInvitees } from '../../events/event-invitees.component';
+import { EventCover } from '../../events/event-cover.component';
+import { ReportButton } from '../../reports/report-button.component';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthSession } from '../../auth/auth-session.service';
@@ -12,6 +16,7 @@ import type {
 
 @Component({
   selector: 'app-event-detail',
+  imports: [ReactiveFormsModule, EventInvitees, EventCover, ReportButton],
   templateUrl: './event-detail.component.html',
   styleUrl: './event-detail.component.css',
 })
@@ -20,12 +25,44 @@ export class EventDetailPage {
   private readonly media = inject(MediaApi);
   private readonly route = inject(ActivatedRoute);
   private readonly session = inject(AuthSession);
+  private readonly fb = inject(FormBuilder);
+  readonly editing = signal(false);
+  readonly inviteeIds = signal<string[]>([]);
+  readonly editCoverMediaId = signal<string | null>(null);
+  readonly coverUploading = signal(false);
+  readonly editForm = this.fb.nonNullable.group({
+    title: ['', [Validators.required, Validators.maxLength(120)]],
+    description: ['', Validators.maxLength(2000)],
+    place: ['', [Validators.required, Validators.maxLength(200)]],
+    startsAt: ['', Validators.required],
+    durationMin: [60, [Validators.required, Validators.min(1), Validators.max(1440)]],
+  });
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly event = signal<GetEventsId200 | null>(null);
   readonly coverUrl = signal<string | null>(null);
   readonly busy = signal(false);
+  readonly selectedOccurrence = signal<string | null>(null);
+
+  chooseOccurrence(id: string): void {
+    this.selectedOccurrence.set(id);
+    const event = this.event();
+    if (event) this.load(event.id);
+  }
+
+  currentOccurrence(event: GetEventsId200): GetEventsId200['occurrences'][number] | undefined {
+    return (
+      event.occurrences.find((row) => row.id === this.selectedOccurrence()) ??
+      event.occurrences.find((row) => !row.cancelled && Date.parse(row.startsAt) > Date.now()) ??
+      event.occurrences[0]
+    );
+  }
+
+  occurrenceUnavailable(event: GetEventsId200): boolean {
+    const row = this.currentOccurrence(event);
+    return !row || row.cancelled || Date.parse(row.startsAt) <= Date.now();
+  }
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -53,6 +90,61 @@ export class EventDetailPage {
     return `${remaining} spot${remaining === 1 ? '' : 's'} left`;
   }
 
+  canEdit(event: GetEventsId200): boolean {
+    return (
+      this.organizerView && !this.seriesCancelled(event) && Date.parse(event.startsAt) > Date.now()
+    );
+  }
+
+  beginEdit(): void {
+    const event = this.event();
+    if (!event || !this.canEdit(event)) return;
+    const date = new Date(event.startsAt);
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+      .toISOString()
+      .slice(0, 16);
+    this.editForm.setValue({
+      title: event.title,
+      description: event.description ?? '',
+      place: event.place,
+      startsAt: local,
+      durationMin: event.durationMin,
+    });
+    this.inviteeIds.set(event.inviteeIds ?? []);
+    this.editCoverMediaId.set(event.coverMediaId ?? null);
+    this.editing.set(true);
+  }
+
+  saveEdit(): void {
+    if (this.coverUploading() || this.busy()) return;
+    const event = this.event();
+    if (!event || this.editForm.invalid) {
+      this.error.set('Check the event title, place, time and duration.');
+      return;
+    }
+    const value = this.editForm.getRawValue();
+    const start = new Date(value.startsAt);
+    if (!Number.isFinite(start.getTime()) || start.getTime() <= Date.now()) {
+      this.error.set('Choose a start time in the future.');
+      return;
+    }
+    this.run(
+      () =>
+        this.api.patch(event.id, {
+          ...value,
+          title: value.title.trim(),
+          place: value.place.trim(),
+          startsAt: start.toISOString(),
+          coverMediaId:
+            this.editCoverMediaId() !== event.coverMediaId
+              ? (this.editCoverMediaId() ?? undefined)
+              : undefined,
+          inviteeIds: event.visibility === 'private' ? this.inviteeIds() : undefined,
+        }),
+      () => this.editing.set(false),
+    );
+  }
+
   seriesCancelled(event: GetEventsId200): boolean {
     if (event.cancelledAt) {
       return true;
@@ -74,7 +166,11 @@ export class EventDetailPage {
     if (!event) {
       return;
     }
-    this.run(() => this.api.apply(event.id, occurrenceBody(event)));
+    const row = this.currentOccurrence(event);
+    if (!row || this.occurrenceUnavailable(event)) return;
+    this.run(() =>
+      this.api.apply(event.id, event.kind === 'recurring' ? { occurrenceId: row.id } : undefined),
+    );
   }
 
   withdraw(): void {
@@ -122,7 +218,7 @@ export class EventDetailPage {
   private load(id: string): void {
     this.loading.set(true);
     this.error.set(null);
-    this.api.get(id).subscribe({
+    this.api.get(id, this.selectedOccurrence() ?? undefined).subscribe({
       next: (event) => {
         this.event.set(event);
         this.loading.set(false);
@@ -140,7 +236,7 @@ export class EventDetailPage {
     });
   }
 
-  private run(request: () => Observable<unknown>): void {
+  private run(request: () => Observable<unknown>, onSuccess?: () => void): void {
     const event = this.event();
     if (!event) {
       return;
@@ -150,6 +246,7 @@ export class EventDetailPage {
     request().subscribe({
       next: () => {
         this.busy.set(false);
+        onSuccess?.();
         this.load(event.id);
       },
       error: (err: unknown) => {
@@ -158,14 +255,4 @@ export class EventDetailPage {
       },
     });
   }
-}
-
-function occurrenceBody(event: GetEventsId200): { occurrenceId: string } | undefined {
-  if (event.kind === 'instant') {
-    return undefined;
-  }
-  const next = event.occurrences.find(
-    (row) => !row.cancelled && new Date(row.startsAt).getTime() > Date.now(),
-  );
-  return next ? { occurrenceId: next.id } : undefined;
 }

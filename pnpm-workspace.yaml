@@ -13,6 +13,12 @@ allowBuilds:
 # younger than four weeks as of 2026-08-18. Newer versions of these packages
 # still wait. Drop an entry once that version is older than the floor.
 minimumReleaseAgeExclude:
+  # Audited security fixes; exact exceptions retain the age floor for other packages.
+  - js-yaml@4.3.2
+  - brace-expansion@5.0.9
+  - fast-uri@3.1.6
+  - qs@6.16.0
+  - hono@4.13.5
   - '@angular-devkit/architect@0.2201.4'
   - '@angular-devkit/core@22.1.4'
   - '@angular-devkit/schematics@22.1.4'
@@ -107,3 +113,10 @@ minimumReleaseAgeExclude:
   - ws@8.21.3
   - yargs@18.1.0
   - yoctocolors@2.2.0
+
+overrides:
+  'js-yaml@>=4.0.0 <4.3.2': 4.3.2
+  'brace-expansion@>=4.0.0 <5.0.9': 5.0.9
+  'fast-uri@>=3.0.0 <3.1.6': 3.1.6
+  'qs@>=2.2.5 <6.16.0': 6.16.0
+  'hono@<4.13.5': 4.13.5

@@ -44,6 +44,9 @@
         </button>
       }
     </div>
+    @if (!isAuthor()) {
+      <app-report-button targetType="comment" [targetId]="current().id" />
+    }
   }
   @if (error()) {
     <p class="error" role="alert">{{ error() }}</p>

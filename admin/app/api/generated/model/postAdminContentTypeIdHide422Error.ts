@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.2.0
  */
 import type { PostAdminContentTypeIdHide422ErrorCode } from './postAdminContentTypeIdHide422ErrorCode';
 import type { PostAdminContentTypeIdHide422ErrorDetailsItem } from './postAdminContentTypeIdHide422ErrorDetailsItem';

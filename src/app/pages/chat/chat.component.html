@@ -10,7 +10,7 @@
 
   @if (loading()) {
     <p class="state" data-testid="chat-loading">Loading messages…</p>
-  } @else {
+  } @else if (accessible()) {
     <ol class="bubbles" data-testid="chat-messages">
       @for (row of messages(); track row.id) {
         <li class="bubble" [class.mine]="mine(row)" [class.theirs]="!mine(row)">
@@ -26,7 +26,12 @@
           } @else {
             <p>{{ row.body }}</p>
           }
-          <span class="stamp">{{ row.createdAt }}</span>
+          <time
+            class="stamp"
+            [attr.datetime]="row.createdAt"
+            [title]="row.createdAt | date: 'medium'"
+            >{{ row.createdAt | date: 'shortTime' }}</time
+          >
           @if (canDelete(row)) {
             <button type="button" class="tombstone" (click)="tombstone(row)">Delete</button>
           }
@@ -37,7 +42,18 @@
     </ol>
 
     <form class="composer" (submit)="$event.preventDefault(); sendText()">
-      <label class="icon">
+      <label class="icon image-icon" title="Attach image">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          aria-hidden="true"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="3" />
+          <circle cx="8" cy="8" r="1.5" />
+          <path d="m3 17 5-5 4 4 4-6 5 7" />
+        </svg>
         <span class="visually-hidden">Attach image</span>
         <input
           type="file"
@@ -46,7 +62,18 @@
           (change)="attachImage($event)"
         />
       </label>
-      <label class="icon">
+      <label class="icon audio-icon" title="Attach audio">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          aria-hidden="true"
+        >
+          <path d="M9 18V5l11-2v13M9 8l11-2" />
+          <ellipse cx="6" cy="18" rx="3" ry="2" />
+          <ellipse cx="17" cy="16" rx="3" ry="2" />
+        </svg>
         <span class="visually-hidden">Attach audio</span>
         <input
           type="file"
@@ -57,6 +84,7 @@
       </label>
       <input
         type="text"
+        aria-label="Message"
         maxlength="4000"
         placeholder="Message…"
         data-testid="chat-draft"

@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { AdminApi, type FixtureCounts } from '../api/admin-api.service';
 import { readApiError } from '../../../src/app/api/models';
 import { AuthSession } from '../../../src/app/auth/auth-session.service';
+import { environment } from '../../../src/environments/environment';
 
 @Component({
   selector: 'admin-fixtures',
@@ -12,9 +13,15 @@ import { AuthSession } from '../../../src/app/auth/auth-session.service';
       800, applications 4 000, messages 10 000, media metadata 5 000.
     </p>
     <p class="warn">
-      Non-production only. Generating fixtures will append synthetic rows. Reset truncates domain
-      tables and cannot be undone. Disabled on prod (FORBIDDEN).
+      Non-production only. Generating fixtures adds synthetic data. Reset removes project data
+      permanently.
     </p>
+    @if (!enabled) {
+      <p class="notice">
+        Fixture generation and reset are unavailable on the live website. Use a local test
+        environment to manage demo data.
+      </p>
+    }
     @if (error()) {
       <p class="error" role="alert">{{ error() }}</p>
     }
@@ -44,17 +51,41 @@ import { AuthSession } from '../../../src/app/auth/auth-session.service';
         }
       </div>
       <div class="actions">
-        <button class="btn-primary" type="button" (click)="generate()" [disabled]="busy()">
+        <button
+          class="btn-primary"
+          type="button"
+          (click)="generate()"
+          [disabled]="busy() || !enabled"
+        >
           @if (busy()) {
             Generating…
           } @else {
             Generate fixtures
           }
         </button>
-        <button class="btn-danger" type="button" (click)="reset()" [disabled]="busy()">
+        <button
+          class="btn-danger"
+          type="button"
+          (click)="confirmReset.set(true)"
+          [disabled]="busy() || !enabled"
+        >
           Reset fixtures
         </button>
       </div>
+      @if (confirmReset()) {
+        <section class="warn" aria-label="Confirm fixture reset">
+          <p>
+            Reset permanently removes all domain data in this test environment. This cannot be
+            undone.
+          </p>
+          <button type="button" (click)="confirmReset.set(false)" [disabled]="busy()">
+            Cancel
+          </button>
+          <button type="button" (click)="reset()" [disabled]="busy()">
+            Permanently reset fixtures
+          </button>
+        </section>
+      }
     }
   `,
   styles: `
@@ -66,7 +97,7 @@ import { AuthSession } from '../../../src/app/auth/auth-session.service';
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
       gap: 1rem;
       margin: 1.5rem 0;
     }
@@ -93,6 +124,7 @@ import { AuthSession } from '../../../src/app/auth/auth-session.service';
     }
     .actions {
       display: flex;
+      flex-wrap: wrap;
       gap: 0.75rem;
       margin-top: 0.5rem;
     }
@@ -119,6 +151,8 @@ export class FixturesPage {
   private readonly api = inject(AdminApi);
   readonly session = inject(AuthSession);
   readonly busy = signal(false);
+  readonly enabled = environment.fixturesEnabled;
+  readonly confirmReset = signal(false);
   readonly error = signal<string | null>(null);
   readonly notice = signal<string | null>(null);
   readonly counts = signal<FixtureCounts>({
@@ -132,13 +166,13 @@ export class FixturesPage {
     media: 5000,
   });
   readonly cards: { key: keyof Required<FixtureCounts>; title: string; hint: string }[] = [
-    { key: 'users', title: 'Users', hint: 'Profiles, settings, auth. Named demos always exist.' },
+    { key: 'users', title: 'Users', hint: 'Demo accounts with profiles and preferences.' },
     {
       key: 'friendships',
       title: 'Friendships',
-      hint: 'Accepted pairs. Power-law hubs + city×sport clusters.',
+      hint: 'Friendships across cities and shared sports.',
     },
-    { key: 'posts', title: 'Posts', hint: 'Feed updates. Optional stock photo metadata.' },
+    { key: 'posts', title: 'Posts', hint: 'Feed updates with optional demo photos.' },
     { key: 'comments', title: 'Comments', hint: 'Nested threads on existing posts.' },
     { key: 'events', title: 'Events', hint: 'Instant sessions with occurrences.' },
     {
@@ -150,7 +184,7 @@ export class FixturesPage {
     {
       key: 'media',
       title: 'Media metadata',
-      hint: 'Reuses ~10 stock MinIO objects. No unique JPEGs.',
+      hint: 'Demo uploads using a small reusable image library.',
     },
   ];
 
@@ -160,10 +194,13 @@ export class FixturesPage {
   }
 
   generate(): void {
+    if (!this.enabled) return;
     this.run(() => this.api.generateFixtures(this.counts()), 'Fixtures generated.');
   }
 
   reset(): void {
+    if (!this.enabled || !this.confirmReset()) return;
+    this.confirmReset.set(false);
     this.run(() => this.api.resetFixtures(), 'Fixtures reset.');
   }
 

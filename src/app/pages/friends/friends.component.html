@@ -141,4 +141,36 @@
       </section>
     </div>
   }
+  <section class="card" aria-label="Blocked members">
+    <h2>Blocked members</h2>
+    <p class="muted">
+      Unblocking lets you find each other again. It does not restore your friendship.
+    </p>
+    @if (!blockedOpen()) {
+      <button type="button" class="btn-secondary" (click)="loadBlocked()">
+        Manage blocked members
+      </button>
+    } @else if (blockedLoading()) {
+      <p>Loading blocked members…</p>
+    } @else if (blockedError()) {
+      <p class="error" role="alert">{{ blockedError() }}</p>
+      <button type="button" class="btn-secondary" (click)="loadBlocked()">Retry</button>
+    } @else {
+      @for (row of blocked(); track row.id) {
+        <div class="friend-actions">
+          <span>{{ row.peer.displayName || row.peer.handle }} · @{{ row.peer.handle }}</span>
+          <button
+            class="btn-secondary"
+            type="button"
+            [disabled]="busyId() === row.id"
+            (click)="unblock(row)"
+          >
+            Unblock
+          </button>
+        </div>
+      } @empty {
+        <p>No blocked members.</p>
+      }
+    }
+  </section>
 </section>

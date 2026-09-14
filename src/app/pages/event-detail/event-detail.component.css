@@ -7,20 +7,26 @@
   padding: 0;
   overflow: hidden;
   position: relative;
+  display: grid;
+  min-height: 12rem;
+  background: #edf5f3;
 }
 
 .hero-cover {
   width: 100%;
-  height: 12rem;
+  height: 100%;
+  position: absolute;
+  inset: 0;
   object-fit: cover;
   background: #c5d4c8;
 }
 
 .hero-copy {
-  position: absolute;
-  left: 1.25rem;
-  bottom: 1.25rem;
+  position: relative;
+  padding: 1.5rem;
+  align-self: end;
   color: #fff;
+  background: linear-gradient(transparent, #141b2bd9);
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
 }
 
@@ -29,6 +35,39 @@
   grid-template-columns: 1.4fr 1fr;
   gap: 1rem;
   align-items: start;
+}
+
+.hero-copy h1 {
+  margin: 0.75rem 0;
+  line-height: 1.2;
+}
+.hero-copy .muted {
+  color: inherit;
+}
+.hero-copy .chips span {
+  color: #212325;
+  text-shadow: none;
+}
+.hero:has(.placeholder) .hero-copy {
+  color: #212325;
+  background: none;
+  text-shadow: none;
+}
+.hero:has(.placeholder) .hero-cover {
+  background: #edf5f3;
+}
+.main,
+.side {
+  min-width: 0;
+}
+.edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.occurrence-meta {
+  flex-wrap: wrap;
+  justify-content: end;
 }
 
 .main,

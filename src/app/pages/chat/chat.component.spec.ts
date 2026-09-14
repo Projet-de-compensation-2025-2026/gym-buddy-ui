@@ -35,6 +35,9 @@ describe('ChatPage', () => {
     TestBed.inject(AuthSession).setAccessToken(`hdr.${payload}.sig`);
     const fixture = TestBed.createComponent(ChatPage);
     fixture.detectChanges();
+    TestBed.inject(HttpTestingController)
+      .expectOne(`${environment.apiBaseUrl}/conversations?size=50`)
+      .flush({ data: [sampleConversation()], page: { next: null, size: 50 } });
     return {
       root: fixture.nativeElement as HTMLElement,
       http: TestBed.inject(HttpTestingController),
@@ -75,6 +78,20 @@ describe('ChatPage', () => {
       });
     detect();
     expect(root.textContent).toContain('On my way');
+    http.verify();
+  });
+
+  it('does not offer message composition for an inaccessible conversation', async () => {
+    const { root, http, detect } = await setup();
+    http
+      .expectOne(
+        `${environment.apiBaseUrl}/conversations/${sampleConversation().id}/messages?size=50`,
+      )
+      .flush({ message: 'Conversation not found' }, { status: 404, statusText: 'Not Found' });
+    detect();
+    expect(root.querySelector('[data-testid="chat-draft"]')).toBeNull();
+    expect(root.querySelector('[data-testid="chat-image"]')).toBeNull();
+    expect(root.querySelector('[data-testid="chat-empty"]')).toBeNull();
     http.verify();
   });
 });

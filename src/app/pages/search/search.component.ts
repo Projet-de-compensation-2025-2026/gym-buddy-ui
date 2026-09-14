@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { EventsApi } from '../../api/events-api.service';
+import { FormsModule } from '@angular/forms';
 import { FriendsApi } from '../../api/friends-api.service';
 import { MediaApi } from '../../api/media-api.service';
 import { ProfilesApi } from '../../api/profiles-api.service';
@@ -11,20 +11,21 @@ import type {
   GetSearchEvents200DataItem,
   GetSearchPeople200DataItem,
   GetSearchPeopleExperience,
+  GetSearchPeopleFriendState,
+  GetSearchEventsSort,
 } from '../../api/generated/model';
 
 export type SearchTab = 'people' | 'events';
 
 @Component({
   selector: 'app-search',
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './search.component.html',
   styleUrl: './search.component.css',
 })
 export class SearchPage {
   private readonly search = inject(SearchApi);
   private readonly friends = inject(FriendsApi);
-  private readonly eventsApi = inject(EventsApi);
   private readonly media = inject(MediaApi);
   private readonly profiles = inject(ProfilesApi);
   private reloadSeq = 0;
@@ -33,10 +34,19 @@ export class SearchPage {
   readonly q = signal('');
   readonly city = signal('');
   readonly radiusKm = signal(10);
+  readonly distanceEnabled = signal(false);
   readonly hasCoordinates = signal(false);
   readonly sports = signal<string[]>([]);
   readonly sportDraft = signal('');
-  readonly experience = signal<GetSearchPeopleExperience[]>([]);
+  readonly experience = signal<GetSearchPeopleExperience | ''>('');
+  readonly activity = signal('');
+  readonly friendState = signal<GetSearchPeopleFriendState | ''>('');
+  readonly sort = signal<GetSearchEventsSort>('relevance');
+  readonly from = signal('');
+  readonly to = signal('');
+  readonly availableOnly = signal(false);
+  readonly organizerIsFriend = signal(false);
+  readonly next = signal<string | null>(null);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly people = signal<GetSearchPeople200DataItem[]>([]);
@@ -50,6 +60,7 @@ export class SearchPage {
 
   setTab(tab: SearchTab): void {
     this.tab.set(tab);
+    if (tab === 'people' && this.sort() === 'starts_at') this.sort.set('relevance');
     this.reload();
   }
 
@@ -57,11 +68,8 @@ export class SearchPage {
     this.reload();
   }
 
-  toggleExperience(level: GetSearchPeopleExperience): void {
-    const current = this.experience();
-    this.experience.set(
-      current.includes(level) ? current.filter((item) => item !== level) : [...current, level],
-    );
+  loadMore(): void {
+    if (this.next() && !this.loading()) this.reload(true);
   }
 
   addSport(): void {
@@ -108,21 +116,6 @@ export class SearchPage {
     this.busyKey.set(hit.handle);
     this.error.set(null);
     this.friends.request({ handle: hit.handle }).subscribe({
-      next: () => {
-        this.busyKey.set(null);
-        this.reload();
-      },
-      error: (err: unknown) => {
-        this.busyKey.set(null);
-        this.error.set(readApiError(err));
-      },
-    });
-  }
-
-  join(hit: GetSearchEvents200DataItem): void {
-    this.busyKey.set(hit.id);
-    this.error.set(null);
-    this.eventsApi.apply(hit.id).subscribe({
       next: () => {
         this.busyKey.set(null);
         this.reload();
@@ -182,20 +175,49 @@ export class SearchPage {
     });
   }
 
-  private reload(): void {
+  private reload(append = false): void {
+    if (this.tab() === 'events' && this.from() && this.to() && this.from() > this.to()) {
+      this.error.set('The end date must be after the start date.');
+      return;
+    }
     const seq = ++this.reloadSeq;
     this.loading.set(true);
     this.error.set(null);
     if (this.tab() === 'people') {
-      this.search.people(this.peopleParams()).subscribe({
+      this.search
+        .people({ ...this.peopleParams(), before: append ? (this.next() ?? undefined) : undefined })
+        .subscribe({
+          next: (page) => {
+            if (seq !== this.reloadSeq) {
+              return;
+            }
+            this.people.set(append ? [...this.people(), ...page.data] : page.data);
+            this.next.set(page.page.next ?? null);
+            this.events.set([]);
+            this.loading.set(false);
+            this.loadAvatars(page.data);
+          },
+          error: (err: unknown) => {
+            if (seq !== this.reloadSeq) {
+              return;
+            }
+            this.error.set(readApiError(err));
+            this.loading.set(false);
+          },
+        });
+      return;
+    }
+    this.search
+      .events({ ...this.eventParams(), before: append ? (this.next() ?? undefined) : undefined })
+      .subscribe({
         next: (page) => {
           if (seq !== this.reloadSeq) {
             return;
           }
-          this.people.set(page.data);
-          this.events.set([]);
+          this.events.set(append ? [...this.events(), ...page.data] : page.data);
+          this.next.set(page.page.next ?? null);
+          this.people.set([]);
           this.loading.set(false);
-          this.loadAvatars(page.data);
         },
         error: (err: unknown) => {
           if (seq !== this.reloadSeq) {
@@ -205,25 +227,6 @@ export class SearchPage {
           this.loading.set(false);
         },
       });
-      return;
-    }
-    this.search.events(this.eventParams()).subscribe({
-      next: (page) => {
-        if (seq !== this.reloadSeq) {
-          return;
-        }
-        this.events.set(page.data);
-        this.people.set([]);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        if (seq !== this.reloadSeq) {
-          return;
-        }
-        this.error.set(readApiError(err));
-        this.loading.set(false);
-      },
-    });
   }
 
   private peopleParams() {
@@ -232,7 +235,9 @@ export class SearchPage {
     return {
       q: this.q().trim() || undefined,
       sports: sports.length ? sports : undefined,
-      experience: experience.length === 1 ? experience[0] : undefined,
+      experience: experience || undefined,
+      friendState: this.friendState() || undefined,
+      sort: this.sort() === 'distance' ? ('distance' as const) : ('relevance' as const),
       city: this.city().trim() || undefined,
       radiusKm: this.radiusParam(),
       size: 20,
@@ -240,17 +245,21 @@ export class SearchPage {
   }
 
   private eventParams() {
-    const sports = this.sports();
     return {
       q: this.q().trim() || undefined,
-      activity: sports.length === 1 ? sports[0] : undefined,
+      activity: this.activity().trim().toLowerCase() || undefined,
+      from: this.from() ? new Date(`${this.from()}T00:00:00`).toISOString() : undefined,
+      to: this.to() ? new Date(`${this.to()}T23:59:59.999`).toISOString() : undefined,
+      remaining: this.availableOnly() || undefined,
+      organizerIsFriend: this.organizerIsFriend() || undefined,
+      sort: this.sort(),
       radiusKm: this.radiusParam(),
       size: 20,
     };
   }
 
   private radiusParam(): number | undefined {
-    return this.hasCoordinates() ? this.radiusKm() : undefined;
+    return this.hasCoordinates() && this.distanceEnabled() ? this.radiusKm() : undefined;
   }
 
   private loadAvatars(rows: GetSearchPeople200DataItem[]): void {

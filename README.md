@@ -1,66 +1,29 @@
-# gym-buddy-ui
+# Gym Buddy UI
 
-Angular 22 member app for Gym Buddies. Product decisions live in
-[`gym-buddy-documentation`](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-documentation).
+Angular member website and administration console.
 
-This slice is **sign-up**, **sign-in**, **profiles**, **friend requests**,
-**account settings**, **avatar upload**, **posts**, **nested comments**,
-the **friends news feed**, and **events** (`/register`, `/login`, `/u/:handle`,
-`/friends`, `/settings/profile`, `/settings/privacy`, `/`, `/posts/:id`,
-`/events`, `/events/new`, `/events/:id`). The access JWT stays in memory; the
-refresh token is the API’s HttpOnly cookie (`path /api/v1/auth`). Messaging is
-a later ticket.
+[Live website](https://projet-de-compensation-2025-2026.github.io/gym-buddy-ui/) · [Specifications and mockups](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-documentation) · [API contract](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi)
 
-The HTTP contract is the versioned
-[`gym-buddy-openapi`](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-openapi)
-package (ticket #64 pins develop SHA `2ebc892909eed2a79841a4aea572aef1968747b4`
-until the next 0.1.x tag). This repo does **not** vendor `openapi.yaml` or
-`bundled.yaml`.
+## Development
 
-`pnpm generate:api` (also run by `pnpm start`, `pnpm build`, and `pnpm test`)
-points [orval](https://orval.dev) `8.22.0` (`client: 'angular'`) at
-`node_modules/gym-buddy-openapi/openapi/openapi.yaml` so the `$ref` tree
-resolves from that package checkout, then writes `src/app/api/generated/`.
-Do not generate from `bundled.yaml`. Auth pages use a thin `AuthApi` wrapper
-over the generated `GymBuddyAPIService` so login / refresh / logout still send
-the HttpOnly refresh cookie. Friends uses `FriendsApi` the same way.
+Use the Node and pnpm versions declared in `package.json`. Start the API from the sibling service repository, then:
 
-| Workflow | Trigger                | Promise                                                                   |
-| -------- | ---------------------- | ------------------------------------------------------------------------- |
-| CI       | PR / push on `develop` | Prettier `--write`, `ng test` (ChromeHeadless), `ng build` + HTTP smoke   |
-| Release  | `workflow_dispatch`    | write SemVer into `package.json`, squash `develop` → `main`, tag `vX.Y.Z` |
-| Deploy   | that tag               | GitHub Pages                                                              |
-
-Live site: https://projet-de-compensation-2025-2026.github.io/gym-buddy-ui/
-
-Production `apiBaseUrl` is `https://vps-c39cdf03.vps.ovh.net/api/v1` (the VPS API, not
-a Pages URL). This does not claim that register/login from the Pages origin succeeds
-(CORS / UFW / SameSite=Lax honesty gate is after this lands; Sentinel re-curls).
-Known static client routes (`/login`, `/register`, `/admin/login`, …) are copied as
-real files so a cold GET is HTTP 200. Site-root `404.html` remains the fallback for
-unknown paths and parameterized routes (`/u/:handle`, `/posts/:id`). GitHub Pages
-has no SPA rewrite.
-
-## Run locally
-
-Requires Node.js `^22.22.3` (see `.nvmrc`) and the pinned pnpm from
-`packageManager` (enable it with Corepack: `corepack enable`).
-
-```bash
+```sh
 corepack enable
 pnpm install --frozen-lockfile
 pnpm generate:api
-pnpm start
+pnpm exec ng serve gym-buddy-ui
 ```
 
-`ng serve` proxies `/api` to `http://127.0.0.1:8080` and uses
-`src/environments/environment.development.ts` (`/api/v1`). Production builds use
-`src/environments/environment.ts` (`https://vps-c39cdf03.vps.ovh.net/api/v1`).
+Member app: `http://localhost:4200`. Run `pnpm exec ng serve gym-buddy-admin` for the administration console (port 4201). Both proxy `/api` to `http://127.0.0.1:8080`.
 
-```bash
-bash .github/scripts/ci/format.sh --write
-bash .github/scripts/ci/test.sh
-bash .github/scripts/ci/smoke.sh
+## Verification
+
+```sh
+pnpm exec ng test gym-buddy-ui --watch=false --browsers=ChromeHeadless
+pnpm exec ng test gym-buddy-admin --watch=false --browsers=ChromeHeadless
+pnpm exec ng build gym-buddy-ui
+pnpm exec ng build gym-buddy-admin
 ```
 
-See [07-CI-CD.md](https://github.com/Projet-de-compensation-2025-2026/gym-buddy-documentation/blob/develop/70-Engineering-practices/07-CI-CD.md).
+Generated clients come from the pinned OpenAPI package; do not edit them manually. Release instructions live in the documentation repository.

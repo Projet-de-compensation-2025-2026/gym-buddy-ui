@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { EMPTY, Observable, expand, reduce } from 'rxjs';
 import { GymBuddyAPIService } from './generated/client';
 import type {
   GetFriendships200,
@@ -16,6 +16,18 @@ export class FriendsApi {
 
   list(params?: GetFriendshipsParams): Observable<GetFriendships200> {
     return this.client.getFriendships(params);
+  }
+
+  listAll(params: GetFriendshipsParams): Observable<GetFriendships200> {
+    return this.list({ ...params, size: 50 }).pipe(
+      expand((page) =>
+        page.page.next ? this.list({ ...params, size: 50, after: page.page.next }) : EMPTY,
+      ),
+      reduce((all, page) => ({ data: [...all.data, ...page.data], page: page.page }), {
+        data: [],
+        page: { next: null, size: 50 },
+      } as GetFriendships200),
+    );
   }
 
   request(body: PostFriendshipsBody): Observable<PostFriendships201> {
@@ -36,5 +48,9 @@ export class FriendsApi {
 
   block(body: PostBlocksBody): Observable<void> {
     return this.client.postBlocks(body);
+  }
+
+  unblock(userId: string): Observable<void> {
+    return this.client.deleteBlocksUserId(userId);
   }
 }

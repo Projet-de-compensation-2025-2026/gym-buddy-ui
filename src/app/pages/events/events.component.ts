@@ -20,6 +20,7 @@ export class EventsPage {
   readonly kind = signal<GetEventsKind | ''>('');
   readonly events = signal<GetEvents200DataItem[]>([]);
   readonly coverUrls = signal<Record<string, string>>({});
+  readonly next = signal<string | null>(null);
 
   constructor() {
     this.reload();
@@ -30,21 +31,28 @@ export class EventsPage {
     this.reload();
   }
 
-  reload(): void {
+  reload(append = false): void {
     this.loading.set(true);
     this.error.set(null);
     const kind = this.kind();
-    this.api.list(kind ? { kind, size: 50 } : { size: 50 }).subscribe({
-      next: (page) => {
-        this.events.set(page.data);
-        this.loading.set(false);
-        this.loadCovers(page.data);
-      },
-      error: (err: unknown) => {
-        this.error.set(readApiError(err));
-        this.loading.set(false);
-      },
-    });
+    this.api
+      .list({
+        kind: kind || undefined,
+        size: 50,
+        after: append ? (this.next() ?? undefined) : undefined,
+      })
+      .subscribe({
+        next: (page) => {
+          this.events.set(append ? [...this.events(), ...page.data] : page.data);
+          this.next.set(page.page.next ?? null);
+          this.loading.set(false);
+          this.loadCovers(page.data);
+        },
+        error: (err: unknown) => {
+          this.error.set(readApiError(err));
+          this.loading.set(false);
+        },
+      });
   }
 
   spots(event: GetEvents200DataItem): string {
@@ -55,7 +63,13 @@ export class EventsPage {
   }
 
   clockTime(iso: string): string {
-    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleString([], {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
 
   initials(event: GetEvents200DataItem): string {

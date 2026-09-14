@@ -96,6 +96,29 @@
             City / Location
             <input formControlName="city" data-testid="settings-city" />
           </label>
+          <details>
+            <summary>Location for nearby training partners</summary>
+            <p class="muted">
+              Optional coordinates enable distance search. Use your gym or city centre.
+            </p>
+            <div class="two">
+              <label
+                >Latitude<input
+                  type="number"
+                  step="any"
+                  min="-90"
+                  max="90"
+                  formControlName="lat" /></label
+              ><label
+                >Longitude<input
+                  type="number"
+                  step="any"
+                  min="-180"
+                  max="180"
+                  formControlName="lng"
+              /></label>
+            </div>
+          </details>
         </article>
         <article class="card">
           <h2>Fitness Profile</h2>
@@ -109,6 +132,39 @@
             </select>
           </label>
           <p>Favorite Sports / Activities</p>
+          <fieldset>
+            <legend>Preferred training times</legend>
+            @for (window of windows(); track $index) {
+              <p>
+                {{ weekdays[window.weekday] }} {{ window.start }}–{{ window.end }}
+                <button
+                  type="button"
+                  class="chip"
+                  (click)="removeWindow($index)"
+                  [attr.aria-label]="'Remove ' + weekdays[window.weekday] + ' training time'"
+                >
+                  ×
+                </button>
+              </p>
+            }
+            <div class="two">
+              <label
+                >Day<select #windowDay>
+                  @for (day of weekdays; track $index) {
+                    <option [value]="$index">{{ day }}</option>
+                  }
+                </select></label
+              ><label>From<input #windowStart type="time" /></label
+              ><label>Until<input #windowEnd type="time" /></label>
+            </div>
+            <button
+              type="button"
+              class="btn-secondary"
+              (click)="addWindow(windowDay.value, windowStart.value, windowEnd.value)"
+            >
+              Add training time
+            </button>
+          </fieldset>
           <div class="chips">
             @for (sport of sports(); track sport) {
               <button type="button" class="chip" (click)="removeSport(sport)">{{ sport }} ×</button>

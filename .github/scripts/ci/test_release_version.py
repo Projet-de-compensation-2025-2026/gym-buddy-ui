@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -68,11 +69,11 @@ def test_release_yml_wires_sync() -> None:
         fail("release.yml must compute version, write package.json, then tag")
 
 
-def test_package_json_matches_shipped_tag() -> None:
+def test_package_json_has_stable_semver() -> None:
     pkg = json.loads(PACKAGE.read_text(encoding="utf-8"))
     ver = str(pkg.get("version", ""))
-    if ver != "1.1.1":
-        fail(f"package.json version {ver!r} must match shipped v1.1.1")
+    if not re.fullmatch(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)", ver):
+        fail(f"package.json version {ver!r} must be a stable X.Y.Z SemVer version")
 
 
 def test_sync_writes_package_json() -> None:
@@ -129,7 +130,7 @@ def main() -> None:
         if not required.is_file():
             fail(f"missing {required}")
     test_release_yml_wires_sync()
-    test_package_json_matches_shipped_tag()
+    test_package_json_has_stable_semver()
     test_sync_writes_package_json()
     test_auto_bump_never_picks_1_0_0()
     print("TEST OK: Release writes package.json; auto bump never picks 1.0.0")

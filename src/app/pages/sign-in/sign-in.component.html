@@ -1,7 +1,19 @@
 <section class="auth-page">
-  <article class="auth-card card">
-    <p class="auth-brand">Gym Buddy</p>
-    <p class="lede">Welcome back. Let's get to work.</p>
+  <article class="auth-card card login-card">
+    <header class="auth-heading">
+      <svg
+        class="auth-emblem"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="m6 6 12 12M3 8l5-5M2 5l3-3m11 19 5-5m-2 6 3-3M4 10l6-6m4 16 6-6" />
+      </svg>
+      <h1 class="auth-brand">Gym Buddy</h1>
+      <p class="lede">Welcome back. Let's get to work.</p>
+    </header>
 
     @if (registered()) {
       <p class="notice" data-testid="sign-in-registered">Account created. Sign in to continue.</p>
@@ -15,6 +27,7 @@
         Email
         <input
           type="email"
+          placeholder="athlete@example.com"
           formControlName="email"
           autocomplete="email"
           data-testid="sign-in-email"

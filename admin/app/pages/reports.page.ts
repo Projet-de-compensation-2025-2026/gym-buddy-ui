@@ -1,4 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { PagedList } from '../api/paged-list';
 import { AdminApi } from '../api/admin-api.service';
 import { readApiError } from '../../../src/app/api/models';
 import type { GetAdminReports200 } from '../api/generated/model';
@@ -7,32 +10,70 @@ type ReportRow = GetAdminReports200['data'][number];
 
 @Component({
   selector: 'admin-reports',
+  imports: [DatePipe, FormsModule],
   template: `
     <h1>Reports Queue</h1>
     <p class="muted">Member reports of users, posts, comments, and events.</p>
-    @if (loading()) {
+    <div class="filters">
+      <label class="search"
+        >Search reports
+        <input
+          type="search"
+          [(ngModel)]="query"
+          (ngModelChange)="reload()"
+          placeholder="Search reporter or reason"
+      /></label>
+      <label
+        >Status
+        <select [(ngModel)]="status" (ngModelChange)="reload()">
+          <option value="open">Open</option>
+          <option value="resolved">Resolved</option>
+        </select></label
+      >
+    </div>
+    @if (loading() && rows().length === 0) {
       <p class="muted">Loading reports…</p>
-    } @else if (error()) {
+    } @else if (error() && rows().length === 0) {
       <p class="error" role="alert">{{ error() }}</p>
+      <button type="button" (click)="reload()" [disabled]="loading()">Retry</button>
     } @else if (rows().length === 0) {
-      <p class="muted">No open reports.</p>
+      <p class="muted">No reports match these filters.</p>
     } @else {
       @for (row of rows(); track row.id) {
         <article class="card">
           <p>
-            <strong>{{ row.reporterHandle }}</strong> · {{ row.targetType }} · {{ row.status }}
+            <strong>{{ row.reporterHandle }}</strong> ·
+            <span class="badge">{{ row.status }}</span> · {{ row.createdAt | date: 'medium' }}
           </p>
-          <p>{{ row.reason }}</p>
-          <button
-            type="button"
-            class="btn-primary"
-            (click)="resolve(row)"
-            [disabled]="busyId() === row.id"
-          >
-            Close report
-          </button>
+          <p>
+            <span class="muted">Reported {{ row.targetType }}</span> <code>{{ row.targetId }}</code>
+          </p>
+          <p class="report-reason">{{ row.reason }}</p>
+          @if (row.status === 'open') {
+            <button
+              type="button"
+              class="btn-primary"
+              (click)="resolve(row)"
+              [disabled]="busyId() === row.id"
+            >
+              Close report
+            </button>
+          }
         </article>
       }
+    }
+    @if (rows().length > 0) {
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <footer class="list-footer">
+        <span class="muted">Entries: {{ rows().length }}</span>
+        @if (nextCursor()) {
+          <button type="button" (click)="reload(true)" [disabled]="loading()">
+            {{ loading() ? 'Loading…' : 'Load more' }}
+          </button>
+        }
+      </footer>
     }
   `,
   styles: `
@@ -58,27 +99,28 @@ type ReportRow = GetAdminReports200['data'][number];
 })
 export class ReportsPage {
   private readonly api = inject(AdminApi);
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly rows = signal<ReportRow[]>([]);
+  private readonly list = new PagedList<ReportRow>((after) =>
+    this.api.listReports({
+      status: this.status || undefined,
+      q: this.query.trim() || undefined,
+      after,
+      size: 50,
+    }),
+  );
+  readonly loading = this.list.loading;
+  readonly nextCursor = this.list.next;
+  readonly error = this.list.error;
+  readonly rows = this.list.rows;
   readonly busyId = signal<string | null>(null);
+  query = '';
+  status: 'open' | 'resolved' = 'open';
 
   constructor() {
     this.reload();
   }
 
-  reload(): void {
-    this.loading.set(true);
-    this.api.listReports({ status: 'open', size: 50 }).subscribe({
-      next: (page) => {
-        this.rows.set(page.data);
-        this.loading.set(false);
-      },
-      error: (err: unknown) => {
-        this.error.set(readApiError(err));
-        this.loading.set(false);
-      },
-    });
+  reload(append = false): void {
+    this.list.load(append);
   }
 
   resolve(row: ReportRow): void {

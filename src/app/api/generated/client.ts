@@ -7,7 +7,7 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.2.0
  */
 import { HttpClient, HttpHeaders, HttpResponse as AngularHttpResponse } from '@angular/common/http';
 import type { HttpContext, HttpEvent, HttpParams } from '@angular/common/http';
@@ -27,6 +27,7 @@ import type {
   GetConversationsParams,
   GetEvents200,
   GetEventsId200,
+  GetEventsIdParams,
   GetEventsParams,
   GetFeed200,
   GetFeedParams,
@@ -255,6 +256,7 @@ export class GymBuddyAPIService {
   /**
    * Creates a user (and profile) from email, handle, password, and display name (FS-ACCT-01).
    * Email and handle are unique case-insensitively (FS-ACCT-02).
+   * Handle must not contain `@` and must not equal email (VALIDATION).
    * Password must be at least 10 characters and must not equal email or handle (FS-ACCT-03).
    * Stored as Argon2id; never logged. Does not return tokens — the visitor logs in afterwards.
    * The first registered user may receive role `admin` (FS-ACCT-10); later users are `member`.
@@ -553,8 +555,10 @@ export class GymBuddyAPIService {
 
   /**
    * Owner-only (FS-PROF-02, FS-PROF-06). Nobody else can edit; staff lock the
-   * account instead. Handle must stay unique (FS-ACCT-02). Invalid sports,
-   * windows, or experience is VALIDATION.
+   * account instead. Handle must stay unique (FS-ACCT-02). JSON merge: omitted
+   * fields stay unchanged (a visibility-only body does not clear sports,
+   * windows, bio, city, or coords). Invalid sports, windows, or experience
+   * (including unknown `experienceLevel`) is VALIDATION.
    * @summary Update the signed-in member's profile
    */
   patchProfilesMe<TData = PatchProfilesMe200>(
@@ -641,7 +645,9 @@ export class GymBuddyAPIService {
   /**
    * FS-FRND-07. `filter=accepted` (default) is visible to the owner and to
    * accepted friends of that owner. `filter=incoming` and `filter=outgoing`
-   * are owner-only pending lists. Optional `handle` lists another member's
+   * are owner-only pending lists. `filter=blocked` is an owner-only list of
+   * blocks created by the caller; it never reveals who blocked the caller.
+   * Optional `handle` lists another member's
    * accepted friends (caller must be owner or an accepted friend). Strangers
    * and blocked callers get NOT_FOUND.
    * @summary List friendships
@@ -869,7 +875,8 @@ export class GymBuddyAPIService {
    * Reverse pending requests are cancelled. Accepted friendship is removed.
    * Block hides both from each other's feed, search ranking, and suggestions,
    * and prevents new requests or DMs. Self-block is VALIDATION. Missing or
-   * closed targets are NOT_FOUND.
+   * closed targets are NOT_FOUND. An existing block owned by the other member
+   * is NOT_FOUND and remains unchanged; its ownership cannot be reversed.
    * @summary Block a member
    */
   postBlocks<TData = void>(
@@ -1879,24 +1886,31 @@ export class GymBuddyAPIService {
    */
   getEventsId<TData = GetEventsId200>(
     id: string,
+    params?: GetEventsIdParams,
     options?: HttpClientBodyOptions,
   ): Observable<TData>;
   getEventsId<TData = GetEventsId200>(
     id: string,
+    params?: GetEventsIdParams,
     options?: HttpClientEventOptions,
   ): Observable<HttpEvent<TData>>;
   getEventsId<TData = GetEventsId200>(
     id: string,
+    params?: GetEventsIdParams,
     options?: HttpClientResponseOptions,
   ): Observable<AngularHttpResponse<TData>>;
   getEventsId<TData = GetEventsId200>(
     id: string,
+    params?: GetEventsIdParams,
     options?: HttpClientObserveOptions,
   ): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({ ...params, ...options?.params }, new Set<string>([]));
+
     if (options?.observe === 'events') {
       return this.http.get<TData>(`${environment.apiBaseUrl}/events/${id}`, {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'events',
+        params: filteredParams,
       });
     }
 
@@ -1904,12 +1918,14 @@ export class GymBuddyAPIService {
       return this.http.get<TData>(`${environment.apiBaseUrl}/events/${id}`, {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'response',
+        params: filteredParams,
       });
     }
 
     return this.http.get<TData>(`${environment.apiBaseUrl}/events/${id}`, {
       ...(options as Omit<NonNullable<typeof options>, 'observe'>),
       observe: 'body',
+      params: filteredParams,
     });
   }
 

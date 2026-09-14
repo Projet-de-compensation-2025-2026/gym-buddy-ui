@@ -1,5 +1,7 @@
 .thread {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 0.35rem;
 }
 
@@ -84,6 +86,8 @@
 
 .reply-form input {
   flex: 1;
+  min-width: 0;
+  width: 0;
   border: 1px solid #e5e7e9;
   border-radius: 999px;
 }
@@ -93,7 +97,33 @@
   padding-left: 0.75rem;
   border-left: 2px solid #e5e7e9;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.85rem;
+}
+
+@media (max-width: 40rem) {
+  .children {
+    margin-left: 0.5rem;
+    padding-left: 0.5rem;
+  }
+  .body,
+  .actions,
+  .reply-form,
+  .load-more {
+    margin-left: 0;
+  }
+  .head {
+    flex-wrap: wrap;
+  }
+  .who {
+    overflow-wrap: anywhere;
+  }
+  .reply-form {
+    flex-wrap: wrap;
+  }
+  .reply-form input {
+    flex-basis: 8rem;
+  }
 }
 
 .load-more {

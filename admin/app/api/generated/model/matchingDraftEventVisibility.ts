@@ -7,12 +7,16 @@
  * pin until the next 0.1.x tag). Do not treat a running Spring
  * /v3/api-docs as source of truth.
  *
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 1.2.0
  */
 
+/**
+ * New matches create a private event inviting only the matched peer. Friends is retained for older matches.
+ */
 export type MatchingDraftEventVisibility =
   (typeof MatchingDraftEventVisibility)[keyof typeof MatchingDraftEventVisibility];
 
 export const MatchingDraftEventVisibility = {
   friends: 'friends',
+  private: 'private',
 } as const;

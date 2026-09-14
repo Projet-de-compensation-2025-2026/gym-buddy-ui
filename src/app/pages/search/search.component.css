@@ -16,11 +16,19 @@
 }
 
 .filters input[type='search'],
-.filters input[type='text'] {
+.filters input[type='text'],
+.filters input[type='date'],
+.filters input:not([type]),
+.filters select {
   width: 100%;
   box-sizing: border-box;
   border: 1px solid #e5e7e9;
   border-radius: 0.35rem;
+}
+
+.filters label:not(.check) {
+  display: grid;
+  gap: 0.35rem;
 }
 
 .radius,
