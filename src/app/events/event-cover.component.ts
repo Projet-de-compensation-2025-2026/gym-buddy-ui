@@ -62,12 +62,10 @@ export class EventCover {
         this.preview.set(null);
         return;
       }
-      this.media
-        .url(id)
-        .subscribe({
-          next: (signed) => this.preview.set(signed.url),
-          error: () => this.preview.set(null),
-        });
+      this.media.url(id).subscribe({
+        next: (signed) => this.preview.set(signed.url),
+        error: () => this.preview.set(null),
+      });
     });
   }
 
