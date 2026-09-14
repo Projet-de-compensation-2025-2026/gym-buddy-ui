@@ -109,10 +109,15 @@ describe('EventDetailPage', () => {
     const select = root.querySelector('[data-testid="occurrence-select"]') as HTMLSelectElement;
     select.value = second;
     select.dispatchEvent(new Event('change'));
+    detect();
+    expect(root.querySelector('[data-testid="occurrence-select"]')).toBeNull();
     http
       .expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}?occurrenceId=${second}`)
       .flush(event);
     detect();
+    const restored = root.querySelector('[data-testid="occurrence-select"]') as HTMLSelectElement;
+    expect(restored.value).toBe(second);
+    expect(restored.selectedOptions[0].textContent).toContain('Sep 8');
     (root.querySelector('[data-testid="apply"]') as HTMLButtonElement).click();
     const apply = http.expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}/applications`);
     expect(apply.request.body).toEqual({ occurrenceId: second });
@@ -120,6 +125,40 @@ describe('EventDetailPage', () => {
     http
       .expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}?occurrenceId=${second}`)
       .flush(event);
+    http.verify();
+  });
+
+  it('keeps a cancelled occurrence selected and labels its availability after loading', async () => {
+    const { root, http, detect } = await setup();
+    const cancelledId = '88888888-8888-4888-8888-888888888888';
+    const event = detail();
+    event.occurrences.push({
+      ...event.occurrences[0],
+      id: cancelledId,
+      startsAt: '2026-09-08T18:00:00Z',
+      cancelled: true,
+      remainingSeats: 0,
+    });
+    http.expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}`).flush(event);
+    detect();
+    const views = root.querySelectorAll('[data-testid="occurrences"] button');
+    (views[1] as HTMLButtonElement).click();
+    detect();
+    expect(root.querySelector('[data-testid="occurrence-select"]')).toBeNull();
+    http
+      .expectOne(`${environment.apiBaseUrl}/events/${EVENT_ID}?occurrenceId=${cancelledId}`)
+      .flush({ ...event, remainingSeats: 0 });
+    detect();
+    const select = root.querySelector('[data-testid="occurrence-select"]') as HTMLSelectElement;
+    expect(select.value).toBe(cancelledId);
+    expect(select.selectedOptions[0].textContent).toContain('Cancelled');
+    const spots = root.querySelector('[data-testid="spots-left"]')?.textContent ?? '';
+    expect(spots).toContain('Cancelled');
+    expect(spots).not.toContain('Full');
+    expect(root.querySelector('[data-testid="apply"]')).toBeNull();
+    expect(root.querySelector('[data-testid="occurrences"]')?.textContent).toContain(
+      '3 spots left',
+    );
     http.verify();
   });
 

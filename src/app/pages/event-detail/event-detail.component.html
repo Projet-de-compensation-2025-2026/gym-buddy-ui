@@ -95,9 +95,8 @@
             <label
               >Session date
               <select
-                #occurrenceSelect
-                [value]="currentOccurrence(event)?.id"
-                (change)="chooseOccurrence(occurrenceSelect.value)"
+                [formControl]="occurrenceControl"
+                (change)="chooseOccurrence(occurrenceControl.value)"
                 data-testid="occurrence-select"
               >
                 @for (row of event.occurrences; track row.id) {
@@ -113,7 +112,7 @@
             <p class="muted" data-testid="cancelled-notice">This session was cancelled.</p>
           } @else {
             <p class="spots" data-testid="spots-left">
-              {{ spotsLabel(event.remainingSeats) }}
+              {{ spotsLabel(event.remainingSeats, currentOccurrence(event)?.cancelled) }}
               <span class="muted"> / {{ event.capacity }} total</span>
             </p>
             @if (event.visibility === 'friends') {
