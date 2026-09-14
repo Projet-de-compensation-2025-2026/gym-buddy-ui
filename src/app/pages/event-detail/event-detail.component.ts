@@ -44,6 +44,7 @@ export class EventDetailPage {
   readonly coverUrl = signal<string | null>(null);
   readonly busy = signal(false);
   readonly selectedOccurrence = signal<string | null>(null);
+  readonly occurrenceControl = this.fb.nonNullable.control('');
 
   chooseOccurrence(id: string): void {
     this.selectedOccurrence.set(id);
@@ -221,6 +222,9 @@ export class EventDetailPage {
     this.api.get(id, this.selectedOccurrence() ?? undefined).subscribe({
       next: (event) => {
         this.event.set(event);
+        this.occurrenceControl.setValue(this.currentOccurrence(event)?.id ?? '', {
+          emitEvent: false,
+        });
         this.loading.set(false);
         if (event.coverMediaId) {
           this.media.url(event.coverMediaId).subscribe({
